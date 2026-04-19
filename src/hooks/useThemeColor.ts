@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { useTheme } from '../context/ThemeContext'
 
 /** Resolves e.g. oklch() via the browser’s style engine — reliable for theme-color / iOS. */
@@ -31,14 +31,23 @@ function getOrCreateThemeMeta(): HTMLMetaElement {
   return meta
 }
 
+/** Detach + re-append so iOS standalone WebKit picks up theme-color updates (otherwise cached). */
+function commitThemeColor(content: string) {
+  const meta = getOrCreateThemeMeta()
+  meta.content = content
+  const head = document.head
+  head.removeChild(meta)
+  head.appendChild(meta)
+}
+
 export function useThemeColor(cssVar: string) {
   const { mode } = useTheme()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const color = resolveCssVarBackground(cssVar)
     if (!color) return
 
-    getOrCreateThemeMeta().content = color
     document.documentElement.style.setProperty('--pwa-status-bar-fill', color)
+    commitThemeColor(color)
   }, [cssVar, mode])
 }

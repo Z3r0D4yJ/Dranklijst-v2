@@ -19,6 +19,21 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Dranklijst" />
     <title>Dranklijst</title>
+    <script>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('theme')
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          var dark =
+            stored === 'dark' ||
+            ((!stored || stored === 'system') && prefersDark)
+          document.documentElement.style.setProperty(
+            '--pwa-status-bar-fill',
+            dark ? '#131920' : '#1e3a8a'
+          )
+        } catch (_) {}
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
