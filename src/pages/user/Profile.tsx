@@ -30,7 +30,7 @@ interface OpenPayment {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  lid: 'Lid', leiding: 'Leiding', groepsleiding: 'Groepsleiding', kas: 'Kas', admin: 'Admin',
+  lid: 'Lid', leiding: 'Leiding', kas: 'Kas',
 }
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; Icon: typeof Sun }[] = [
@@ -372,7 +372,7 @@ export function Profile() {
         </div>
 
         {/* ─── Leiding / Beheer navigation ────────── */}
-        {(profile?.role === 'leiding' || profile?.role === 'groepsleiding' || profile?.role === 'kas' || profile?.role === 'admin') && (
+        {(profile?.role === 'leiding' || profile?.role === 'kas') && (
           <>
             <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Beheer</p>
             <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
@@ -395,7 +395,7 @@ export function Profile() {
                   onClick={() => navigate('/leiding/transacties')}
                 />
               )}
-              {(profile.role === 'groepsleiding' || profile.role === 'kas' || profile.role === 'admin') && (
+              {profile.role === 'kas' && (
                 <AccountRow
                   first
                   icon={Gear}

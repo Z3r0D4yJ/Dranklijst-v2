@@ -6,8 +6,6 @@ const ROLE_RANK: Record<Role, number> = {
   lid: 1,
   leiding: 2,
   kas: 3,
-  groepsleiding: 4,
-  admin: 5,
 }
 
 interface Props {

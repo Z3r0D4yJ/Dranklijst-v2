@@ -105,7 +105,7 @@ export function Leaderboard() {
   const { data: myGroups } = useMyGroups()
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const canSeeAll = profile?.role === 'groepsleiding' || profile?.role === 'admin'
+  const canSeeAll = profile?.role === 'kas'
   const myGroupIds = new Set((myGroups ?? []).map(g => g.id))
 
   const visibleGroups = canSeeAll

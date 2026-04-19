@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { User, MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 
-type Role = 'lid' | 'leiding' | 'groepsleiding' | 'kas' | 'admin'
+type Role = 'lid' | 'leiding' | 'kas'
 
 interface UserRow {
   id: string
@@ -14,19 +14,15 @@ interface UserRow {
 }
 
 const ROLES: { value: Role; label: string }[] = [
-  { value: 'lid',           label: 'Lid' },
-  { value: 'leiding',       label: 'Leiding' },
-  { value: 'groepsleiding', label: 'Groepsleiding' },
-  { value: 'kas',           label: 'Kas' },
-  { value: 'admin',         label: 'Admin' },
+  { value: 'lid',     label: 'Lid' },
+  { value: 'leiding', label: 'Leiding' },
+  { value: 'kas',     label: 'Kas' },
 ]
 
 const ROLE_STYLE: Record<Role, { bg: string; text: string }> = {
-  lid:           { bg: 'var(--color-surface-alt)',  text: 'var(--color-text-secondary)' },
-  leiding:       { bg: 'var(--color-primary-pale)', text: 'var(--color-primary)' },
-  groepsleiding: { bg: 'var(--color-success-bg)',   text: 'var(--color-success)' },
-  kas:           { bg: 'var(--color-warning-bg)',   text: 'var(--color-warning)' },
-  admin:         { bg: 'var(--color-danger-bg)',    text: 'var(--color-danger)' },
+  lid:     { bg: 'var(--color-surface-alt)',  text: 'var(--color-text-secondary)' },
+  leiding: { bg: 'var(--color-primary-pale)', text: 'var(--color-primary)' },
+  kas:     { bg: 'var(--color-warning-bg)',   text: 'var(--color-warning)' },
 }
 
 export function Users() {
