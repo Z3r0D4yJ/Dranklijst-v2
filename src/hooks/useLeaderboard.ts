@@ -16,22 +16,19 @@ export interface LeaderboardGroup {
   entries: LeaderboardEntry[]
 }
 
-export function useLeaderboard(periodId: string | undefined, groupId?: string | null) {
+export function useLeaderboard(periodId: string | undefined) {
   return useQuery({
-    queryKey: ['leaderboard', periodId, groupId],
-    // Don't run until groupId is resolved: null = intentional (see all), string = filtered, undefined = still loading
-    enabled: !!periodId && groupId !== undefined,
+    queryKey: ['leaderboard', periodId],
+    enabled: !!periodId,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_leaderboard', {
         p_period_id: periodId!,
-        p_group_id: groupId ?? null,
       })
 
       if (error) throw error
 
       const rows = (data ?? []) as Omit<LeaderboardEntry, 'rank'>[]
 
-      // Rank per groep
       const grouped: Record<string, LeaderboardGroup> = {}
       for (const row of rows) {
         if (!grouped[row.group_id]) {
@@ -40,7 +37,12 @@ export function useLeaderboard(periodId: string | undefined, groupId?: string | 
         grouped[row.group_id].entries.push({ ...row, rank: grouped[row.group_id].entries.length + 1 })
       }
 
-      return Object.values(grouped).sort((a, b) => a.group_name.localeCompare(b.group_name))
+      return Object.values(grouped).sort((a, b) => {
+        // Leiding altijd achteraan
+        if (a.group_name === 'Leiding') return 1
+        if (b.group_name === 'Leiding') return -1
+        return a.group_name.localeCompare(b.group_name)
+      })
     },
   })
 }

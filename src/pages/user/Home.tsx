@@ -36,7 +36,7 @@ export function Home() {
   const { data: consumptions, isLoading: consLoading } = useGroupConsumptions(group?.id)
   const { data: period } = useActivePeriod()
   const { data: txs } = useTransactions(period?.id)
-  const { data: lbGroups } = useLeaderboard(period?.id, group?.id)
+  const { data: lbGroups } = useLeaderboard(period?.id)
 
   const [selected, setSelected] = useState<GroupConsumptionItem | null>(null)
   const [bubbles, setBubbles] = useState<Bubble[]>([])

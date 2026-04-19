@@ -1,8 +1,8 @@
 import { Trophy, Crown, Medal } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
-import { useMyGroup } from '../../hooks/useMyGroup'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useLeaderboard, type LeaderboardEntry } from '../../hooks/useLeaderboard'
+import { useMyGroups } from '../../hooks/useMyGroups'
 import { useThemeColor } from '../../hooks/useThemeColor'
 
 function Pillar({ rank, name, total, height }: { rank: number; name: string; total: number; height: number }) {
@@ -23,10 +23,7 @@ function Pillar({ rank, name, total, height }: { rank: number; name: string; tot
       <p className="text-[13px] font-extrabold tabular-nums" style={{ color: 'var(--color-primary)' }}>€ {total.toFixed(2).replace('.', ',')}</p>
       <div
         className="w-full flex items-start justify-center pt-2.5 text-white text-[22px] font-extrabold tracking-[-0.5px] rounded-[10px_10px_4px_4px]"
-        style={{
-          height,
-          background: `linear-gradient(180deg, ${tone} 0%, ${toneSoft} 100%)`,
-        }}
+        style={{ height, background: `linear-gradient(180deg, ${tone} 0%, ${toneSoft} 100%)` }}
       >
         {rank}
       </div>
@@ -71,28 +68,27 @@ function EntryRow({ entry, isMe, index }: { entry: LeaderboardEntry; isMe: boole
 export function Leaderboard() {
   useThemeColor('--color-surface')
   const { profile } = useAuth()
-  const { data: myGroup, isLoading: groupLoading } = useMyGroup()
   const { data: period } = useActivePeriod()
+  const { data: allGroups, isLoading } = useLeaderboard(period?.id)
+  const { data: myGroups } = useMyGroups()
 
   const canSeeAll = profile?.role === 'groepsleiding' || profile?.role === 'admin'
-  // undefined = still loading (holds the query); null = no filter (canSeeAll); string = specific group
-  const groupFilter: string | null | undefined =
-    !profile ? undefined :
-    canSeeAll ? null :
-    groupLoading ? undefined :
-    myGroup?.id ?? null
 
-  const { data: groups, isLoading } = useLeaderboard(period?.id, groupFilter)
+  const myGroupIds = new Set((myGroups ?? []).map(g => g.id))
+
+  const visibleGroups = canSeeAll
+    ? (allGroups ?? [])
+    : (allGroups ?? []).filter(g => myGroupIds.has(g.group_id))
+
+  const showGroupHeaders = canSeeAll || visibleGroups.length > 1
 
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
       {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Leaderboard</h1>
-        {period && myGroup && (
-          <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-            {canSeeAll ? period.name : `${myGroup.name} · ${period.name}`}
-          </p>
+        {period && (
+          <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{period.name}</p>
         )}
       </div>
 
@@ -124,7 +120,7 @@ export function Leaderboard() {
         </div>
       )}
 
-      {!isLoading && period && (groups ?? []).length === 0 && (
+      {!isLoading && period && visibleGroups.length === 0 && (
         <div className="px-5 mt-10 text-center">
           <img src="/fox.png" alt="" className="w-16 h-16 object-cover rounded-full mx-auto mb-3 opacity-60" style={{ animation: 'dl-wiggle 2.6s ease-in-out infinite' }} />
           <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>Nog geen scores</p>
@@ -133,9 +129,9 @@ export function Leaderboard() {
       )}
 
       <div className="px-5 pt-5 pb-24 space-y-5">
-        {(groups ?? []).map(group => (
+        {visibleGroups.map(group => (
           <section key={group.group_id}>
-            {canSeeAll && (
+            {showGroupHeaders && (
               <div className="flex items-center gap-2 mb-3 px-0.5">
                 <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
                   <Trophy size={14} color="var(--color-primary)" />
@@ -158,7 +154,9 @@ export function Leaderboard() {
             )}
 
             {/* Full list */}
-            <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2.5 ml-0.5" style={{ color: 'var(--color-text-muted)' }}>Volledige ranking</p>
+            {showGroupHeaders && (
+              <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2.5 ml-0.5" style={{ color: 'var(--color-text-muted)' }}>Volledige ranking</p>
+            )}
             <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
               {group.entries.map((entry, i) => (
                 <EntryRow key={entry.user_id} entry={entry} isMe={entry.user_id === profile?.id} index={i} />
