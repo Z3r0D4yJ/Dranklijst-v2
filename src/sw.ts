@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { registerRoute, NavigationRoute } from 'workbox-routing'
-import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
+import { NetworkFirst, NetworkOnly } from 'workbox-strategies'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -25,10 +25,10 @@ registerRoute(
   })
 )
 
-// Supabase API: StaleWhileRevalidate so the app works on slow connections
+// Supabase API: NetworkOnly — data must always be fresh, never serve stale cache
 registerRoute(
   ({ url }) => url.hostname.endsWith('.supabase.co'),
-  new StaleWhileRevalidate({ cacheName: 'supabase-cache' })
+  new NetworkOnly()
 )
 
 // Push notification ontvangen
