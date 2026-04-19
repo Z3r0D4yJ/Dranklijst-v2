@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -25,6 +25,12 @@ import { AllTransactions } from './pages/admin/AllTransactions'
 import { Groups } from './pages/admin/Groups'
 
 const queryClient = new QueryClient()
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
 
 function PendingInviteHandler() {
   const { session } = useAuth()
@@ -53,6 +59,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop />
           <PendingInviteHandler />
           <Routes>
             {/* Publieke routes */}
