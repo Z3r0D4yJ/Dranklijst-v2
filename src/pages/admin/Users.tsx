@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { User, MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
+import { Pagination } from '../../components/Pagination'
+import { usePagination } from '../../hooks/usePagination'
 
 type Role = 'lid' | 'leiding' | 'kas'
 
@@ -67,6 +69,7 @@ export function Users() {
   const filtered = (users ?? []).filter(u =>
     u.full_name.toLowerCase().includes(search.toLowerCase())
   )
+  const { slice: pageUsers, page, totalPages, onPage } = usePagination(filtered, 25)
 
   return (
     <div className="px-4 space-y-4">
@@ -100,7 +103,7 @@ export function Users() {
       )}
 
       <div className="space-y-2">
-        {filtered.map(u => {
+        {pageUsers.map(u => {
           const style = ROLE_STYLE[u.role] ?? ROLE_STYLE.lid
           const isUpdating = updatingId === u.id
           const isOpen = openDropdown === u.id
@@ -178,6 +181,8 @@ export function Users() {
           <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen gebruikers gevonden.</p>
         </div>
       )}
+
+      <Pagination page={page} totalPages={totalPages} onPage={onPage} />
     </div>
   )
 }

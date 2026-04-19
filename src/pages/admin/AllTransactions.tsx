@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Trash, Receipt } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
+import { CustomSelect } from '../../components/CustomSelect'
+import { Pagination } from '../../components/Pagination'
+import { usePagination } from '../../hooks/usePagination'
 import type { Period } from '../../lib/database.types'
+
+const PAGE_SIZE = 50
 
 interface TxRow {
   id: string
@@ -47,7 +52,6 @@ export function AllTransactions() {
         .from('transactions')
         .select('id, user_id, quantity, unit_price, total_price, created_at, period_id, profiles(full_name), consumptions(name)')
         .order('created_at', { ascending: false })
-        .limit(200)
 
       if (selectedPeriod) query = query.eq('period_id', selectedPeriod)
 
@@ -64,16 +68,14 @@ export function AllTransactions() {
       const { data: memberships } = await supabase
         .from('group_members')
         .select('user_id, groups(id, name)')
-        .in('user_id', userIds)
+        .in('user_id', userIds.length ? userIds : ['none'])
 
       const memberMap: Record<string, { id: string; name: string }> = {}
       for (const m of (memberships ?? []) as unknown as Array<{ user_id: string; groups: { id: string; name: string } | null }>) {
-        if (m.groups && m.groups.name !== 'Leiding') {
-          memberMap[m.user_id] = m.groups
-        }
+        if (m.groups && m.groups.name !== 'Leiding') memberMap[m.user_id] = m.groups
       }
 
-      const mapped: TxRow[] = rows.map(r => ({
+      const mapped = rows.map(r => ({
         id: r.id,
         user_id: r.user_id,
         full_name: r.profiles?.full_name ?? 'Onbekend',
@@ -88,13 +90,16 @@ export function AllTransactions() {
       }))
 
       if (selectedGroup) {
-        return mapped.filter(r => (r as TxRow & { group_id: string }).group_id === selectedGroup ||
-          groups?.find(g => g.id === selectedGroup)?.name === r.group_name)
+        return mapped.filter(r => r.group_id === selectedGroup)
       }
-      return mapped
+      return mapped as TxRow[]
     },
     enabled: true,
   })
+
+  const allTx = transactions ?? []
+  const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, PAGE_SIZE)
+  const total = allTx.reduce((s, t) => s + t.total_price, 0)
 
   async function deleteTransaction(id: string) {
     setDeletingId(id)
@@ -106,47 +111,34 @@ export function AllTransactions() {
     setDeletingId(null)
   }
 
-  const total = (transactions ?? []).reduce((s, t) => s + t.total_price, 0)
-
-  const selectStyle = {
-    background: 'var(--color-surface)',
-    border: '1px solid var(--color-border-mid)',
-    borderRadius: 12,
-    padding: '10px 12px',
-    fontSize: 12,
-    fontWeight: 600,
-    color: 'var(--color-text-secondary)',
-    outline: 'none',
-    fontFamily: 'inherit',
-    flex: 1,
-  } as React.CSSProperties
-
   return (
     <div className="px-4 space-y-3">
       {/* Filters */}
       <div className="flex gap-2">
-        <select value={selectedPeriod} onChange={e => setSelectedPeriod(e.target.value)} style={selectStyle}>
-          <option value="">Alle periodes</option>
-          {(periods ?? []).map(p => (
-            <option key={p.id} value={p.id}>{p.name}{p.is_active ? ' (actief)' : ''}</option>
-          ))}
-        </select>
-        <select value={selectedGroup} onChange={e => setSelectedGroup(e.target.value)} style={selectStyle}>
-          <option value="">Alle groepen</option>
-          {(groups ?? []).map(g => (
-            <option key={g.id} value={g.id}>{g.name}</option>
-          ))}
-        </select>
+        <CustomSelect
+          value={selectedPeriod}
+          onChange={v => { setSelectedPeriod(v) }}
+          options={(periods ?? []).map(p => ({ value: p.id, label: p.name + (p.is_active ? ' (actief)' : '') }))}
+          placeholder="Alle periodes"
+          style={{ flex: 1 }}
+        />
+        <CustomSelect
+          value={selectedGroup}
+          onChange={v => { setSelectedGroup(v) }}
+          options={(groups ?? []).map(g => ({ value: g.id, label: g.name }))}
+          placeholder="Alle groepen"
+          style={{ flex: 1 }}
+        />
       </div>
 
       {/* Summary */}
-      {(transactions ?? []).length > 0 && (
+      {allTx.length > 0 && (
         <div className="rounded-[14px] px-4 py-3 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="flex items-center gap-2">
             <div className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
               <Receipt size={14} color="var(--color-primary)" />
             </div>
-            <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{transactions?.length} transacties</span>
+            <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{allTx.length} transacties</span>
           </div>
           <span className="text-[18px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>€{total.toFixed(2).replace('.', ',')}</span>
         </div>
@@ -158,14 +150,14 @@ export function AllTransactions() {
         </div>
       )}
 
-      {!isLoading && (transactions ?? []).length === 0 && (
+      {!isLoading && allTx.length === 0 && (
         <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen transacties gevonden.</p>
         </div>
       )}
 
       <div className="flex flex-col gap-2">
-        {(transactions ?? []).map(tx => (
+        {pageTx.map(tx => (
           <div key={tx.id} className="rounded-[14px] px-3.5 py-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -209,6 +201,8 @@ export function AllTransactions() {
           </div>
         ))}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPage={onPage} />
     </div>
   )
 }

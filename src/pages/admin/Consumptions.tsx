@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, PencilSimple, Eye, EyeSlash, X, Check } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
+import { CustomSelect } from '../../components/CustomSelect'
 import type { Consumption, ConsumptionCategory } from '../../lib/database.types'
 
 const CATEGORIES: { value: ConsumptionCategory; label: string }[] = [
@@ -163,13 +164,12 @@ export function Consumptions() {
                 min="0"
                 style={{ ...inputStyle, flex: 1, width: 'auto' }}
               />
-              <select
+              <CustomSelect
                 value={form.category}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value as ConsumptionCategory }))}
-                style={{ ...inputStyle, flex: 1, width: 'auto' }}
-              >
-                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </select>
+                onChange={v => setForm(f => ({ ...f, category: v as ConsumptionCategory }))}
+                options={CATEGORIES.map(c => ({ value: c.value, label: c.label }))}
+                style={{ flex: 1 }}
+              />
             </div>
           </div>
 

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Users, CurrencyEur } from '@phosphor-icons/react'
+import { Users, CurrencyEur, CaretDown } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 
 interface GroupRow {
@@ -69,10 +69,10 @@ export function Groups() {
       {(groups ?? []).map(g => (
         <details
           key={g.id}
-          className="rounded-[14px] overflow-hidden"
+          className="dl-accordion rounded-[14px] overflow-hidden"
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
         >
-          <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer select-none list-none">
+          <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer select-none list-none active:opacity-70 transition-opacity">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--color-primary-pale)' }}>
                 <Users size={16} color="var(--color-primary)" />
@@ -89,6 +89,9 @@ export function Groups() {
                   <span className="text-[11px] font-bold" style={{ color: 'var(--color-success)' }}>{g.total.toFixed(2)}</span>
                 </div>
               )}
+              <div className="dl-accordion-caret w-6 h-6 rounded-[6px] flex items-center justify-center shrink-0" style={{ background: 'var(--color-surface-alt)' }}>
+                <CaretDown size={12} color="var(--color-text-muted)" weight="bold" />
+              </div>
             </div>
           </summary>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Users, CurrencyEur, Receipt, TrendUp, CalendarBlank } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
+import { CustomSelect } from '../../components/CustomSelect'
 
 interface GroupStat { name: string; total: number }
 interface PeriodOption { id: string; name: string; is_active: boolean; started_at: string; ended_at: string | null }
@@ -116,31 +117,19 @@ export function Dashboard() {
     <div className="px-4 space-y-3">
       {/* Period picker */}
       {periods.length > 0 && (
-        <div className="rounded-[14px] flex items-center gap-2.5 px-3.5 py-2.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <div
-            className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center shrink-0"
-            style={{ background: currentPeriod?.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)' }}
-          >
-            <CalendarBlank size={14} color={currentPeriod?.is_active ? 'var(--color-success)' : 'var(--color-text-muted)'} />
-          </div>
-          <select
-            value={selectedPeriod}
-            onChange={e => { manuallySelected.current = true; setSelectedPeriod(e.target.value) }}
-            className="flex-1 bg-transparent text-[13px] font-bold outline-none"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            {periods.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.name}{p.is_active ? ' (actief)' : ''}
-              </option>
-            ))}
-          </select>
-          {currentPeriod?.is_active && (
-            <span className="text-[11px] font-bold rounded-full px-2 py-0.5" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
-              Actief
-            </span>
-          )}
-        </div>
+        <CustomSelect
+          value={selectedPeriod}
+          onChange={v => { manuallySelected.current = true; setSelectedPeriod(v) }}
+          options={periods.map(p => ({ value: p.id, label: p.name + (p.is_active ? ' (actief)' : '') }))}
+          icon={
+            <div
+              className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
+              style={{ background: currentPeriod?.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)' }}
+            >
+              <CalendarBlank size={13} color={currentPeriod?.is_active ? 'var(--color-success)' : 'var(--color-text-muted)'} />
+            </div>
+          }
+        />
       )}
 
       {selectedPeriod && (

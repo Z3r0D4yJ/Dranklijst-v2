@@ -226,9 +226,20 @@ button {
 }
 
 /* Native select in dark mode */
+.dark select {
+  color-scheme: dark;
+}
 .dark select option {
   background-color: oklch(0.23 0.02 250);
   color: oklch(0.96 0.005 250);
+}
+
+/* Accordion caret rotation */
+.dl-accordion[open] .dl-accordion-caret {
+  transform: rotate(180deg);
+}
+.dl-accordion-caret {
+  transition: transform 200ms ease;
 }
 
 /* Tabular nums on all monetary values */

@@ -4,6 +4,9 @@ import { CheckCircle, Clock, CurrencyEur, User, Export } from '@phosphor-icons/r
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPaymentConfirmed } from '../../lib/notifications'
+import { CustomSelect } from '../../components/CustomSelect'
+import { Pagination } from '../../components/Pagination'
+import { usePagination } from '../../hooks/usePagination'
 import type { Period } from '../../lib/database.types'
 
 interface PaymentRow {
@@ -126,24 +129,18 @@ export function Finance() {
   const totalAll    = payments.reduce((s, p) => s + Number(p.amount_due), 0)
   const paidPct     = totalAll > 0 ? Math.round((paidTotal / totalAll) * 100) : 0
   const currentPeriod = (periods ?? []).find(p => p.id === selectedPeriod)
+  const { slice: pagePayments, page, totalPages, onPage } = usePagination(payments, 25)
 
   return (
     <div className="px-4 space-y-3">
       {/* Period selector */}
       {(periods ?? []).length > 0 && (
-        <div className="rounded-[14px] flex items-center gap-2.5 px-3.5 py-2.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <CurrencyEur size={14} color="var(--color-text-muted)" />
-          <select
-            value={selectedPeriod}
-            onChange={e => { manuallySelected.current = true; setSelectedPeriod(e.target.value) }}
-            className="flex-1 bg-transparent text-[13px] font-semibold outline-none"
-            style={{ color: 'var(--color-text-primary)', fontFamily: 'inherit' }}
-          >
-            {(periods ?? []).map(p => (
-              <option key={p.id} value={p.id}>{p.name}{p.is_active ? ' (actief)' : ''}</option>
-            ))}
-          </select>
-        </div>
+        <CustomSelect
+          value={selectedPeriod}
+          onChange={v => { manuallySelected.current = true; setSelectedPeriod(v) }}
+          options={(periods ?? []).map(p => ({ value: p.id, label: p.name + (p.is_active ? ' (actief)' : '') }))}
+          icon={<CurrencyEur size={14} color="var(--color-text-muted)" />}
+        />
       )}
 
       {/* Totals */}
@@ -206,7 +203,7 @@ export function Finance() {
       )}
 
       <div className="flex flex-col gap-2">
-        {payments.map(payment => {
+        {pagePayments.map(payment => {
           const cfg = STATUS_CONFIG[payment.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.unpaid
           return (
             <div key={payment.id} className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
@@ -259,6 +256,8 @@ export function Finance() {
           )
         })}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPage={onPage} />
     </div>
   )
 }

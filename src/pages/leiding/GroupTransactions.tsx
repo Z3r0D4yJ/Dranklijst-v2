@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { IconChip } from '../../components/IconChip'
 import { Receipt } from '@phosphor-icons/react'
+import { Pagination } from '../../components/Pagination'
+import { usePagination } from '../../hooks/usePagination'
 import type { ConsumptionCategory } from '../../lib/database.types'
 
 interface TxRow {
@@ -102,8 +104,10 @@ export function GroupTransactions() {
     },
   })
 
-  const total = (transactions ?? []).reduce((s, t) => s + t.total_price, 0)
-  const grouped = groupByDate(transactions ?? [])
+  const allTx = transactions ?? []
+  const total = allTx.reduce((s, t) => s + t.total_price, 0)
+  const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, 30)
+  const grouped = groupByDate(pageTx)
 
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
@@ -148,7 +152,7 @@ export function GroupTransactions() {
         )}
 
         {/* ─── Empty state ─────────────────────────── */}
-        {!isLoading && (transactions ?? []).length === 0 && (
+        {!isLoading && allTx.length === 0 && (
           <div className="rounded-card px-4 py-10 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <IconChip tone="primary" icon={Receipt} size={48} />
             <p className="text-[14px] font-bold mt-3" style={{ color: 'var(--color-text-primary)' }}>Nog geen transacties</p>
@@ -185,6 +189,8 @@ export function GroupTransactions() {
             </div>
           </section>
         ))}
+
+        <Pagination page={page} totalPages={totalPages} onPage={onPage} />
       </div>
     </div>
   )

@@ -7,6 +7,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { IconChip } from '../../components/IconChip'
+import { Pagination } from '../../components/Pagination'
+import { usePagination } from '../../hooks/usePagination'
 import type { Period, ConsumptionCategory } from '../../lib/database.types'
 
 function groupByDate<T extends { created_at: string }>(items: T[]) {
@@ -56,8 +58,10 @@ export function Transactions() {
   const selectedPeriod = periods?.find(p => p.id === selectedPeriodId) ?? null
   const { data: transactions, isLoading } = useTransactions(selectedPeriod?.id)
 
-  const total = (transactions ?? []).reduce((s, t) => s + t.total_price, 0)
-  const grouped = groupByDate(transactions ?? [])
+  const allTx = transactions ?? []
+  const total = allTx.reduce((s, t) => s + t.total_price, 0)
+  const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, 30)
+  const grouped = groupByDate(pageTx)
 
   const { data: payment } = useQuery({
     queryKey: ['payment', user?.id, selectedPeriod?.id],
@@ -152,7 +156,7 @@ export function Transactions() {
         )}
 
         {/* ─── Empty state ─────────────────────────── */}
-        {!isLoading && (transactions ?? []).length === 0 && (
+        {!isLoading && allTx.length === 0 && (
           <div className="rounded-card px-4 py-12 flex flex-col items-center text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <IconChip tone="primary" icon={Receipt} size={48} />
             <p className="text-[14px] font-bold mt-3" style={{ color: 'var(--color-text-primary)' }}>Nog niets gekocht</p>
@@ -187,6 +191,8 @@ export function Transactions() {
             </div>
           </section>
         ))}
+
+        <Pagination page={page} totalPages={totalPages} onPage={onPage} />
       </div>
     </div>
   )

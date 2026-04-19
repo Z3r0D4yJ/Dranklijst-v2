@@ -68,7 +68,7 @@ function EntryRow({ entry, isMe, index }: { entry: LeaderboardEntry; isMe: boole
 
 function GroupView({ group, userId }: { group: LeaderboardGroup; userId: string | undefined }) {
   return (
-    <div className="px-5 pt-5 pb-24 space-y-3">
+    <div className="px-5 pb-24 space-y-3" style={{ paddingTop: 58 }}>
       {group.entries.length >= 2 && (
         <div className="rounded-card" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '22px 16px 18px' }}>
           <div className="flex items-end justify-center gap-2" style={{ height: 180 }}>
@@ -117,7 +117,7 @@ export function Leaderboard() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
       {/* ─── Header ──────────────────────────────── */}
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
+      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px', position: 'relative', zIndex: 10 }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Leaderboard</h1>
         {period && (
           <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{period.name}</p>
@@ -132,6 +132,8 @@ export function Leaderboard() {
             background: 'var(--color-surface)',
             borderBottom: '1px solid var(--color-border)',
             scrollbarWidth: 'none',
+            position: 'relative',
+            zIndex: 10,
           }}
         >
           {visibleGroups.map(g => {
