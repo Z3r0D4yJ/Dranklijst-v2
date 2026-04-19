@@ -37,7 +37,7 @@ function groupByDate<T extends { created_at: string }>(items: T[]) {
 }
 
 export function GroupTransactions() {
-  useThemeColor('--color-bg')
+  useThemeColor('--color-surface')
   const { profile } = useAuth()
 
   const { data: groupInfo } = useQuery({

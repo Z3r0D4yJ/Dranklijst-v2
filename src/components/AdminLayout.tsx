@@ -5,7 +5,7 @@ import { useThemeColor } from '../hooks/useThemeColor'
 import { BottomNav } from './BottomNav'
 
 export function AdminLayout() {
-  useThemeColor('--color-bg')
+  useThemeColor('--color-surface')
   const { profile } = useAuth()
   const role = profile?.role ?? ''
   const isAdmin = role === 'admin'

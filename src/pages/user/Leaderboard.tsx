@@ -69,7 +69,7 @@ function EntryRow({ entry, isMe, index }: { entry: LeaderboardEntry; isMe: boole
 }
 
 export function Leaderboard() {
-  useThemeColor('--color-bg')
+  useThemeColor('--color-surface')
   const { profile } = useAuth()
   const { data: myGroup, isLoading: groupLoading } = useMyGroup()
   const { data: period } = useActivePeriod()

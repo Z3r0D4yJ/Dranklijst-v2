@@ -183,11 +183,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* black-translucent PWA: fill the iOS status-bar zone with the header color.
-   body padding-top pushes all page content below the status bar, revealing
-   the html background (--color-header) in the safe-area-inset-top region. */
+/* black-translucent PWA (iOS): status bar / overscan use the same paint as theme-color.
+   --pwa-status-bar-fill is set by useThemeColor() per route (fallback: header blue). */
 html {
-  background-color: var(--color-header);
+  background-color: var(--pwa-status-bar-fill, var(--color-header));
   /* Snappier taps; zoom is capped via viewport meta for installed PWA feel */
   touch-action: manipulation;
 }

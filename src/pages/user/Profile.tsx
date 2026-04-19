@@ -158,7 +158,7 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
 }
 
 export function Profile() {
-  useThemeColor('--color-bg')
+  useThemeColor('--color-surface')
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()

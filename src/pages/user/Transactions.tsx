@@ -33,7 +33,7 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 export function Transactions() {
-  useThemeColor('--color-bg')
+  useThemeColor('--color-surface')
   const { user } = useAuth()
   const { data: activePeriod } = useActivePeriod()
 

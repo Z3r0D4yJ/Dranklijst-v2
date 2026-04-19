@@ -22,7 +22,7 @@ interface MemberWithProfile {
 }
 
 export function GroupManagement() {
-  useThemeColor('--color-bg')
+  useThemeColor('--color-surface')
   const { profile } = useAuth()
   const [requests, setRequests] = useState<JoinRequestWithProfile[]>([])
   const [members, setMembers] = useState<MemberWithProfile[]>([])

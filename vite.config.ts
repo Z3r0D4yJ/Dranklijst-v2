@@ -16,7 +16,7 @@ export default defineConfig({
         name: 'Dranklijst',
         short_name: 'Dranklijst',
         description: 'Digitale streepjeslijst voor Chiro',
-        theme_color: '#2563EB',
+        theme_color: '#1E3A8A',
         background_color: '#F8FAFC',
         display: 'standalone',
         orientation: 'portrait',
