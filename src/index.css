@@ -189,6 +189,8 @@ html {
   background-color: var(--pwa-status-bar-fill, var(--color-header));
   /* Snappier taps; zoom is capped via viewport meta for installed PWA feel */
   touch-action: manipulation;
+  /* Disable iOS rubber-band / overscroll bounce on the root */
+  overscroll-behavior: none;
 }
 
 body {
@@ -196,6 +198,8 @@ body {
   color: var(--color-text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
   padding-top: env(safe-area-inset-top, 0px);
+  /* Belt-and-suspenders for older Safari versions that ignore html overscroll-behavior */
+  overscroll-behavior: none;
 }
 
 button {
