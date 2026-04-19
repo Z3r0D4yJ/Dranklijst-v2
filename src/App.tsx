@@ -24,7 +24,14 @@ import { Dashboard } from './pages/admin/Dashboard'
 import { AllTransactions } from './pages/admin/AllTransactions'
 import { Groups } from './pages/admin/Groups'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 0,
+      refetchOnMount: 'always',
+    },
+  },
+})
 
 function ScrollToTop() {
   const { pathname } = useLocation()

@@ -63,14 +63,15 @@ export function Periods() {
 
     if (error) {
       setError('Kon periode niet starten.')
+      setLoading(false)
     } else {
-      setNewName('')
-      setShowNew(false)
-      queryClient.invalidateQueries({ queryKey: ['period-stats'] })
+      await queryClient.invalidateQueries({ queryKey: ['period-stats'] })
       queryClient.invalidateQueries({ queryKey: ['active-period'] })
       queryClient.invalidateQueries({ queryKey: ['periods'] })
+      setNewName('')
+      setShowNew(false)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   async function closePeriod(periodId: string, periodName: string) {

@@ -90,7 +90,7 @@ export function Consumptions() {
       })
     }
 
-    queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] })
+    await queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] })
     queryClient.invalidateQueries({ queryKey: ['group-consumptions'] })
     closeForm()
     setLoading(false)
@@ -98,7 +98,7 @@ export function Consumptions() {
 
   async function toggleActive(c: Consumption) {
     await supabase.from('consumptions').update({ is_active: !c.is_active }).eq('id', c.id)
-    queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] })
+    await queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] })
     queryClient.invalidateQueries({ queryKey: ['group-consumptions'] })
   }
 

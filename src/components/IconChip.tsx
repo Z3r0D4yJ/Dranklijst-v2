@@ -25,6 +25,21 @@ const TONE_STYLES: Record<string, { bg: string; fg: string }> = {
   'niet-alcoholisch': { bg: 'var(--color-cat-soda-bg)',  fg: 'var(--color-cat-soda-fg)' },
 }
 
+const COLOR_MAP: Record<string, { bg: string; fg: string }> = {
+  red:    { bg: 'var(--color-drink-red-bg)',    fg: 'var(--color-drink-red-fg)' },
+  orange: { bg: 'var(--color-drink-orange-bg)', fg: 'var(--color-drink-orange-fg)' },
+  amber:  { bg: 'var(--color-cat-beer-bg)',     fg: 'var(--color-cat-beer-fg)' },
+  green:  { bg: 'var(--color-drink-green-bg)',  fg: 'var(--color-drink-green-fg)' },
+  yellow: { bg: 'var(--color-drink-yellow-bg)', fg: 'var(--color-drink-yellow-fg)' },
+  brown:  { bg: 'var(--color-cat-coffee-bg)',   fg: 'var(--color-cat-coffee-fg)' },
+  beer:   { bg: 'var(--color-cat-beer-bg)',     fg: 'var(--color-cat-beer-fg)' },
+}
+
+const ICON_NAME_MAP: Record<string, FC<IconProps>> = {
+  BeerBottle,
+  BeerStein,
+}
+
 const DEFAULT_ICONS: Record<string, FC<IconProps>> = {
   beer:    BeerStein,
   wine:    Wine,
@@ -43,15 +58,17 @@ const DEFAULT_ICONS: Record<string, FC<IconProps>> = {
 interface Props {
   tone?: IconChipTone
   icon?: FC<IconProps>
+  colorName?: string
+  iconName?: string
   size?: number
   iconSize?: number
 }
 
-export function IconChip({ tone = 'primary', icon, size = 40, iconSize }: Props) {
-  const { bg, fg } = TONE_STYLES[tone] ?? TONE_STYLES.neutral
+export function IconChip({ tone = 'primary', icon, colorName, iconName, size = 40, iconSize }: Props) {
+  const { bg, fg } = (colorName && COLOR_MAP[colorName]) ?? TONE_STYLES[tone] ?? TONE_STYLES.neutral
   const radius = Math.round(size * 0.32)
   const iSize = iconSize ?? Math.round(size * 0.48)
-  const IconComponent = icon ?? DEFAULT_ICONS[tone] ?? ShoppingCart
+  const IconComponent = icon ?? (iconName && ICON_NAME_MAP[iconName]) ?? DEFAULT_ICONS[tone] ?? ShoppingCart
 
   return (
     <div

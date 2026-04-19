@@ -96,18 +96,11 @@ export function Finance() {
     const periodName = periods?.find(p => p.id === selectedPeriod)?.name ?? 'de periode'
     notifyPaymentConfirmed(payment.user_id, periodName)
 
-    const { data } = await supabase
-      .from('payments')
-      .select('id, user_id, period_id, amount_due, amount_paid, status, paid_at, profiles!payments_user_id_fkey(full_name)')
-      .eq('period_id', selectedPeriod)
-      .order('status')
-
-    const rows = (data ?? []) as unknown as Array<{
-      id: string; user_id: string; period_id: string
-      amount_due: number; amount_paid: number; status: string
-      paid_at: string | null; profiles: { full_name: string } | null
-    }>
-    setPayments(rows.map(p => ({ ...p, full_name: p.profiles?.full_name ?? 'Onbekend' })))
+    setPayments(prev => prev.map(p =>
+      p.id === paymentId
+        ? { ...p, status: 'paid', amount_paid: payment.amount_due, paid_at: new Date().toISOString() }
+        : p
+    ))
     setConfirming(null)
   }
 

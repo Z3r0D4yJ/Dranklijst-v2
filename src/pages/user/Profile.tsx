@@ -203,7 +203,7 @@ export function Profile() {
   async function markAsPaid(paymentId: string) {
     setMarkingPaid(paymentId)
     await supabase.from('payments').update({ status: 'pending' }).eq('id', paymentId)
-    queryClient.invalidateQueries({ queryKey: ['open-payments', profile?.id] })
+    await queryClient.invalidateQueries({ queryKey: ['open-payments', profile?.id] })
     setMarkingPaid(null)
   }
 

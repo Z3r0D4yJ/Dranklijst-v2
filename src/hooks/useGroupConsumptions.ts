@@ -8,6 +8,8 @@ export interface GroupConsumptionItem {
   name: string
   price: number
   category: ConsumptionCategory
+  color: string | null
+  icon: string | null
   is_visible: boolean
 }
 
@@ -18,7 +20,7 @@ export function useGroupConsumptions(groupId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('group_consumptions')
-        .select('id, consumption_id, is_visible, custom_price, consumptions(name, price, category, is_active)')
+        .select('id, consumption_id, is_visible, custom_price, consumptions(name, price, category, color, icon, is_active)')
         .eq('group_id', groupId!)
         .eq('is_visible', true)
 
@@ -29,7 +31,7 @@ export function useGroupConsumptions(groupId: string | undefined) {
         consumption_id: string
         is_visible: boolean
         custom_price: number | null
-        consumptions: { name: string; price: number; category: ConsumptionCategory; is_active: boolean } | null
+        consumptions: { name: string; price: number; category: ConsumptionCategory; color: string | null; icon: string | null; is_active: boolean } | null
       }>)
         .filter(item => item.consumptions?.is_active)
         .map(item => ({
@@ -38,6 +40,8 @@ export function useGroupConsumptions(groupId: string | undefined) {
           name: item.consumptions!.name,
           price: item.custom_price ?? item.consumptions!.price,
           category: item.consumptions!.category,
+          color: item.consumptions!.color,
+          icon: item.consumptions!.icon,
           is_visible: item.is_visible,
         })) as GroupConsumptionItem[]
     },

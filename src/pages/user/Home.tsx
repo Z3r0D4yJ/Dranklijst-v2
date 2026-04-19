@@ -13,11 +13,10 @@ import { BuyModal } from '../../components/BuyModal'
 import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
 
-const CATEGORY_ORDER = ['soda', 'water', 'coffee', 'niet-alcoholisch', 'beer', 'wine', 'alcoholisch'] as const
+const CATEGORY_ORDER = ['niet-alcoholisch', 'alcoholisch'] as const
 const CATEGORY_LABELS: Record<string, string> = {
-  soda: 'Frisdrank', water: 'Water', coffee: 'Koffie',
-  beer: 'Bier', wine: 'Wijn',
-  'niet-alcoholisch': 'Frisdrank', 'alcoholisch': 'Alcohol',
+  'niet-alcoholisch': 'Dranken',
+  'alcoholisch':      'Bier',
 }
 
 interface Bubble { id: string; x: number; y: number }
@@ -194,7 +193,7 @@ export function Home() {
                       transitionDuration: '180ms',
                     }}
                   >
-                    <IconChip tone={item.category as IconChipTone} size={38} />
+                    <IconChip tone={item.category as IconChipTone} colorName={item.color ?? undefined} iconName={item.icon ?? undefined} size={38} />
                     <div>
                       <p className="text-[14px] font-bold tracking-[-0.1px] leading-tight" style={{ color: 'var(--color-text-primary)' }}>{item.name}</p>
                       <p className="text-[17px] font-extrabold tracking-[-0.3px] mt-0.5 tabular-nums" style={{ color: 'var(--color-primary)' }}>

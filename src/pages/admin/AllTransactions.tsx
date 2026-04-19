@@ -99,7 +99,7 @@ export function AllTransactions() {
   async function deleteTransaction(id: string) {
     setDeletingId(id)
     await supabase.from('transactions').delete().eq('id', id)
-    queryClient.invalidateQueries({ queryKey: ['all-transactions'] })
+    await queryClient.invalidateQueries({ queryKey: ['all-transactions'] })
     queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     queryClient.invalidateQueries({ queryKey: ['period-stats'] })
     setConfirmId(null)

@@ -39,7 +39,8 @@ export interface Consumption {
   name: string
   price: number
   category: ConsumptionCategory
-  emoji: string | null
+  color: string | null
+  icon: string | null
   is_active: boolean
   created_at: string
 }
@@ -125,8 +126,8 @@ export type Database = {
       }
       consumptions: {
         Row: Consumption
-        Insert: { name: string; price: number; category: ConsumptionCategory; emoji?: string | null; is_active?: boolean }
-        Update: { name?: string; price?: number; category?: ConsumptionCategory; emoji?: string | null; is_active?: boolean }
+        Insert: { name: string; price: number; category: ConsumptionCategory; color?: string | null; icon?: string | null; is_active?: boolean }
+        Update: { name?: string; price?: number; category?: ConsumptionCategory; color?: string | null; icon?: string | null; is_active?: boolean }
         Relationships: []
       }
       group_consumptions: {

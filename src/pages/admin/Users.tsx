@@ -64,7 +64,7 @@ export function Users() {
     setUpdatingId(userId)
     setOpenDropdown(null)
     await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
-    queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+    await queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     setUpdatingId(null)
   }
 
