@@ -45,7 +45,7 @@ function AuthSplash({ c }) {
         <img src="fox.png" alt="" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center 22%' }} />
       </div>
       <h1 style={{ color:c.headerFg, fontSize:22, fontWeight:800, letterSpacing:-0.5, margin:0, position:'relative', zIndex:1 }}>Dranklijst</h1>
-      <p style={{ color:`${c.headerFg}88`, fontSize:12, fontWeight:500, margin:'4px 0 0', position:'relative', zIndex:1 }}>Chiro Melle</p>
+      <p style={{ color:`${c.headerFg}88`, fontSize:12, fontWeight:500, margin:'4px 0 0', position:'relative', zIndex:1 }}>Chiro Reinaert Lochristi</p>
     </div>
   )
 }
@@ -202,10 +202,10 @@ function Register(c) {
 // ─── JoinGroup — Browse ─────────────────────────────────────
 function JoinGroupBrowse(c) {
   const groups = [
-    { name:'Giraf',  desc:'2e Melle — Giraf',  status:'join'    },
-    { name:'Leeuw',  desc:'3e Melle — Leeuw',  status:'pending' },
-    { name:'Zebra',  desc:'1e Melle — Zebra',  status:'member'  },
-    { name:'Tijger', desc:'4e Melle — Tijger', status:'join'    },
+    { name:'Giraf',  desc:'2e Reinaert Lochristi — Giraf',  status:'join'    },
+    { name:'Leeuw',  desc:'3e Reinaert Lochristi — Leeuw',  status:'pending' },
+    { name:'Zebra',  desc:'1e Reinaert Lochristi — Zebra',  status:'member'  },
+    { name:'Tijger', desc:'4e Reinaert Lochristi — Tijger', status:'join'    },
   ]
   return (
     <div style={{ height:'100%', display:'flex', flexDirection:'column', background:c.bg }}>

@@ -65,7 +65,7 @@ export function Login() {
           <img src="/fox.png" alt="" className="w-full h-full object-cover" style={{ objectPosition: 'center 22%' }} />
         </div>
         <h1 className="relative z-10 text-[22px] font-extrabold tracking-[-0.5px] m-0" style={{ color: 'var(--color-header-fg)' }}>Dranklijst</h1>
-        <p className="relative z-10 text-[12px] font-medium mt-1 m-0" style={{ color: 'rgba(255,255,255,0.55)' }}>Chiro Melle</p>
+        <p className="relative z-10 text-[12px] font-medium mt-1 m-0" style={{ color: 'rgba(255,255,255,0.55)' }}>Chiro Reinaert Lochristi</p>
       </div>
 
       {/* ─── Form sheet ─────────────────────────────── */}
