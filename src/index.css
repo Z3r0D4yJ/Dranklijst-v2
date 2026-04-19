@@ -183,10 +183,18 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* black-translucent PWA: fill the iOS status-bar zone with the header color.
+   body padding-top pushes all page content below the status bar, revealing
+   the html background (--color-header) in the safe-area-inset-top region. */
+html {
+  background-color: var(--color-header);
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* Native select in dark mode */
