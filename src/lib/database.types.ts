@@ -1,7 +1,7 @@
 export type Role = 'lid' | 'leiding' | 'groepsleiding' | 'kas' | 'admin'
 export type JoinRequestStatus = 'pending' | 'approved' | 'rejected'
 export type PaymentStatus = 'unpaid' | 'pending' | 'paid'
-export type ConsumptionCategory = 'beer' | 'wine' | 'soda' | 'water' | 'coffee' | 'alcoholisch' | 'niet-alcoholisch'
+export type ConsumptionCategory = 'alcoholisch' | 'niet-alcoholisch'
 
 export interface Profile {
   id: string

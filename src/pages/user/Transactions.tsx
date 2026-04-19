@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Receipt } from '@phosphor-icons/react'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
@@ -36,6 +37,7 @@ export function Transactions() {
   useThemeColor('--color-surface')
   const { user } = useAuth()
   const { data: activePeriod } = useActivePeriod()
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null)
 
   const { data: periods } = useQuery({
     queryKey: ['periods'],
@@ -45,7 +47,13 @@ export function Transactions() {
     },
   })
 
-  const selectedPeriod = activePeriod ?? periods?.[0]
+  useEffect(() => {
+    if (selectedPeriodId) return
+    if (activePeriod) { setSelectedPeriodId(activePeriod.id); return }
+    if (periods?.length) setSelectedPeriodId(periods[0].id)
+  }, [activePeriod, periods, selectedPeriodId])
+
+  const selectedPeriod = periods?.find(p => p.id === selectedPeriodId) ?? null
   const { data: transactions, isLoading } = useTransactions(selectedPeriod?.id)
 
   const total = (transactions ?? []).reduce((s, t) => s + t.total_price, 0)
@@ -72,13 +80,46 @@ export function Transactions() {
         )}
       </div>
 
+      {/* ─── Periode-tabs ─────────────────────────── */}
+      {(periods ?? []).length > 1 && (
+        <div
+          className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0"
+          style={{
+            background: 'var(--color-surface)',
+            borderBottom: '1px solid var(--color-border)',
+            scrollbarWidth: 'none',
+          }}
+        >
+          {(periods ?? []).map(p => {
+            const isActive = p.id === selectedPeriodId
+            return (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPeriodId(p.id)}
+                className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors"
+                style={{
+                  background: isActive ? 'var(--color-primary)' : 'var(--color-surface-alt)',
+                  color: isActive ? '#fff' : 'var(--color-text-secondary)',
+                }}
+              >
+                {p.name}
+                {p.is_active && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: isActive ? 'rgba(255,255,255,0.7)' : 'var(--color-success)' }}
+                  />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       <div className="px-5 pt-4 pb-24 space-y-4">
         {/* ─── Total card ──────────────────────────── */}
         <div className="rounded-[20px] overflow-hidden relative" style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff' }}>
-          {/* Decorative circles */}
           <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: 70, background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', right: 30, bottom: -20, width: 80, height: 80, borderRadius: 40, background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-          {/* Fox */}
           <img
             src="/fox.png"
             alt=""

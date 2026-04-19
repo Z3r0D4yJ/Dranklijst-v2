@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Users, Check, X, Trash, Clock, LinkSimple, ArrowsClockwise, Copy, CheckCircle } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyJoinRequestResolved } from '../../lib/notifications'
 import { useThemeColor } from '../../hooks/useThemeColor'
+import { useJoinRequests } from '../../hooks/useJoinRequests'
 
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -13,15 +15,6 @@ function generateCode(): string {
 interface InviteCode {
   id: string
   code: string
-}
-
-interface JoinRequestWithProfile {
-  id: string
-  user_id: string
-  group_id: string
-  status: string
-  created_at: string
-  profiles: { full_name: string } | null
 }
 
 interface MemberWithProfile {
@@ -34,7 +27,7 @@ interface MemberWithProfile {
 export function GroupManagement() {
   useThemeColor('--color-surface')
   const { profile } = useAuth()
-  const [requests, setRequests] = useState<JoinRequestWithProfile[]>([])
+  const queryClient = useQueryClient()
   const [members, setMembers] = useState<MemberWithProfile[]>([])
   const [groupName, setGroupName] = useState<string>('')
   const [groupId, setGroupId] = useState<string | null>(null)
@@ -43,6 +36,8 @@ export function GroupManagement() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [codeLoading, setCodeLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  const { data: requests } = useJoinRequests(groupId)
 
   useEffect(() => {
     loadData()
@@ -68,13 +63,7 @@ export function GroupManagement() {
     setGroupName(ownGroup.groups?.name ?? '')
     setGroupId(gId)
 
-    const [requestsRes, membersRes, inviteRes] = await Promise.all([
-      supabase
-        .from('join_requests')
-        .select('*, profiles(full_name)')
-        .eq('group_id', gId)
-        .eq('status', 'pending')
-        .order('created_at'),
+    const [membersRes, inviteRes] = await Promise.all([
       supabase
         .from('group_members')
         .select('*, profiles(full_name, role)')
@@ -87,32 +76,33 @@ export function GroupManagement() {
         .maybeSingle(),
     ])
 
-    if (requestsRes.data) setRequests(requestsRes.data as unknown as JoinRequestWithProfile[])
     if (membersRes.data) setMembers(membersRes.data as unknown as MemberWithProfile[])
     if (inviteRes.data) setInviteCode(inviteRes.data as InviteCode)
     setLoading(false)
   }
 
-  async function resolveRequest(requestId: string, userId: string, groupId: string, approve: boolean) {
+  async function resolveRequest(requestId: string, userId: string, approve: boolean) {
     setActionLoading(requestId)
 
-    const { error } = await supabase
-      .from('join_requests')
-      .update({
-        status: approve ? 'approved' : 'rejected',
-        resolved_at: new Date().toISOString(),
-        resolved_by: profile?.id,
-      })
-      .eq('id', requestId)
+    const { error } = await supabase.rpc('resolve_join_request', {
+      p_request_id: requestId,
+      p_approved: approve,
+    })
 
-    if (!error && approve) {
-      await supabase.from('group_members').insert({ user_id: userId, group_id: groupId })
-    }
     if (!error) {
+      await queryClient.invalidateQueries({ queryKey: ['join-requests', groupId] })
+      if (approve) {
+        // refresh members list
+        const { data } = await supabase
+          .from('group_members')
+          .select('*, profiles(full_name, role)')
+          .eq('group_id', groupId!)
+          .order('joined_at')
+        if (data) setMembers(data as unknown as MemberWithProfile[])
+      }
       notifyJoinRequestResolved(userId, groupName, approve)
     }
 
-    await loadData()
     setActionLoading(null)
   }
 
@@ -226,20 +216,20 @@ export function GroupManagement() {
               <Clock size={15} color="#2563EB" />
             </div>
             <h2 className="text-base font-bold text-[#0F172A] dark:text-[#F1F5F9]">Aanvragen</h2>
-            {requests.length > 0 && (
+            {(requests ?? []).length > 0 && (
               <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                {requests.length}
+                {requests!.length}
               </span>
             )}
           </div>
 
-          {requests.length === 0 ? (
+          {(requests ?? []).length === 0 ? (
             <div className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] px-4 py-6 text-center">
               <p className="text-sm text-[#94A3B8]">Geen openstaande aanvragen</p>
             </div>
           ) : (
             <div className="space-y-2">
-              {requests.map(req => (
+              {requests!.map(req => (
                 <div
                   key={req.id}
                   className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] px-4 py-3.5 flex items-center justify-between"
@@ -259,14 +249,14 @@ export function GroupManagement() {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => resolveRequest(req.id, req.user_id, req.group_id, false)}
+                      onClick={() => resolveRequest(req.id, req.user_id, false)}
                       disabled={actionLoading === req.id}
                       className="w-9 h-9 bg-[#FEF2F2] dark:bg-[#450A0A] rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
                     >
                       <X size={18} color="#EF4444" weight="bold" />
                     </button>
                     <button
-                      onClick={() => resolveRequest(req.id, req.user_id, req.group_id, true)}
+                      onClick={() => resolveRequest(req.id, req.user_id, true)}
                       disabled={actionLoading === req.id}
                       className="w-9 h-9 bg-[#ECFDF5] dark:bg-[#064E3B] rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
                     >

@@ -5,17 +5,13 @@ import { supabase } from '../../lib/supabase'
 import type { Consumption, ConsumptionCategory } from '../../lib/database.types'
 
 const CATEGORIES: { value: ConsumptionCategory; label: string }[] = [
-  { value: 'soda',   label: 'Frisdrank' },
-  { value: 'water',  label: 'Water' },
-  { value: 'coffee', label: 'Koffie' },
-  { value: 'beer',   label: 'Bier' },
-  { value: 'wine',   label: 'Wijn' },
+  { value: 'niet-alcoholisch', label: 'Frisdrank / Water' },
+  { value: 'alcoholisch',      label: 'Bier / Alcoholisch' },
 ]
 
 const CAT_LABELS: Record<string, string> = {
-  soda: 'Frisdrank', water: 'Water', coffee: 'Koffie',
-  beer: 'Bier', wine: 'Wijn',
-  'niet-alcoholisch': 'Frisdrank', 'alcoholisch': 'Alcohol',
+  'niet-alcoholisch': 'Frisdrank / Water',
+  'alcoholisch':      'Bier / Alcoholisch',
 }
 
 interface FormState {
@@ -24,7 +20,7 @@ interface FormState {
   category: ConsumptionCategory
 }
 
-const EMPTY_FORM: FormState = { name: '', price: '', category: 'soda' }
+const EMPTY_FORM: FormState = { name: '', price: '', category: 'niet-alcoholisch' }
 
 export function Consumptions() {
   const queryClient = useQueryClient()
