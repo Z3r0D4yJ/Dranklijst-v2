@@ -59,7 +59,7 @@ export function Groups() {
   if (isLoading) {
     return (
       <div className="flex justify-center mt-8">
-        <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -67,41 +67,49 @@ export function Groups() {
   return (
     <div className="px-4 space-y-3">
       {(groups ?? []).map(g => (
-        <details key={g.id} className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] overflow-hidden group">
+        <details
+          key={g.id}
+          className="rounded-[14px] overflow-hidden"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+        >
           <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer select-none list-none">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-xl flex items-center justify-center shrink-0">
-                <Users size={16} color="#2563EB" />
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--color-primary-pale)' }}>
+                <Users size={16} color="var(--color-primary)" />
               </div>
               <div>
-                <p className="text-sm font-bold text-[#0F172A] dark:text-[#F1F5F9]">{g.name}</p>
-                <p className="text-xs text-[#94A3B8]">{g.memberCount} leden</p>
+                <p className="text-[13px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>{g.name}</p>
+                <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{g.memberCount} leden</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {g.total > 0 && (
-                <div className="flex items-center gap-1 bg-[#ECFDF5] dark:bg-[#064E3B] px-2.5 py-1 rounded-lg">
-                  <CurrencyEur size={11} color="#10B981" />
-                  <span className="text-xs font-bold text-[#10B981]">{g.total.toFixed(2)}</span>
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg" style={{ background: 'var(--color-success-bg)' }}>
+                  <CurrencyEur size={11} color="var(--color-success)" />
+                  <span className="text-[11px] font-bold" style={{ color: 'var(--color-success)' }}>{g.total.toFixed(2)}</span>
                 </div>
               )}
             </div>
           </summary>
 
           {g.members.length > 0 && (
-            <div className="border-t border-[#F1F5F9] dark:border-[#334155] divide-y divide-[#F1F5F9] dark:divide-[#334155]">
+            <div style={{ borderTop: '1px solid var(--color-border)' }}>
               {g.members.map((m, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-2.5">
-                  <p className="text-sm text-[#0F172A] dark:text-[#F1F5F9]">{m.full_name}</p>
-                  <span className="text-xs text-[#94A3B8] font-medium capitalize">{m.role}</span>
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-4 py-2.5"
+                  style={{ borderTop: i > 0 ? '1px solid var(--color-border)' : undefined }}
+                >
+                  <p className="text-[13px] m-0" style={{ color: 'var(--color-text-primary)' }}>{m.full_name}</p>
+                  <span className="text-[11px] font-medium capitalize" style={{ color: 'var(--color-text-muted)' }}>{m.role}</span>
                 </div>
               ))}
             </div>
           )}
 
           {g.members.length === 0 && (
-            <div className="border-t border-[#F1F5F9] dark:border-[#334155] px-4 py-3">
-              <p className="text-xs text-[#94A3B8]">Geen leden</p>
+            <div className="px-4 py-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+              <p className="text-[11px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen leden</p>
             </div>
           )}
         </details>

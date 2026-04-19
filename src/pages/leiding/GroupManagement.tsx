@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Users, Check, X, Trash, Clock, LinkSimple, ArrowsClockwise, Copy, CheckCircle } from '@phosphor-icons/react'
+import { Check, X, Trash, ArrowsClockwise, Copy, CheckCircle, User } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyJoinRequestResolved } from '../../lib/notifications'
@@ -22,6 +22,26 @@ interface MemberWithProfile {
   user_id: string
   joined_at: string
   profiles: { full_name: string; role: string } | null
+}
+
+function SectionLabel({ children, count }: { children: React.ReactNode; count?: number }) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>{children}</p>
+      {count != null && (
+        <span
+          className="text-[11px] font-extrabold rounded-full leading-4"
+          style={{
+            color: count > 0 ? '#fff' : 'var(--color-text-muted)',
+            background: count > 0 ? 'var(--color-primary)' : 'var(--color-surface-alt)',
+            padding: '1px 6px',
+          }}
+        >
+          {count}
+        </span>
+      )}
+    </div>
+  )
 }
 
 export function GroupManagement() {
@@ -83,16 +103,13 @@ export function GroupManagement() {
 
   async function resolveRequest(requestId: string, userId: string, approve: boolean) {
     setActionLoading(requestId)
-
     const { error } = await supabase.rpc('resolve_join_request', {
       p_request_id: requestId,
       p_approved: approve,
     })
-
     if (!error) {
       await queryClient.invalidateQueries({ queryKey: ['join-requests', groupId] })
       if (approve) {
-        // refresh members list
         const { data } = await supabase
           .from('group_members')
           .select('*, profiles(full_name, role)')
@@ -102,7 +119,6 @@ export function GroupManagement() {
       }
       notifyJoinRequestResolved(userId, groupName, approve)
     }
-
     setActionLoading(null)
   }
 
@@ -139,69 +155,66 @@ export function GroupManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] pb-8">
-      <div className="bg-white dark:bg-[#1E293B] border-b border-[#F1F5F9] dark:border-[#334155] px-4 pt-12 pb-4">
-        <h1 className="text-xl font-bold text-[#0F172A] dark:text-[#F1F5F9]">Groepsbeheer</h1>
-        <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-0.5">{groupName}</p>
+    <div className="min-h-screen pb-8" style={{ background: 'var(--color-bg)' }}>
+      {/* ─── Header ──────────────────────────────── */}
+      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
+        <h1 className="text-[22px] font-extrabold tracking-[-0.5px] m-0 mb-0.5" style={{ color: 'var(--color-text-primary)' }}>Groepsbeheer</h1>
+        <p className="text-[12px] font-medium m-0" style={{ color: 'var(--color-text-muted)' }}>{groupName} · {members.length} leden</p>
       </div>
 
-      <div className="px-4 mt-6 space-y-6">
-        {/* Uitnodigingslink */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center">
-              <LinkSimple size={15} color="#2563EB" />
-            </div>
-            <h2 className="text-base font-bold text-[#0F172A] dark:text-[#F1F5F9]">Uitnodigingslink</h2>
-          </div>
+      <div className="px-5 pt-4 pb-8 flex flex-col gap-5">
 
-          <div className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] p-4">
+        {/* ─── Uitnodigingslink ─────────────────────── */}
+        <section>
+          <SectionLabel>Uitnodigingslink</SectionLabel>
+          <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             {inviteCode ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <>
+                <div className="flex items-center justify-between mb-3.5">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] mb-0.5">Code</p>
-                    <p className="text-2xl font-bold tracking-[0.25em] text-[#0F172A] dark:text-[#F1F5F9]">
-                      {inviteCode.code}
-                    </p>
+                    <p className="text-[11px] font-extrabold uppercase tracking-[1px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>Code</p>
+                    <p className="text-[26px] font-extrabold tracking-[0.28em] m-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>{inviteCode.code}</p>
                   </div>
                   <button
                     onClick={handleGenerateCode}
                     disabled={codeLoading}
-                    className="w-9 h-9 bg-[#F1F5F9] dark:bg-[#334155] rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                    style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
                     title="Nieuwe code genereren"
                   >
-                    <ArrowsClockwise size={17} color="#64748B" className={codeLoading ? 'animate-spin' : ''} />
+                    <ArrowsClockwise size={15} color="var(--color-text-muted)" className={codeLoading ? 'animate-spin' : ''} />
                   </button>
                 </div>
                 <button
                   onClick={copyLink}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-all"
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-[10px] text-[13px] font-bold active:scale-[0.98] transition-all"
                   style={{
                     background: copied ? 'var(--color-success-bg)' : 'var(--color-primary-pale)',
                     color: copied ? 'var(--color-success)' : 'var(--color-primary)',
+                    border: 'none',
+                    fontFamily: 'inherit',
                   }}
                 >
-                  {copied ? <CheckCircle size={17} weight="fill" /> : <Copy size={17} />}
+                  {copied ? <CheckCircle size={14} weight="fill" /> : <Copy size={14} />}
                   {copied ? 'Link gekopieerd!' : 'Kopieer uitnodigingslink'}
                 </button>
-              </div>
+              </>
             ) : (
               <div className="text-center space-y-3">
-                <p className="text-sm text-[#94A3B8]">Nog geen uitnodigingscode aangemaakt</p>
+                <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Nog geen uitnodigingscode aangemaakt</p>
                 <button
                   onClick={handleGenerateCode}
                   disabled={codeLoading}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-transform disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-bold rounded-xl active:scale-[0.98] transition-transform disabled:opacity-50"
+                  style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', fontFamily: 'inherit' }}
                 >
-                  <LinkSimple size={16} />
                   {codeLoading ? 'Bezig…' : 'Code aanmaken'}
                 </button>
               </div>
@@ -209,58 +222,51 @@ export function GroupManagement() {
           </div>
         </section>
 
-        {/* Join-aanvragen */}
+        {/* ─── Aanvragen ──────────────────────────── */}
         <section>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center">
-              <Clock size={15} color="#2563EB" />
-            </div>
-            <h2 className="text-base font-bold text-[#0F172A] dark:text-[#F1F5F9]">Aanvragen</h2>
-            {(requests ?? []).length > 0 && (
-              <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                {requests!.length}
-              </span>
-            )}
-          </div>
-
+          <SectionLabel count={(requests ?? []).length}>Aanvragen</SectionLabel>
           {(requests ?? []).length === 0 ? (
-            <div className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] px-4 py-6 text-center">
-              <p className="text-sm text-[#94A3B8]">Geen openstaande aanvragen</p>
+            <div className="rounded-[14px] px-4 py-[18px] text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen openstaande aanvragen</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               {requests!.map(req => (
                 <div
                   key={req.id}
-                  className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] px-4 py-3.5 flex items-center justify-between"
+                  className="rounded-[14px] flex items-center gap-3 p-3.5"
+                  style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-full flex items-center justify-center">
-                      <Users size={16} color="#2563EB" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F1F5F9]">
-                        {req.profiles?.full_name ?? 'Onbekend'}
-                      </p>
-                      <p className="text-xs text-[#94A3B8]">
-                        {new Date(req.created_at).toLocaleDateString('nl-BE')}
-                      </p>
-                    </div>
+                  <div
+                    className="w-[38px] h-[38px] rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: 'var(--color-primary-pale)', border: '1.5px solid var(--color-primary-border)' }}
+                  >
+                    <User size={17} color="var(--color-primary)" />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex-1">
+                    <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
+                      {req.profiles?.full_name ?? 'Onbekend'}
+                    </p>
+                    <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                      {new Date(req.created_at).toLocaleDateString('nl-BE')}
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5">
                     <button
                       onClick={() => resolveRequest(req.id, req.user_id, false)}
                       disabled={actionLoading === req.id}
-                      className="w-9 h-9 bg-[#FEF2F2] dark:bg-[#450A0A] rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                      style={{ background: 'var(--color-danger-bg)', border: 'none' }}
                     >
-                      <X size={18} color="#EF4444" weight="bold" />
+                      <X size={16} color="var(--color-danger)" weight="bold" />
                     </button>
                     <button
                       onClick={() => resolveRequest(req.id, req.user_id, true)}
                       disabled={actionLoading === req.id}
-                      className="w-9 h-9 bg-[#ECFDF5] dark:bg-[#064E3B] rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                      style={{ background: 'var(--color-success-bg)', border: 'none' }}
                     >
-                      <Check size={18} color="#10B981" weight="bold" />
+                      <Check size={16} color="var(--color-success)" weight="bold" />
                     </button>
                   </div>
                 </div>
@@ -269,52 +275,49 @@ export function GroupManagement() {
           )}
         </section>
 
-        {/* Leden */}
+        {/* ─── Leden ──────────────────────────────── */}
         <section>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center">
-              <Users size={15} color="#2563EB" />
-            </div>
-            <h2 className="text-base font-bold text-[#0F172A] dark:text-[#F1F5F9]">Leden</h2>
-            <span className="text-xs text-[#94A3B8] font-medium">{members.length}</span>
-          </div>
-
+          <SectionLabel count={members.length}>Leden</SectionLabel>
           {members.length === 0 ? (
-            <div className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] px-4 py-6 text-center">
-              <p className="text-sm text-[#94A3B8]">Nog geen leden in deze groep</p>
+            <div className="rounded-card px-4 py-6 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Nog geen leden in deze groep</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {members.map(member => {
+            <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              {members.map((member, i) => {
                 const isSelf = member.user_id === profile?.id
                 return (
                   <div
                     key={member.id}
-                    className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] px-4 py-3.5 flex items-center justify-between"
+                    className="flex items-center gap-3 px-3.5 py-3"
+                    style={{ borderTop: i === 0 ? 'none' : '1px solid var(--color-border)' }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-full flex items-center justify-center">
-                        <Users size={16} color="#2563EB" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F1F5F9]">
-                          {member.profiles?.full_name ?? 'Onbekend'}
-                          {isSelf && (
-                            <span className="ml-2 text-xs text-[#94A3B8] font-normal">(jij)</span>
-                          )}
-                        </p>
-                        <p className="text-xs text-[#94A3B8]">
-                          {member.profiles?.role === 'leiding' ? 'Leiding' : 'Lid'} · {new Date(member.joined_at).toLocaleDateString('nl-BE')}
-                        </p>
-                      </div>
+                    <div
+                      className="w-[38px] h-[38px] rounded-full flex items-center justify-center shrink-0"
+                      style={{
+                        background: isSelf ? 'var(--color-accent-bg)' : 'var(--color-surface-alt)',
+                        border: `1.5px solid ${isSelf ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
+                      }}
+                    >
+                      <User size={17} color={isSelf ? 'var(--color-accent)' : 'var(--color-text-secondary)'} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
+                        {member.profiles?.full_name ?? 'Onbekend'}
+                        {isSelf && <span className="ml-1.5 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>(jij)</span>}
+                      </p>
+                      <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                        {member.profiles?.role === 'leiding' ? 'Leiding' : 'Lid'}
+                      </p>
                     </div>
                     {!isSelf && (
                       <button
                         onClick={() => removeMember(member.id, member.user_id)}
                         disabled={actionLoading === member.id}
-                        className="w-9 h-9 bg-[#FEF2F2] dark:bg-[#450A0A] rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                        className="w-8 h-8 rounded-[8px] flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                        style={{ background: 'var(--color-danger-bg)', border: 'none' }}
                       >
-                        <Trash size={16} color="#EF4444" />
+                        <Trash size={14} color="var(--color-danger)" />
                       </button>
                     )}
                   </div>
@@ -323,6 +326,7 @@ export function GroupManagement() {
             </div>
           )}
         </section>
+
       </div>
     </div>
   )

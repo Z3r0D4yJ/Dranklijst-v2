@@ -19,8 +19,8 @@ import type { IconChipTone } from '../../components/IconChip'
 
 const CATEGORY_ORDER = ['niet-alcoholisch', 'alcoholisch'] as const
 const CATEGORY_LABELS: Record<string, string> = {
-  'niet-alcoholisch': 'Dranken',
-  'alcoholisch':      'Bier',
+  'niet-alcoholisch': 'Frisdrank',
+  'alcoholisch':      'Alcohol',
 }
 
 interface Bubble { id: string; x: number; y: number }

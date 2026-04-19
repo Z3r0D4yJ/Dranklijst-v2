@@ -21,12 +21,12 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'admin',         label: 'Admin' },
 ]
 
-const ROLE_COLORS: Record<Role, { bg: string; text: string }> = {
-  lid:           { bg: 'bg-[#F8FAFC] dark:bg-[#334155]',  text: 'text-[#64748B] dark:text-[#94A3B8]' },
-  leiding:       { bg: 'bg-[#EFF6FF] dark:bg-[#1E3A8A]',  text: 'text-[#2563EB]' },
-  groepsleiding: { bg: 'bg-[#F0FDF4] dark:bg-[#064E3B]',  text: 'text-[#16A34A]' },
-  kas:           { bg: 'bg-[#FFFBEB] dark:bg-[#44250A]',  text: 'text-[#D97706]' },
-  admin:         { bg: 'bg-[#FEF2F2] dark:bg-[#450A0A]',  text: 'text-[#DC2626]' },
+const ROLE_STYLE: Record<Role, { bg: string; text: string }> = {
+  lid:           { bg: 'var(--color-surface-alt)',  text: 'var(--color-text-secondary)' },
+  leiding:       { bg: 'var(--color-primary-pale)', text: 'var(--color-primary)' },
+  groepsleiding: { bg: 'var(--color-success-bg)',   text: 'var(--color-success)' },
+  kas:           { bg: 'var(--color-warning-bg)',   text: 'var(--color-warning)' },
+  admin:         { bg: 'var(--color-danger-bg)',    text: 'var(--color-danger)' },
 }
 
 export function Users() {
@@ -75,39 +75,55 @@ export function Users() {
   return (
     <div className="px-4 space-y-4">
       <div className="relative">
-        <MagnifyingGlass size={16} color="#94A3B8" className="absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <MagnifyingGlass
+          size={16}
+          color="var(--color-text-muted)"
+          style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+        />
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Zoek gebruiker…"
-          className="w-full bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#0F172A] dark:text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-primary"
+          className="w-full outline-none text-[13px]"
+          style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border-mid)',
+            borderRadius: 12,
+            padding: '10px 14px 10px 40px',
+            color: 'var(--color-text-primary)',
+            fontFamily: 'inherit',
+          }}
         />
       </div>
 
       {isLoading && (
         <div className="flex justify-center mt-8">
-          <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
         </div>
       )}
 
       <div className="space-y-2">
         {filtered.map(u => {
-          const colors = ROLE_COLORS[u.role] ?? ROLE_COLORS.lid
+          const style = ROLE_STYLE[u.role] ?? ROLE_STYLE.lid
           const isUpdating = updatingId === u.id
           const isOpen = openDropdown === u.id
 
           return (
-            <div key={u.id} className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] p-4">
+            <div
+              key={u.id}
+              className="rounded-[14px] p-3.5"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+            >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-full flex items-center justify-center shrink-0">
-                    <User size={16} color="#2563EB" />
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-primary-pale)' }}>
+                    <User size={16} color="var(--color-primary)" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F1F5F9] truncate">{u.full_name}</p>
+                    <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>{u.full_name}</p>
                     {u.groups.length > 0 && (
-                      <p className="text-xs text-[#94A3B8] truncate">{u.groups.join(', ')}</p>
+                      <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>{u.groups.join(', ')}</p>
                     )}
                   </div>
                 </div>
@@ -116,7 +132,8 @@ export function Users() {
                   <button
                     onClick={() => setOpenDropdown(isOpen ? null : u.id)}
                     disabled={isUpdating}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-50 ${colors.bg} ${colors.text}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-opacity disabled:opacity-50"
+                    style={{ background: style.bg, color: style.text, border: 'none', fontFamily: 'inherit' }}
                   >
                     {isUpdating ? '…' : ROLES.find(r => r.value === u.role)?.label ?? u.role}
                     {!isUpdating && <CaretDown size={11} />}
@@ -124,16 +141,28 @@ export function Users() {
 
                   {isOpen && (
                     <>
+                      <div className="fixed inset-0 z-10" onClick={() => setOpenDropdown(null)} />
                       <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setOpenDropdown(null)}
-                      />
-                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl shadow-lg z-20 min-w-[140px] overflow-hidden">
+                        className="absolute right-0 top-full mt-1 z-20 min-w-[140px] overflow-hidden"
+                        style={{
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--color-border-mid)',
+                          borderRadius: 12,
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+                        }}
+                      >
                         {ROLES.map(r => (
                           <button
                             key={r.value}
                             onClick={() => changeRole(u.id, r.value)}
-                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#F8FAFC] dark:hover:bg-[#0F172A] transition-colors ${r.value === u.role ? 'font-semibold text-primary' : 'text-[#0F172A] dark:text-[#F1F5F9]'}`}
+                            className="w-full text-left px-4 py-2.5 text-[13px] transition-colors"
+                            style={{
+                              fontWeight: r.value === u.role ? 700 : 500,
+                              color: r.value === u.role ? 'var(--color-primary)' : 'var(--color-text-primary)',
+                              background: 'transparent',
+                              border: 'none',
+                              fontFamily: 'inherit',
+                            }}
                           >
                             {r.label}
                           </button>
@@ -149,8 +178,8 @@ export function Users() {
       </div>
 
       {!isLoading && filtered.length === 0 && (
-        <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] px-4 py-8 text-center">
-          <p className="text-sm text-[#94A3B8]">Geen gebruikers gevonden.</p>
+        <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen gebruikers gevonden.</p>
         </div>
       )}
     </div>

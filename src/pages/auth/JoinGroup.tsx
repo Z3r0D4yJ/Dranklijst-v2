@@ -90,16 +90,17 @@ export function JoinGroup() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--color-bg)' }}>
         <div className="w-full max-w-sm text-center space-y-5">
-          <div className="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle size={36} color="#10B981" weight="fill" />
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ background: 'var(--color-success-bg)' }}>
+            <CheckCircle size={36} color="var(--color-success)" weight="fill" />
           </div>
           <div>
-            <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Welkom bij {joinedGroupName}!</h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>Je bent toegevoegd aan de groep.</p>
+            <h2 className="text-[20px] font-extrabold tracking-[-0.4px]" style={{ color: 'var(--color-text-primary)' }}>Welkom bij {joinedGroupName}!</h2>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-secondary)' }}>Je bent toegevoegd aan de groep.</p>
           </div>
           <button
             onClick={() => navigate('/', { replace: true })}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3 rounded-xl text-sm active:scale-[0.98] transition-transform"
+            className="w-full flex items-center justify-center gap-2 text-[14px] font-bold py-3.5 rounded-[14px] active:scale-[0.98] transition-transform"
+            style={{ background: 'var(--color-primary)', color: '#fff', boxShadow: 'var(--shadow-fab)' }}
           >
             Naar de app
             <ArrowRight size={18} />

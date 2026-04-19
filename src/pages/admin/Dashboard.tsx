@@ -13,19 +13,28 @@ interface DashboardData {
   groupStats: GroupStat[]
 }
 
-function StatCard({ label, value, icon, color, bg }: { label: string; value: string; icon: React.ReactNode; color: string; bg: string }) {
+function StatCard({ label, value, icon, iconBg, iconColor, valueColor }: {
+  label: string
+  value: string
+  icon: React.ReactNode
+  iconBg: string
+  iconColor: string
+  valueColor: string
+}) {
   return (
-    <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] p-4">
+    <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-medium text-[#94A3B8]">{label}</p>
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bg}`}>{icon}</div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
+        <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: iconBg }}>
+          {icon}
+        </div>
       </div>
-      <p className={`text-2xl font-extrabold ${color}`}>{value}</p>
+      <p className="text-[22px] font-extrabold tracking-[-0.5px] m-0 tabular-nums" style={{ color: valueColor, fontSize: value.length > 6 ? 16 : 22 }}>{value}</p>
     </div>
   )
 }
 
-const BAR_COLORS = ['#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE', '#EFF6FF']
+const BAR_COLORS = ['var(--color-primary)', 'oklch(0.60 0.18 221)', 'oklch(0.65 0.15 221)', 'oklch(0.70 0.12 221)', 'oklch(0.75 0.09 221)']
 
 export function Dashboard() {
   const [periods, setPeriods] = useState<PeriodOption[]>([])
@@ -98,7 +107,7 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="flex justify-center mt-12">
-        <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -106,16 +115,21 @@ export function Dashboard() {
   const currentPeriod = periods.find(p => p.id === selectedPeriod)
 
   return (
-    <div className="px-4 space-y-4">
+    <div className="px-4 space-y-3">
+      {/* Period picker */}
       {periods.length > 0 && (
-        <div className="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-[14px] px-4 py-3 flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${currentPeriod?.is_active ? 'bg-[#ECFDF5] dark:bg-[#064E3B]' : 'bg-[#F8FAFC] dark:bg-[#334155]'}`}>
-            <CalendarBlank size={15} color={currentPeriod?.is_active ? '#10B981' : '#94A3B8'} />
+        <div className="rounded-[14px] flex items-center gap-2.5 px-3.5 py-2.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <div
+            className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center shrink-0"
+            style={{ background: currentPeriod?.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)' }}
+          >
+            <CalendarBlank size={14} color={currentPeriod?.is_active ? 'var(--color-success)' : 'var(--color-text-muted)'} />
           </div>
           <select
             value={selectedPeriod}
             onChange={e => { manuallySelected.current = true; setSelectedPeriod(e.target.value) }}
-            className="flex-1 bg-transparent text-sm font-semibold text-[#0F172A] dark:text-[#F1F5F9] focus:outline-none"
+            className="flex-1 bg-transparent text-[13px] font-bold outline-none"
+            style={{ color: 'var(--color-text-primary)' }}
           >
             {periods.map(p => (
               <option key={p.id} value={p.id}>
@@ -123,55 +137,85 @@ export function Dashboard() {
               </option>
             ))}
           </select>
+          {currentPeriod?.is_active && (
+            <span className="text-[11px] font-bold rounded-full px-2 py-0.5" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
+              Actief
+            </span>
+          )}
         </div>
       )}
 
       {selectedPeriod && (
         <>
-          <div className="flex items-center gap-2 pt-1">
-            <TrendUp size={15} color="#2563EB" weight="bold" />
-            <p className="text-xs font-bold text-primary uppercase tracking-wider">{currentPeriod?.name}</p>
-          </div>
-
           {statsLoading ? (
             <div className="flex justify-center py-6">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3">
-                <StatCard label="Omzet" value={`€${(data?.totalRevenue ?? 0).toFixed(2)}`}
-                  icon={<CurrencyEur size={16} color="#10B981" />} color="text-[#10B981]" bg="bg-[#ECFDF5] dark:bg-[#064E3B]" />
-                <StatCard label="Transacties" value={String(data?.totalTransactions ?? 0)}
-                  icon={<Receipt size={16} color="#2563EB" />} color="text-[#0F172A] dark:text-[#F1F5F9]" bg="bg-[#EFF6FF] dark:bg-[#1E3A8A]" />
-                <StatCard label="Leden totaal" value={String(data?.totalUsers ?? 0)}
-                  icon={<Users size={16} color="#8B5CF6" />} color="text-[#0F172A] dark:text-[#F1F5F9]" bg="bg-[#F5F3FF] dark:bg-[#2E1065]" />
-                <StatCard label="Top groep" value={data?.topGroup ?? '—'}
-                  icon={<TrendUp size={16} color="#F59E0B" />} color="text-[#0F172A] dark:text-[#F1F5F9]" bg="bg-[#FFFBEB] dark:bg-[#44250A]" />
+              <div className="grid grid-cols-2 gap-2.5">
+                <StatCard
+                  label="Omzet"
+                  value={`€${(data?.totalRevenue ?? 0).toFixed(2)}`}
+                  icon={<CurrencyEur size={13} color="var(--color-success)" />}
+                  iconBg="var(--color-success-bg)"
+                  iconColor="var(--color-success)"
+                  valueColor="var(--color-success)"
+                />
+                <StatCard
+                  label="Transacties"
+                  value={String(data?.totalTransactions ?? 0)}
+                  icon={<Receipt size={13} color="var(--color-primary)" />}
+                  iconBg="var(--color-primary-pale)"
+                  iconColor="var(--color-primary)"
+                  valueColor="var(--color-primary)"
+                />
+                <StatCard
+                  label="Leden"
+                  value={String(data?.totalUsers ?? 0)}
+                  icon={<Users size={13} color="var(--color-accent)" />}
+                  iconBg="var(--color-accent-bg)"
+                  iconColor="var(--color-accent)"
+                  valueColor="var(--color-accent)"
+                />
+                <StatCard
+                  label="Top groep"
+                  value={data?.topGroup ?? '—'}
+                  icon={<TrendUp size={13} color="var(--color-gold)" />}
+                  iconBg="color-mix(in oklch, var(--color-gold) 14%, transparent)"
+                  iconColor="var(--color-gold)"
+                  valueColor="var(--color-gold)"
+                />
               </div>
 
               {(data?.groupStats?.filter(g => g.total > 0).length ?? 0) > 0 && (
-                <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] p-4">
-                  <p className="text-sm font-bold text-[#0F172A] dark:text-[#F1F5F9] mb-4">Omzet per groep</p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={data?.groupStats} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={v => `€${v}`} />
-                      <Tooltip
-                        formatter={(v) => [`€${Number(v).toFixed(2)}`, 'Omzet']}
-                        contentStyle={{ borderRadius: 10, border: '1px solid #334155', fontSize: 12, backgroundColor: '#1E293B', color: '#F1F5F9' }}
-                      />
-                      <Bar dataKey="total" radius={[6, 6, 0, 0]}>
-                        {data?.groupStats.map((_, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />)}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] m-0 mb-3" style={{ color: 'var(--color-text-muted)' }}>Omzet per groep</p>
+                  <div className="flex flex-col gap-2.5">
+                    {(data?.groupStats ?? []).filter(g => g.total > 0).map((b, i) => {
+                      const max = Math.max(...(data?.groupStats ?? []).map(g => g.total), 1)
+                      const pct = Math.round((b.total / max) * 100)
+                      return (
+                        <div key={i} className="flex items-center gap-2.5">
+                          <span className="text-[12px] font-semibold text-right shrink-0 w-11" style={{ color: 'var(--color-text-secondary)' }}>{b.name}</span>
+                          <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
+                            <div
+                              className="h-full rounded-[6px] flex items-center justify-end pr-2"
+                              style={{ width: `${pct}%`, background: BAR_COLORS[i % BAR_COLORS.length] }}
+                            >
+                              <span className="text-[11px] font-extrabold text-white tabular-nums">€{Math.round(b.total)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
               {data?.totalTransactions === 0 && (
-                <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] px-4 py-6 text-center">
-                  <p className="text-sm text-[#94A3B8]">Geen transacties voor deze periode.</p>
+                <div className="rounded-[14px] px-4 py-6 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                  <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen transacties voor deze periode.</p>
                 </div>
               )}
             </>

@@ -104,23 +104,45 @@ export function Consumptions() {
     return acc
   }, {})
 
+  const inputStyle = {
+    background: 'var(--color-surface-alt)',
+    border: '1.5px solid var(--color-border-mid)',
+    borderRadius: 12,
+    padding: '10px 14px',
+    color: 'var(--color-text-primary)',
+    fontSize: 13,
+    outline: 'none',
+    fontFamily: 'inherit',
+    width: '100%',
+    boxSizing: 'border-box' as const,
+  }
+
   return (
     <div className="px-4 space-y-4">
       <button
         onClick={openNew}
-        className="w-full bg-primary text-white font-semibold py-3 rounded-xl text-sm active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+        className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+        style={{
+          background: 'var(--color-primary)',
+          color: '#fff',
+          padding: 13,
+          borderRadius: 14,
+          border: 'none',
+          boxShadow: 'var(--shadow-fab)',
+          fontFamily: 'inherit',
+        }}
       >
-        <Plus size={18} />
+        <Plus size={16} weight="bold" />
         Nieuwe consumptie
       </button>
 
       {showForm && (
-        <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] p-4 space-y-3">
+        <div className="rounded-[14px] p-4 space-y-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-[#0F172A] dark:text-[#F1F5F9]">
+            <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
               {editing ? 'Consumptie bewerken' : 'Nieuwe consumptie'}
             </p>
-            <button onClick={closeForm}><X size={18} color="#94A3B8" /></button>
+            <button onClick={closeForm}><X size={18} color="var(--color-text-muted)" /></button>
           </div>
 
           <div className="space-y-2">
@@ -129,7 +151,7 @@ export function Consumptions() {
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Naam"
-              className="w-full bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#334155] text-[#0F172A] dark:text-[#F1F5F9] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
+              style={inputStyle}
             />
             <div className="flex gap-2">
               <input
@@ -139,26 +161,34 @@ export function Consumptions() {
                 placeholder="Prijs (€)"
                 step="0.10"
                 min="0"
-                className="flex-1 bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#334155] text-[#0F172A] dark:text-[#F1F5F9] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary"
+                style={{ ...inputStyle, flex: 1, width: 'auto' }}
               />
               <select
                 value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value as ConsumptionCategory }))}
-                className="flex-1 bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#334155] text-[#0F172A] dark:text-[#F1F5F9] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
+                style={{ ...inputStyle, flex: 1, width: 'auto' }}
               >
                 {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
           </div>
 
-          {error && <p className="text-xs text-[#EF4444]">{error}</p>}
+          {error && <p className="text-[12px] m-0" style={{ color: 'var(--color-danger)' }}>{error}</p>}
 
           <button
             onClick={save}
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-2.5 rounded-xl text-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full text-[13px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+            style={{
+              background: 'var(--color-primary)',
+              color: '#fff',
+              padding: '10px',
+              borderRadius: 12,
+              border: 'none',
+              fontFamily: 'inherit',
+            }}
           >
-            <Check size={16} weight="bold" />
+            <Check size={14} weight="bold" />
             {loading ? 'Opslaan…' : 'Opslaan'}
           </button>
         </div>
@@ -166,35 +196,47 @@ export function Consumptions() {
 
       {isLoading && (
         <div className="flex justify-center mt-8">
-          <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
         </div>
       )}
 
       {Object.entries(grouped).map(([cat, items]) => (
         <section key={cat}>
-          <p className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2">
+          <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2 m-0" style={{ color: 'var(--color-text-muted)' }}>
             {CAT_LABELS[cat] ?? cat}
           </p>
-          <div className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] divide-y divide-[#F1F5F9] dark:divide-[#334155]">
-            {items.map(c => (
-              <div key={c.id} className={`flex items-center gap-3 px-4 py-3 ${!c.is_active ? 'opacity-40' : ''}`}>
+          <div className="rounded-[14px] overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+            {items.map((c, i) => (
+              <div
+                key={c.id}
+                className="flex items-center gap-3 px-4 py-3"
+                style={{
+                  opacity: c.is_active ? 1 : 0.4,
+                  borderTop: i > 0 ? '1px solid var(--color-border)' : undefined,
+                }}
+              >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F1F5F9] truncate">{c.name}</p>
-                  <p className="text-xs text-[#94A3B8]">€{c.price.toFixed(2)}</p>
+                  <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>{c.name}</p>
+                  <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>€{c.price.toFixed(2)}</p>
                 </div>
                 <button
                   onClick={() => openEdit(c)}
-                  className="w-8 h-8 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center active:scale-95 transition-transform"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform"
+                  style={{ background: 'var(--color-primary-pale)', border: 'none' }}
                 >
-                  <PencilSimple size={14} color="#2563EB" />
+                  <PencilSimple size={14} color="var(--color-primary)" />
                 </button>
                 <button
                   onClick={() => toggleActive(c)}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform ${c.is_active ? 'bg-[#ECFDF5] dark:bg-[#064E3B]' : 'bg-[#F1F5F9] dark:bg-[#334155]'}`}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform"
+                  style={{
+                    background: c.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)',
+                    border: 'none',
+                  }}
                 >
                   {c.is_active
-                    ? <Eye size={14} color="#10B981" />
-                    : <EyeSlash size={14} color="#94A3B8" />}
+                    ? <Eye size={14} color="var(--color-success)" />
+                    : <EyeSlash size={14} color="var(--color-text-muted)" />}
                 </button>
               </div>
             ))}

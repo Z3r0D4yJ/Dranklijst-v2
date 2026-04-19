@@ -108,24 +108,30 @@ export function AllTransactions() {
 
   const total = (transactions ?? []).reduce((s, t) => s + t.total_price, 0)
 
+  const selectStyle = {
+    background: 'var(--color-surface)',
+    border: '1px solid var(--color-border-mid)',
+    borderRadius: 12,
+    padding: '10px 12px',
+    fontSize: 12,
+    fontWeight: 600,
+    color: 'var(--color-text-secondary)',
+    outline: 'none',
+    fontFamily: 'inherit',
+    flex: 1,
+  } as React.CSSProperties
+
   return (
     <div className="px-4 space-y-3">
+      {/* Filters */}
       <div className="flex gap-2">
-        <select
-          value={selectedPeriod}
-          onChange={e => setSelectedPeriod(e.target.value)}
-          className="flex-1 bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl px-3 py-2.5 text-sm text-[#0F172A] dark:text-[#F1F5F9] focus:outline-none focus:border-primary"
-        >
+        <select value={selectedPeriod} onChange={e => setSelectedPeriod(e.target.value)} style={selectStyle}>
           <option value="">Alle periodes</option>
           {(periods ?? []).map(p => (
             <option key={p.id} value={p.id}>{p.name}{p.is_active ? ' (actief)' : ''}</option>
           ))}
         </select>
-        <select
-          value={selectedGroup}
-          onChange={e => setSelectedGroup(e.target.value)}
-          className="flex-1 bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl px-3 py-2.5 text-sm text-[#0F172A] dark:text-[#F1F5F9] focus:outline-none focus:border-primary"
-        >
+        <select value={selectedGroup} onChange={e => setSelectedGroup(e.target.value)} style={selectStyle}>
           <option value="">Alle groepen</option>
           {(groups ?? []).map(g => (
             <option key={g.id} value={g.id}>{g.name}</option>
@@ -133,55 +139,58 @@ export function AllTransactions() {
         </select>
       </div>
 
+      {/* Summary */}
       {(transactions ?? []).length > 0 && (
-        <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] px-4 py-3 flex items-center justify-between">
+        <div className="rounded-[14px] px-4 py-3 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center">
-              <Receipt size={14} color="#2563EB" />
+            <div className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
+              <Receipt size={14} color="var(--color-primary)" />
             </div>
-            <span className="text-sm font-bold text-[#0F172A] dark:text-[#F1F5F9]">{transactions?.length} transacties</span>
+            <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{transactions?.length} transacties</span>
           </div>
-          <span className="text-base font-extrabold text-[#0F172A] dark:text-[#F1F5F9]">€{total.toFixed(2)}</span>
+          <span className="text-[18px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>€{total.toFixed(2).replace('.', ',')}</span>
         </div>
       )}
 
       {isLoading && (
         <div className="flex justify-center mt-8">
-          <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
         </div>
       )}
 
       {!isLoading && (transactions ?? []).length === 0 && (
-        <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] px-4 py-8 text-center">
-          <p className="text-sm text-[#94A3B8]">Geen transacties gevonden.</p>
+        <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen transacties gevonden.</p>
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         {(transactions ?? []).map(tx => (
-          <div key={tx.id} className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] px-4 py-3">
+          <div key={tx.id} className="rounded-[14px] px-3.5 py-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F1F5F9] truncate">{tx.full_name}</p>
-                <p className="text-xs text-[#94A3B8]">{tx.group_name} · {tx.consumption_name} × {tx.quantity}</p>
-                <p className="text-xs text-[#94A3B8]">
+                <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>{tx.full_name}</p>
+                <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{tx.group_name} · {tx.consumption_name} ×{tx.quantity}</p>
+                <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                   {new Date(tx.created_at).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-sm font-extrabold text-[#0F172A] dark:text-[#F1F5F9]">€{tx.total_price.toFixed(2)}</span>
+                <span className="text-[14px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>€{tx.total_price.toFixed(2)}</span>
                 {confirmId === tx.id ? (
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setConfirmId(null)}
-                      className="px-2.5 py-1.5 text-xs font-semibold bg-[#F8FAFC] dark:bg-[#334155] text-[#64748B] dark:text-[#94A3B8] rounded-lg"
+                      className="px-2.5 py-1.5 text-[12px] font-semibold rounded-[8px]"
+                      style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
                     >
                       Nee
                     </button>
                     <button
                       onClick={() => deleteTransaction(tx.id)}
                       disabled={deletingId === tx.id}
-                      className="px-2.5 py-1.5 text-xs font-semibold bg-[#FEF2F2] dark:bg-[#450A0A] text-[#EF4444] rounded-lg disabled:opacity-50"
+                      className="px-2.5 py-1.5 text-[12px] font-semibold rounded-[8px] disabled:opacity-50"
+                      style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}
                     >
                       {deletingId === tx.id ? '…' : 'Ja'}
                     </button>
@@ -189,9 +198,10 @@ export function AllTransactions() {
                 ) : (
                   <button
                     onClick={() => setConfirmId(tx.id)}
-                    className="w-8 h-8 bg-[#FEF2F2] dark:bg-[#450A0A] rounded-lg flex items-center justify-center active:scale-95 transition-transform"
+                    className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center active:scale-95 transition-transform"
+                    style={{ background: 'var(--color-danger-bg)', border: 'none' }}
                   >
-                    <Trash size={14} color="#EF4444" />
+                    <Trash size={13} color="var(--color-danger)" />
                   </button>
                 )}
               </div>

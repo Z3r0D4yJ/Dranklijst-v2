@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Dranklijst — Auth & Admin Redesign v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin:0; padding:0; font-family:'Plus Jakarta Sans',-apple-system,system-ui,sans-serif; }
+    *, *::before, *::after { box-sizing:border-box; }
+    button { font-family:inherit; }
+    input  { font-family:inherit; }
+  </style>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Shared canvas + Phone frame -->
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <!-- Core screens (has Phone + palette) -->
+  <script type="text/babel" src="screens.jsx"></script>
+  <!-- New screens -->
+  <script type="text/babel" src="auth-screens.jsx"></script>
+  <script type="text/babel" src="leiding-screens.jsx"></script>
+  <script type="text/babel" src="admin-screens.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "hue": 221,
+      "showNotes": true
+    }/*EDITMODE-END*/;
+
+    function App() {
+      const [hue, setHue] = useState(TWEAK_DEFAULTS.hue);
+      const [tweaksOn, setTweaksOn] = useState(false);
+
+      useEffect(() => {
+        const onMsg = (e) => {
+          if (e.data?.type === '__activate_edit_mode')   setTweaksOn(true);
+          if (e.data?.type === '__deactivate_edit_mode') setTweaksOn(false);
+          if (e.data?.type === '__edit_mode_set_keys' && e.data.edits?.hue != null)
+            setHue(Number(e.data.edits.hue));
+        };
+        window.addEventListener('message', onMsg);
+        window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+        return () => window.removeEventListener('message', onMsg);
+      }, []);
+
+      const P = (props) => <Phone hue={hue} {...props}/>;
+
+      return (
+        <>
+          <DesignCanvas>
+            {/* ─── Title ─────────────────────────────────── */}
+            <div style={{ padding:'0 60px 30px' }}>
+              <h1 style={{ fontSize:42, fontWeight:800, letterSpacing:-1.2, margin:0, color:'rgba(30,22,14,0.92)' }}>
+                Dranklijst — Auth &amp; Admin Redesign
+              </h1>
+              <p style={{ fontSize:16, fontWeight:500, color:'rgba(60,50,40,0.7)', margin:'8px 0 0', maxWidth:860, lineHeight:1.55 }}>
+                Alle schermen die nog niet in het design systeem zaten: auth-flow (login · register · groep joinen),
+                groepsbeheer voor leiding, en alle 7 admin-subpagina's. Zelfde tokens als v1 —
+                Chiro blauw, vos-oranje accent, Plus Jakarta Sans, geen schaduwen behalve FAB.
+                Elke sectie toont <b>light ↔ dark</b> zij aan zij.
+              </p>
+            </div>
+
+            {/* ─── Auth — Login & Register ───────────────── */}
+            <DCSection
+              title="Auth — Inloggen & Registreren"
+              subtitle="Split-layout: header-kleur bovenaan met vos + branding, form-sheet schuift er als een kaart bovenuit. Geeft meteen de app-identiteit mee i.p.v. een generiek formulier.">
+              <P label="Login · Light"        dark={false}>{(c) => Login(c)}</P>
+              <P label="Login · Dark"         dark={true} >{(c) => Login(c)}</P>
+              <P label="Registreren · Light"  dark={false}>{(c) => Register(c)}</P>
+              <P label="Registreren · Dark"   dark={true} >{(c) => Register(c)}</P>
+            </DCSection>
+
+            {/* ─── Auth — Groep joinen ───────────────────── */}
+            <DCSection
+              title="Auth — Groep joinen"
+              subtitle="Browse-modus toont alle groepen met directe actie-knop. Code-modus heeft een groot typografisch codeveld. Success-state bevestigt de join met een vriendelijke check.">
+              <P label="Groepen browsen · Light"  dark={false}>{(c) => JoinGroupBrowse(c)}</P>
+              <P label="Groepen browsen · Dark"   dark={true} >{(c) => JoinGroupBrowse(c)}</P>
+              <P label="Code invoeren · Light"    dark={false}>{(c) => JoinGroupCode(c)}</P>
+              <P label="Code invoeren · Dark"     dark={true} >{(c) => JoinGroupCode(c)}</P>
+              <P label="Succes · Light"           dark={false}>{(c) => JoinGroupSuccess(c)}</P>
+              <P label="Succes · Dark"            dark={true} >{(c) => JoinGroupSuccess(c)}</P>
+            </DCSection>
+
+            {/* ─── Leiding — Groepsbeheer ───────────────── */}
+            <DCSection
+              title="Leiding — Groepsbeheer"
+              subtitle="Uitnodigingscode prominent als groot typografisch element. Aanvragen krijgen duidelijke approve/reject knoppen in success/danger toon. Leden-lijst met vos-avatar voor de leidinggevende zelf.">
+              <P label="Groepsbeheer · Light" dark={false}>{(c) => GroupManagement(c)}</P>
+              <P label="Groepsbeheer · Dark"  dark={true} >{(c) => GroupManagement(c)}</P>
+              <P label="Groepstransacties · Light" dark={false}>{(c) => GroupTransactionsLeiding(c)}</P>
+              <P label="Groepstransacties · Dark"  dark={true} >{(c) => GroupTransactionsLeiding(c)}</P>
+              <DCPostIt top={-12} left={-28} rotate={3} width={210}>
+                Rode stip op de uitnodigingscode-code geeft aan dat er een verse code is — regenereer knop → onmiddellijk nieuwe code.
+              </DCPostIt>
+            </DCSection>
+
+            {/* ─── Admin — Dashboard ────────────────────── */}
+            <DCSection
+              title="Admin — Dashboard"
+              subtitle="4 stat-tiles elk met een eigen toon: omzet groen, transacties blauw, leden oranje (vos), top groep goud. Horizontale barchart in primary-kleur i.p.v. regenboogarray.">
+              <P label="Dashboard · Light" dark={false}>{(c) => AdminDashboard(c)}</P>
+              <P label="Dashboard · Dark"  dark={true} >{(c) => AdminDashboard(c)}</P>
+            </DCSection>
+
+            {/* ─── Admin — Transacties & Groepen ───────── */}
+            <DCSection
+              title="Admin — Transacties & Groepen"
+              subtitle="Transacties: filterbalk + samenvatting + datumgroepen. Groepen: expandeerbare kaarten met spend-chip — klik op een groep om leden te zien.">
+              <P label="Transacties · Light" dark={false}>{(c) => AdminAllTransactions(c)}</P>
+              <P label="Transacties · Dark"  dark={true} >{(c) => AdminAllTransactions(c)}</P>
+              <P label="Groepen · Light"     dark={false}>{(c) => AdminGroups(c)}</P>
+              <P label="Groepen · Dark"      dark={true} >{(c) => AdminGroups(c)}</P>
+            </DCSection>
+
+            {/* ─── Admin — Periodes & Financieel ───────── */}
+            <DCSection
+              title="Admin — Periodes & Financieel"
+              subtitle="Actieve periode krijgt een primary-kleur accent-balk links + heldere 'Afsluiten' knop. Financieel toont betaalstatus-voortgangsbalk: één oogopslag hoeveel % betaald is.">
+              <P label="Periodes · Light"    dark={false}>{(c) => AdminPeriods(c)}</P>
+              <P label="Periodes · Dark"     dark={true} >{(c) => AdminPeriods(c)}</P>
+              <P label="Financieel · Light"  dark={false}>{(c) => AdminFinance(c)}</P>
+              <P label="Financieel · Dark"   dark={true} >{(c) => AdminFinance(c)}</P>
+              <DCPostIt top={-10} right={-24} rotate={-3} width={220}>
+                De progressbar toont in één oogopslag hoeveel % al betaald is — handig voor de kas op afsluitmoment.
+              </DCPostIt>
+            </DCSection>
+
+            {/* ─── Admin — Consumpties & Gebruikers ────── */}
+            <DCSection
+              title="Admin — Consumpties & Gebruikers"
+              subtitle="Consumpties: category icon-chips matchen de koop-tiles op Home. Visibility-toggle is groen/grijs (eye/eyeSlash). Gebruikers: role-badge is klikbaar dropdown in de eigen role-kleur.">
+              <P label="Consumpties · Light" dark={false}>{(c) => AdminConsumptions(c)}</P>
+              <P label="Consumpties · Dark"  dark={true} >{(c) => AdminConsumptions(c)}</P>
+              <P label="Gebruikers · Light"  dark={false}>{(c) => AdminUsers(c)}</P>
+              <P label="Gebruikers · Dark"   dark={true} >{(c) => AdminUsers(c)}</P>
+            </DCSection>
+
+            {/* ─── Design notes ─────────────────────────── */}
+            <DCSection title="Implementatienotities" subtitle="Wat er anders is dan de huidige hardcoded versies.">
+              <div style={{
+                width:520, background:'#fff', borderRadius:14, padding:24,
+                boxShadow:'0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06)',
+                fontSize:14, lineHeight:1.65, color:'#1a1408',
+              }}>
+                <h3 style={{ margin:'0 0 10px', fontSize:16, fontWeight:800, letterSpacing:-0.3 }}>Auth schermen</h3>
+                <ul style={{ margin:'0 0 18px 18px', padding:0, color:'#3a3020' }}>
+                  <li>Split-layout: header-kleur boven, form-sheet schuift op vanuit onder (borderRadius 24px top).</li>
+                  <li>Inputs: <code>surfaceAlt</code> achtergrond + <code>borderMid</code> rand — niet de plain witte inputs van nu.</li>
+                  <li>CTA-knop krijgt <code>shadow-fab</code> voor gewicht, zelfde als de FAB + BuyModal CTA.</li>
+                  <li>Google-knop: <code>surface</code> bg + <code>borderMid</code> rand — past in beide thema's.</li>
+                </ul>
+                <h3 style={{ margin:'0 0 10px', fontSize:16, fontWeight:800, letterSpacing:-0.3 }}>Leiding schermen</h3>
+                <ul style={{ margin:'0 0 18px 18px', padding:0, color:'#3a3020' }}>
+                  <li>Hardcoded <code>#F8FAFC/#1E293B/…</code> → CSS vars (<code>var(--color-surface)</code> etc.).</li>
+                  <li>Uitnodigingscode: groot letterteken <code>28px/800/0.28em tracking</code> — meteen leesbaar.</li>
+                  <li>Approve/Reject: <code>successBg/dangerBg</code> knopen, geen border — zachter dan de huidige outline.</li>
+                </ul>
+                <h3 style={{ margin:'0 0 10px', fontSize:16, fontWeight:800, letterSpacing:-0.3 }}>Admin schermen</h3>
+                <ul style={{ margin:'0 0 18px 18px', padding:0, color:'#3a3020' }}>
+                  <li>Alle hardcoded hex-waarden → CSS vars. Darkmode werkt nu automatisch.</li>
+                  <li>Tab-balk: icoontje naast tekst; active tab krijgt <code>fontWeight 700</code> + <code>2px borderBottom primary</code>.</li>
+                  <li>Dashboard stat-tiles: elke tegel een eigen semantische kleur (groen/blauw/oranje/goud).</li>
+                  <li>Barchar: <code>primary</code>-gradient horizontaal, witte labels in de balk zelf.</li>
+                  <li>Finance progressbar: visuele % betaald — ontbreekt volledig in huidige versie.</li>
+                  <li>Periodes: actieve periode heeft een <code>3px primary</code> accent-balk links + <code>primaryBorder</code> rand.</li>
+                  <li>Groepen: expandeerbaar via state, chevron roteert 180° — subtiele feedbackanimatie.</li>
+                  <li>Gebruikers: role-badge in eigen kleur (<code>successBg/warningBg/dangerBg</code>) — meteen herkenbaar.</li>
+                </ul>
+                <h3 style={{ margin:'0 0 10px', fontSize:16, fontWeight:800, letterSpacing:-0.3 }}>Next steps</h3>
+                <ul style={{ margin:'0 0 0 18px', padding:0, color:'#3a3020' }}>
+                  <li>Vervang alle hardcoded hex in de TSX-bestanden door de CSS vars uit <code>index.css</code>.</li>
+                  <li>Auth: verwijder de <code>bg-[#F8FAFC]</code> tailwind classes, gebruik de split-layout structuur.</li>
+                  <li>AdminLayout: voeg icoontjes toe aan de tab-links (al aanwezig in Phosphor).</li>
+                </ul>
+              </div>
+            </DCSection>
+          </DesignCanvas>
+
+          {/* ─── Tweaks panel ─────────────────────────── */}
+          {tweaksOn && (
+            <div style={{
+              position:'fixed', bottom:20, right:20, width:268,
+              background:'#fff', borderRadius:14, padding:16, zIndex:100,
+              boxShadow:'0 10px 30px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.08)',
+              fontFamily:"'Plus Jakarta Sans', sans-serif",
+            }}>
+              <p style={{ margin:'0 0 12px', fontSize:13, fontWeight:800, letterSpacing:0.2, color:'#0B1220', textTransform:'uppercase' }}>Tweaks</p>
+              <label style={{ fontSize:12, fontWeight:600, color:'#5B6678', display:'block', marginBottom:6 }}>
+                Primary hue <span style={{ color:'#0B1220', fontWeight:800 }}>{hue}°</span>
+              </label>
+              <input type="range" min="0" max="360" value={hue}
+                onChange={e => {
+                  const v = Number(e.target.value);
+                  setHue(v);
+                  window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ hue: v } }, '*');
+                }}
+                style={{ width:'100%' }}
+              />
+              <div style={{ display:'flex', gap:6, marginTop:10 }}>
+                {[221, 260, 150, 180, 20, 330].map(h => (
+                  <button key={h} onClick={() => { setHue(h); window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ hue: h } }, '*'); }}
+                    style={{ flex:1, height:28, borderRadius:8, border:'none', background:`oklch(0.55 0.21 ${h})`, cursor:'pointer', outline: h === hue ? '2.5px solid #0B1220' : 'none', outlineOffset:2 }}
+                  />
+                ))}
+              </div>
+              <p style={{ fontSize:11, color:'#94A3B8', margin:'10px 0 0' }}>221 = Chiro blauw (default)</p>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

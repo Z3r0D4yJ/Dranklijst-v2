@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { CalendarBlank, Play, Stop, Plus, X, CheckCircle, Users, CurrencyEur } from '@phosphor-icons/react'
+import { CalendarBlank, Stop, Plus, X, CheckCircle, Users, CurrencyEur } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
@@ -99,21 +99,31 @@ export function Periods() {
   }
 
   return (
-    <div className="px-4 space-y-4">
+    <div className="px-4 space-y-3">
+      {/* New period */}
       {!showNew ? (
         <button
           onClick={() => setShowNew(true)}
-          className="w-full bg-primary text-white font-semibold py-3 rounded-xl text-sm active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+          className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          style={{
+            background: 'var(--color-primary)',
+            color: '#fff',
+            padding: 13,
+            borderRadius: 14,
+            border: 'none',
+            boxShadow: 'var(--shadow-fab)',
+            fontFamily: 'inherit',
+          }}
         >
-          <Plus size={18} />
+          <Plus size={16} weight="bold" />
           Nieuwe periode starten
         </button>
       ) : (
-        <div className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] p-4 space-y-3">
+        <div className="rounded-[14px] p-4 space-y-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-[#0F172A] dark:text-[#F1F5F9]">Nieuwe periode</p>
+            <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>Nieuwe periode</p>
             <button onClick={() => { setShowNew(false); setNewName('') }}>
-              <X size={18} color="#94A3B8" />
+              <X size={18} color="var(--color-text-muted)" />
             </button>
           </div>
           <input
@@ -121,17 +131,33 @@ export function Periods() {
             value={newName}
             onChange={e => setNewName(e.target.value)}
             placeholder="bv. Zomerkamp 2025"
-            className="w-full bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#334155] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] dark:text-[#F1F5F9] placeholder:text-[#94A3B8] focus:outline-none focus:border-primary"
+            className="w-full outline-none text-[14px] font-medium"
+            style={{
+              background: 'var(--color-surface-alt)',
+              border: '1.5px solid var(--color-border-mid)',
+              borderRadius: 12,
+              padding: '10px 14px',
+              color: 'var(--color-text-primary)',
+              boxSizing: 'border-box',
+              fontFamily: 'inherit',
+            }}
             onKeyDown={e => e.key === 'Enter' && startPeriod()}
             autoFocus
           />
-          {error && <p className="text-xs text-[#EF4444]">{error}</p>}
+          {error && <p className="text-[12px] m-0" style={{ color: 'var(--color-danger)' }}>{error}</p>}
           <button
             onClick={startPeriod}
             disabled={!newName.trim() || loading}
-            className="w-full bg-primary text-white font-semibold py-2.5 rounded-xl text-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+            style={{
+              background: 'var(--color-primary)',
+              color: '#fff',
+              padding: '10px',
+              borderRadius: 12,
+              border: 'none',
+              fontFamily: 'inherit',
+            }}
           >
-            <Play size={16} weight="fill" />
             {loading ? 'Bezig…' : 'Starten'}
           </button>
         </div>
@@ -139,59 +165,75 @@ export function Periods() {
 
       {isLoading && (
         <div className="flex justify-center mt-8">
-          <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
         </div>
       )}
 
-      {(stats ?? []).map(({ period, user_count, total }) => (
-        <div key={period.id} className="bg-white dark:bg-[#1E293B] border border-[#F1F5F9] dark:border-[#334155] rounded-[14px] p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${period.is_active ? 'bg-[#ECFDF5] dark:bg-[#064E3B]' : 'bg-[#F8FAFC] dark:bg-[#334155]'}`}>
-                <CalendarBlank size={17} color={period.is_active ? '#10B981' : '#94A3B8'} />
+      <div className="flex flex-col gap-2.5">
+        {(stats ?? []).map(({ period, user_count, total }) => (
+          <div
+            key={period.id}
+            className="rounded-[14px] p-3.5 relative overflow-hidden"
+            style={{
+              background: 'var(--color-surface)',
+              border: `1px solid ${period.is_active ? 'var(--color-primary-border)' : 'var(--color-border)'}`,
+            }}
+          >
+            {period.is_active && (
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'var(--color-primary)' }} />
+            )}
+            <div className="flex items-start gap-3" style={{ paddingLeft: period.is_active ? 8 : 0 }}>
+              <div
+                className="w-[34px] h-[34px] rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: period.is_active ? 'var(--color-primary-pale)' : 'var(--color-surface-alt)' }}
+              >
+                <CalendarBlank size={16} color={period.is_active ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
               </div>
-              <div>
-                <p className="text-sm font-bold text-[#0F172A] dark:text-[#F1F5F9]">{period.name}</p>
-                <p className="text-xs text-[#94A3B8]">
+              <div className="flex-1">
+                <p className="text-[14px] font-bold m-0 mb-0.5" style={{ color: 'var(--color-text-primary)' }}>{period.name}</p>
+                <p className="text-[12px] m-0" style={{ color: 'var(--color-text-muted)' }}>
                   {formatDate(period.started_at)}
                   {period.ended_at ? ` → ${formatDate(period.ended_at)}` : ' · Actief'}
                 </p>
               </div>
+              {period.is_active && (
+                <button
+                  onClick={() => closePeriod(period.id, period.name)}
+                  disabled={closing === period.id}
+                  className="flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1.5 rounded-[8px] active:scale-95 transition-transform disabled:opacity-50 shrink-0"
+                  style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)', border: 'none', fontFamily: 'inherit' }}
+                >
+                  <Stop size={12} weight="fill" />
+                  {closing === period.id ? 'Bezig…' : 'Afsluiten'}
+                </button>
+              )}
+              {!period.is_active && (
+                <span className="flex items-center gap-1 text-[12px] font-bold shrink-0" style={{ color: 'var(--color-success)' }}>
+                  <CheckCircle size={14} weight="fill" />
+                  Gesloten
+                </span>
+              )}
             </div>
-            {period.is_active && (
-              <button
-                onClick={() => closePeriod(period.id, period.name)}
-                disabled={closing === period.id}
-                className="flex items-center gap-1.5 bg-[#FEF2F2] dark:bg-[#450A0A] text-[#EF4444] text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition-transform disabled:opacity-50 shrink-0"
-              >
-                <Stop size={13} weight="fill" />
-                {closing === period.id ? 'Bezig…' : 'Afsluiten'}
-              </button>
-            )}
-            {!period.is_active && (
-              <span className="flex items-center gap-1 text-xs text-[#10B981] font-semibold shrink-0">
-                <CheckCircle size={14} weight="fill" />
-                Gesloten
-              </span>
-            )}
-          </div>
 
-          <div className="flex gap-3 mt-3 pt-3 border-t border-[#F1F5F9] dark:border-[#334155]">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center">
-                <Users size={12} color="#2563EB" />
-              </div>
-              <span className="text-xs font-semibold text-[#0F172A] dark:text-[#F1F5F9]">{user_count} leden</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center">
-                <CurrencyEur size={12} color="#2563EB" />
-              </div>
-              <span className="text-xs font-semibold text-[#0F172A] dark:text-[#F1F5F9]">€{total.toFixed(2)} totaal</span>
+            <div
+              className="flex gap-4 mt-3 pt-2.5"
+              style={{ borderTop: '1px solid var(--color-border)', paddingLeft: period.is_active ? 8 : 0 }}
+            >
+              {[
+                { Icon: Users, val: `${user_count} leden` },
+                { Icon: CurrencyEur, val: `€${total.toFixed(2)} totaal` },
+              ].map(({ Icon, val }, j) => (
+                <div key={j} className="flex items-center gap-1.5">
+                  <div className="w-[22px] h-[22px] rounded-[6px] flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
+                    <Icon size={11} color="var(--color-primary)" />
+                  </div>
+                  <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>{val}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
