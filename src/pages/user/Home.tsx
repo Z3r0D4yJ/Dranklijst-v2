@@ -9,7 +9,10 @@ import { useTransactions } from '../../hooks/useTransactions'
 import { useLeaderboard } from '../../hooks/useLeaderboard'
 import { useCountUp } from '../../hooks/useCountUp'
 import { useThemeColor } from '../../hooks/useThemeColor'
+import { usePushSubscription } from '../../hooks/usePushSubscription'
+import { useNotifications } from '../../hooks/useNotifications'
 import { BuyModal } from '../../components/BuyModal'
+import { NotificationsSheet } from '../../components/NotificationsSheet'
 import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
 
@@ -26,6 +29,9 @@ export function Home() {
   useThemeColor('--color-header')
   const { profile } = useAuth()
   const queryClient = useQueryClient()
+  const push = usePushSubscription()
+  const { unreadCount } = useNotifications()
+  const [showNotifs, setShowNotifs] = useState(false)
   const { data: group, isLoading: groupLoading } = useMyGroup()
   const { data: consumptions, isLoading: consLoading } = useGroupConsumptions(group?.id)
   const { data: period } = useActivePeriod()
@@ -98,9 +104,20 @@ export function Home() {
               <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.4px] mt-0.5">Dorst?</h1>
             </div>
           </div>
-          <button className="w-10 h-10 rounded-xl flex items-center justify-center relative" style={{ background: 'rgba(255,255,255,0.12)' }}>
+          <button
+            onClick={() => setShowNotifs(true)}
+            className="w-10 h-10 rounded-xl flex items-center justify-center relative active:scale-95 transition-transform"
+            style={{ background: 'rgba(255,255,255,0.12)' }}
+          >
             <Bell size={20} color="var(--color-header-fg)" />
-            <span className="absolute top-[9px] right-[10px] w-2 h-2 rounded-full bg-[var(--color-accent)]" style={{ border: '2px solid var(--color-header)' }} />
+            {unreadCount > 0 && (
+              <span
+                className="absolute top-[7px] right-[8px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center text-[9px] font-extrabold"
+                style={{ background: 'var(--color-accent)', color: '#fff', border: '1.5px solid var(--color-header)', padding: '0 3px' }}
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
         </div>
 
@@ -231,6 +248,8 @@ export function Home() {
           onSuccess={handleSuccess}
         />
       )}
+
+      {showNotifs && <NotificationsSheet onClose={() => setShowNotifs(false)} />}
     </div>
   )
 }

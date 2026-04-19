@@ -24,6 +24,12 @@ Deno.serve(async (req) => {
 
     async function send(userIds: string[], title: string, body: string, url = '/') {
       if (!userIds.length) return
+
+      // Persist to notifications table so users can view history
+      await sb.from('notifications').insert(
+        userIds.map(user_id => ({ user_id, title, body, url }))
+      )
+
       await sb.functions.invoke('send-push', { body: { user_ids: userIds, title, body, url } })
     }
 
