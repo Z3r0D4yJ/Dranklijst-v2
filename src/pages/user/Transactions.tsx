@@ -112,7 +112,7 @@ export function Transactions() {
 
         {/* ─── Empty state ─────────────────────────── */}
         {!isLoading && (transactions ?? []).length === 0 && (
-          <div className="rounded-card px-4 py-10 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <div className="rounded-card px-4 py-12 flex flex-col items-center text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <IconChip tone="primary" icon={Receipt} size={48} />
             <p className="text-[14px] font-bold mt-3" style={{ color: 'var(--color-text-primary)' }}>Nog niets gekocht</p>
             <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Je transacties verschijnen hier.</p>
