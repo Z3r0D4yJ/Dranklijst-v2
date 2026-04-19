@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PublicRoute } from './components/PublicRoute'
 import { BottomNav } from './components/BottomNav'
@@ -8,6 +9,7 @@ import { AdminLayout } from './components/AdminLayout'
 import { Login } from './pages/auth/Login'
 import { Register } from './pages/auth/Register'
 import { JoinGroup } from './pages/auth/JoinGroup'
+import { JoinViaCode } from './pages/auth/JoinViaCode'
 import { Home } from './pages/user/Home'
 import { Transactions } from './pages/user/Transactions'
 import { Leaderboard } from './pages/user/Leaderboard'
@@ -24,6 +26,19 @@ import { Groups } from './pages/admin/Groups'
 
 const queryClient = new QueryClient()
 
+function PendingInviteHandler() {
+  const { session } = useAuth()
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (!session) return
+    const code = sessionStorage.getItem('pendingInviteCode')
+    if (!code) return
+    sessionStorage.removeItem('pendingInviteCode')
+    navigate(`/join/${code}`, { replace: true })
+  }, [session])
+  return null
+}
+
 function AppLayout() {
   return (
     <>
@@ -38,6 +53,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <PendingInviteHandler />
           <Routes>
             {/* Publieke routes */}
             <Route element={<PublicRoute />}>
@@ -45,7 +61,10 @@ export default function App() {
               <Route path="/register" element={<Register />} />
             </Route>
 
-            {/* Join group */}
+            {/* Join via invite link — public, handles auth state internally */}
+            <Route path="/join/:code" element={<JoinViaCode />} />
+
+            {/* Join group via code input */}
             <Route element={<ProtectedRoute />}>
               <Route path="/join-group" element={<JoinGroup />} />
             </Route>

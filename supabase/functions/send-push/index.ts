@@ -89,8 +89,8 @@ async function encryptPayload(
   const cek   = await crypto.subtle.importKey('raw', cekBits, 'AES-GCM', false, ['encrypt'])
   const nonce = new Uint8Array(nonceBits)
 
-  const data      = enc.encode(payload)
-  const plaintext = new Uint8Array(4096 - 16 - 1)
+  const data = enc.encode(payload)
+  const plaintext = new Uint8Array(data.length + 1)
   plaintext.set(data)
   plaintext[data.length] = 0x02
 

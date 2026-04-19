@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Users, Check, X, Trash, Clock } from '@phosphor-icons/react'
+import { Users, Check, X, Trash, Clock, LinkSimple, ArrowsClockwise, Copy, CheckCircle } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyJoinRequestResolved } from '../../lib/notifications'
 import { useThemeColor } from '../../hooks/useThemeColor'
+
+function generateCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+}
+
+interface InviteCode {
+  id: string
+  code: string
+}
 
 interface JoinRequestWithProfile {
   id: string
@@ -27,8 +37,12 @@ export function GroupManagement() {
   const [requests, setRequests] = useState<JoinRequestWithProfile[]>([])
   const [members, setMembers] = useState<MemberWithProfile[]>([])
   const [groupName, setGroupName] = useState<string>('')
+  const [groupId, setGroupId] = useState<string | null>(null)
+  const [inviteCode, setInviteCode] = useState<InviteCode | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [codeLoading, setCodeLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -50,25 +64,32 @@ export function GroupManagement() {
       return
     }
 
+    const gId = ownGroup.group_id
     setGroupName(ownGroup.groups?.name ?? '')
-    const groupId = ownGroup.group_id
+    setGroupId(gId)
 
-    const [requestsRes, membersRes] = await Promise.all([
+    const [requestsRes, membersRes, inviteRes] = await Promise.all([
       supabase
         .from('join_requests')
         .select('*, profiles(full_name)')
-        .eq('group_id', groupId)
+        .eq('group_id', gId)
         .eq('status', 'pending')
         .order('created_at'),
       supabase
         .from('group_members')
         .select('*, profiles(full_name, role)')
-        .eq('group_id', groupId)
+        .eq('group_id', gId)
         .order('joined_at'),
+      supabase
+        .from('invite_codes')
+        .select('id, code')
+        .eq('group_id', gId)
+        .maybeSingle(),
     ])
 
     if (requestsRes.data) setRequests(requestsRes.data as unknown as JoinRequestWithProfile[])
     if (membersRes.data) setMembers(membersRes.data as unknown as MemberWithProfile[])
+    if (inviteRes.data) setInviteCode(inviteRes.data as InviteCode)
     setLoading(false)
   }
 
@@ -103,6 +124,29 @@ export function GroupManagement() {
     setActionLoading(null)
   }
 
+  async function handleGenerateCode() {
+    if (!groupId || !profile) return
+    setCodeLoading(true)
+    const code = generateCode()
+    const { data } = await supabase
+      .from('invite_codes')
+      .upsert({ group_id: groupId, code, created_by: profile.id }, { onConflict: 'group_id' })
+      .select('id, code')
+      .single()
+    if (data) setInviteCode(data as InviteCode)
+    setCodeLoading(false)
+  }
+
+  function inviteLink() {
+    return `${window.location.origin}/join/${inviteCode?.code ?? ''}`
+  }
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(inviteLink())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
@@ -119,6 +163,62 @@ export function GroupManagement() {
       </div>
 
       <div className="px-4 mt-6 space-y-6">
+        {/* Uitnodigingslink */}
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 bg-[#EFF6FF] dark:bg-[#1E3A8A] rounded-lg flex items-center justify-center">
+              <LinkSimple size={15} color="#2563EB" />
+            </div>
+            <h2 className="text-base font-bold text-[#0F172A] dark:text-[#F1F5F9]">Uitnodigingslink</h2>
+          </div>
+
+          <div className="bg-white dark:bg-[#1E293B] rounded-[14px] border border-[#F1F5F9] dark:border-[#334155] p-4">
+            {inviteCode ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] mb-0.5">Code</p>
+                    <p className="text-2xl font-bold tracking-[0.25em] text-[#0F172A] dark:text-[#F1F5F9]">
+                      {inviteCode.code}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleGenerateCode}
+                    disabled={codeLoading}
+                    className="w-9 h-9 bg-[#F1F5F9] dark:bg-[#334155] rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                    title="Nieuwe code genereren"
+                  >
+                    <ArrowsClockwise size={17} color="#64748B" className={codeLoading ? 'animate-spin' : ''} />
+                  </button>
+                </div>
+                <button
+                  onClick={copyLink}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-all"
+                  style={{
+                    background: copied ? 'var(--color-success-bg)' : 'var(--color-primary-pale)',
+                    color: copied ? 'var(--color-success)' : 'var(--color-primary)',
+                  }}
+                >
+                  {copied ? <CheckCircle size={17} weight="fill" /> : <Copy size={17} />}
+                  {copied ? 'Link gekopieerd!' : 'Kopieer uitnodigingslink'}
+                </button>
+              </div>
+            ) : (
+              <div className="text-center space-y-3">
+                <p className="text-sm text-[#94A3B8]">Nog geen uitnodigingscode aangemaakt</p>
+                <button
+                  onClick={handleGenerateCode}
+                  disabled={codeLoading}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-transform disabled:opacity-50"
+                >
+                  <LinkSimple size={16} />
+                  {codeLoading ? 'Bezig…' : 'Code aanmaken'}
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+
         {/* Join-aanvragen */}
         <section>
           <div className="flex items-center gap-2 mb-3">
