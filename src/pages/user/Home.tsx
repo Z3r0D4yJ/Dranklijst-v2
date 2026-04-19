@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Bell, CurrencyEur } from '@phosphor-icons/react'
+import { Bell, CurrencyEur, Users } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { useMyGroup } from '../../hooks/useMyGroup'
 import { useGroupConsumptions, type GroupConsumptionItem } from '../../hooks/useGroupConsumptions'
@@ -11,6 +11,7 @@ import { useCountUp } from '../../hooks/useCountUp'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
 import { useNotifications } from '../../hooks/useNotifications'
+import { useNavigate } from 'react-router-dom'
 import { BuyModal } from '../../components/BuyModal'
 import { NotificationsSheet } from '../../components/NotificationsSheet'
 import { IconChip } from '../../components/IconChip'
@@ -27,6 +28,7 @@ interface Toast  { id: string; name: string }
 
 export function Home() {
   useThemeColor('--color-header')
+  const navigate = useNavigate()
   const { profile } = useAuth()
   const queryClient = useQueryClient()
   usePushSubscription()
@@ -155,10 +157,18 @@ export function Home() {
 
       {/* ─── Empty / no-group states ─────────────── */}
       {!groupLoading && !group && (
-        <div className="px-5 mt-10 text-center">
+        <div className="px-5 mt-10 flex flex-col items-center text-center">
           <img src="/fox.png" alt="" className="w-16 h-16 object-cover rounded-full mx-auto mb-3 opacity-60" style={{ animation: 'dl-wiggle 2.6s ease-in-out infinite' }} />
           <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>Nog geen groep</p>
-          <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-secondary)' }}>Dien een join-aanvraag in om consumpties te kopen.</p>
+          <p className="text-[13px] mt-1 mb-5" style={{ color: 'var(--color-text-secondary)' }}>Dien een join-aanvraag in om consumpties te kopen.</p>
+          <button
+            onClick={() => navigate('/join-group')}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl text-[14px] font-bold active:scale-[0.98] transition-transform"
+            style={{ background: 'var(--color-primary)', color: '#fff' }}
+          >
+            <Users size={18} weight="bold" />
+            Groep joinen
+          </button>
         </div>
       )}
 
