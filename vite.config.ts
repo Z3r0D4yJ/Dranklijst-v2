@@ -19,6 +19,7 @@ export default defineConfig({
         theme_color: '#2563EB',
         background_color: '#F8FAFC',
         display: 'standalone',
+        orientation: 'portrait',
         start_url: '/',
         icons: [
           { src: '/appstore-images/android/launchericon-48x48.png',   sizes: '48x48',   type: 'image/png' },

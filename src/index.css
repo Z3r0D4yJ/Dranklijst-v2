@@ -188,6 +188,8 @@
    the html background (--color-header) in the safe-area-inset-top region. */
 html {
   background-color: var(--color-header);
+  /* Snappier taps; zoom is capped via viewport meta for installed PWA feel */
+  touch-action: manipulation;
 }
 
 body {
@@ -195,6 +197,10 @@ body {
   color: var(--color-text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+button {
+  user-select: none;
 }
 
 /* Native select in dark mode */
