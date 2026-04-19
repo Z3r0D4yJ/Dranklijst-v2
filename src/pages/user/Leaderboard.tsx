@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useMyGroup } from '../../hooks/useMyGroup'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useLeaderboard, type LeaderboardEntry } from '../../hooks/useLeaderboard'
+import { useThemeColor } from '../../hooks/useThemeColor'
 
 function Pillar({ rank, name, total, height }: { rank: number; name: string; total: number; height: number }) {
   const tone = rank === 1 ? 'var(--color-accent)' : rank === 2 ? 'var(--color-silver)' : 'var(--color-bronze)'
@@ -68,6 +69,7 @@ function EntryRow({ entry, isMe, index }: { entry: LeaderboardEntry; isMe: boole
 }
 
 export function Leaderboard() {
+  useThemeColor('--color-bg')
   const { profile } = useAuth()
   const { data: myGroup, isLoading: groupLoading } = useMyGroup()
   const { data: period } = useActivePeriod()

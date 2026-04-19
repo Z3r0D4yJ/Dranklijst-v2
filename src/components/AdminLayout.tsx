@@ -1,9 +1,11 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { CalendarBlank, CurrencyEur, Package, Users, ChartBar, Receipt, Rows } from '@phosphor-icons/react'
 import { useAuth } from '../context/AuthContext'
+import { useThemeColor } from '../hooks/useThemeColor'
 import { BottomNav } from './BottomNav'
 
 export function AdminLayout() {
+  useThemeColor('--color-bg')
   const { profile } = useAuth()
   const role = profile?.role ?? ''
   const isAdmin = role === 'admin'

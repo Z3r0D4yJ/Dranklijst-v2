@@ -13,6 +13,7 @@ import { Transactions } from './pages/user/Transactions'
 import { Leaderboard } from './pages/user/Leaderboard'
 import { Profile } from './pages/user/Profile'
 import { GroupManagement } from './pages/leiding/GroupManagement'
+import { GroupTransactions } from './pages/leiding/GroupTransactions'
 import { Periods } from './pages/admin/Periods'
 import { Finance } from './pages/admin/Finance'
 import { Consumptions } from './pages/admin/Consumptions'
@@ -63,6 +64,7 @@ export default function App() {
             <Route element={<ProtectedRoute minRole="leiding" />}>
               <Route element={<AppLayout />}>
                 <Route path="/leiding/groep" element={<GroupManagement />} />
+                <Route path="/leiding/transacties" element={<GroupTransactions />} />
               </Route>
             </Route>
 

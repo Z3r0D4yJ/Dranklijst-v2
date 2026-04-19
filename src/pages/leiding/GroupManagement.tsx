@@ -3,6 +3,7 @@ import { Users, Check, X, Trash, Clock } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyJoinRequestResolved } from '../../lib/notifications'
+import { useThemeColor } from '../../hooks/useThemeColor'
 
 interface JoinRequestWithProfile {
   id: string
@@ -21,6 +22,7 @@ interface MemberWithProfile {
 }
 
 export function GroupManagement() {
+  useThemeColor('--color-bg')
   const { profile } = useAuth()
   const [requests, setRequests] = useState<JoinRequestWithProfile[]>([])
   const [members, setMembers] = useState<MemberWithProfile[]>([])

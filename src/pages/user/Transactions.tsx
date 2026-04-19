@@ -4,6 +4,7 @@ import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useTransactions } from '../../hooks/useTransactions'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useThemeColor } from '../../hooks/useThemeColor'
 import { IconChip } from '../../components/IconChip'
 import type { Period, ConsumptionCategory } from '../../lib/database.types'
 
@@ -32,6 +33,7 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 export function Transactions() {
+  useThemeColor('--color-bg')
   const { user } = useAuth()
   const { data: activePeriod } = useActivePeriod()
 

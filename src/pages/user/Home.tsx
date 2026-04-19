@@ -8,6 +8,7 @@ import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useTransactions } from '../../hooks/useTransactions'
 import { useLeaderboard } from '../../hooks/useLeaderboard'
 import { useCountUp } from '../../hooks/useCountUp'
+import { useThemeColor } from '../../hooks/useThemeColor'
 import { BuyModal } from '../../components/BuyModal'
 import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
@@ -23,6 +24,7 @@ interface Bubble { id: string; x: number; y: number }
 interface Toast  { id: string; name: string }
 
 export function Home() {
+  useThemeColor('--color-header')
   const { profile } = useAuth()
   const queryClient = useQueryClient()
   const { data: group, isLoading: groupLoading } = useMyGroup()

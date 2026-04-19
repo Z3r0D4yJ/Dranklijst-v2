@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight } from '@phosphor-icons/react'
+import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
 import { usePWAInstall } from '../../hooks/usePWAInstall'
 import { useTheme, type ThemeMode } from '../../context/ThemeContext'
 import { IconChip } from '../../components/IconChip'
+import { useThemeColor } from '../../hooks/useThemeColor'
 
 interface JoinRequestWithGroup {
   id: string
@@ -156,7 +158,9 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
 }
 
 export function Profile() {
+  useThemeColor('--color-bg')
   const { profile, signOut } = useAuth()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const push = usePushSubscription()
   const pwa = usePWAInstall()
@@ -371,6 +375,44 @@ export function Profile() {
             <AccountRow icon={XCircle} tone="danger" label="Aanvraag afgewezen" />
           )}
         </div>
+
+        {/* ─── Leiding / Beheer navigation ────────── */}
+        {(profile?.role === 'leiding' || profile?.role === 'groepsleiding' || profile?.role === 'kas' || profile?.role === 'admin') && (
+          <>
+            <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Beheer</p>
+            <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              {(profile.role === 'leiding') && (
+                <AccountRow
+                  first
+                  icon={UsersThree}
+                  tone="primary"
+                  label="Groepsbeheer"
+                  sub="Aanvragen & leden"
+                  onClick={() => navigate('/leiding/groep')}
+                />
+              )}
+              {(profile.role === 'leiding') && (
+                <AccountRow
+                  icon={Receipt}
+                  tone="primary"
+                  label="Groepstransacties"
+                  sub="Aankopen van jouw groep"
+                  onClick={() => navigate('/leiding/transacties')}
+                />
+              )}
+              {(profile.role === 'groepsleiding' || profile.role === 'kas' || profile.role === 'admin') && (
+                <AccountRow
+                  first
+                  icon={Gear}
+                  tone="primary"
+                  label="Beheerpanel"
+                  sub="Dashboard, transacties & meer"
+                  onClick={() => navigate('/admin')}
+                />
+              )}
+            </div>
+          </>
+        )}
 
         {/* ─── Sign out ───────────────────────────── */}
         <button

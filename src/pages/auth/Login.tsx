@@ -2,8 +2,10 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EnvelopeSimple, LockSimple, Eye, EyeSlash } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
+import { useThemeColor } from '../../hooks/useThemeColor'
 
 export function Login() {
+  useThemeColor('--color-bg')
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

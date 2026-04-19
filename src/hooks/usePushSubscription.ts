@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from '../lib/push'
+import { subscribeToPush, unsubscribeFromPush } from '../lib/push'
 
 export function usePushSubscription() {
   const { user } = useAuth()
