@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { Users, CurrencyEur, Receipt, TrendUp, CalendarBlank } from '@phosphor-icons/react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { supabase } from '../../lib/supabase'
 
 interface GroupStat { name: string; total: number }
@@ -13,12 +12,11 @@ interface DashboardData {
   groupStats: GroupStat[]
 }
 
-function StatCard({ label, value, icon, iconBg, iconColor, valueColor }: {
+function StatCard({ label, value, icon, iconBg, valueColor }: {
   label: string
   value: string
   icon: React.ReactNode
   iconBg: string
-  iconColor: string
   valueColor: string
 }) {
   return (
@@ -159,7 +157,6 @@ export function Dashboard() {
                   value={`€${(data?.totalRevenue ?? 0).toFixed(2)}`}
                   icon={<CurrencyEur size={13} color="var(--color-success)" />}
                   iconBg="var(--color-success-bg)"
-                  iconColor="var(--color-success)"
                   valueColor="var(--color-success)"
                 />
                 <StatCard
@@ -167,7 +164,6 @@ export function Dashboard() {
                   value={String(data?.totalTransactions ?? 0)}
                   icon={<Receipt size={13} color="var(--color-primary)" />}
                   iconBg="var(--color-primary-pale)"
-                  iconColor="var(--color-primary)"
                   valueColor="var(--color-primary)"
                 />
                 <StatCard
@@ -175,7 +171,6 @@ export function Dashboard() {
                   value={String(data?.totalUsers ?? 0)}
                   icon={<Users size={13} color="var(--color-accent)" />}
                   iconBg="var(--color-accent-bg)"
-                  iconColor="var(--color-accent)"
                   valueColor="var(--color-accent)"
                 />
                 <StatCard
@@ -183,7 +178,6 @@ export function Dashboard() {
                   value={data?.topGroup ?? '—'}
                   icon={<TrendUp size={13} color="var(--color-gold)" />}
                   iconBg="color-mix(in oklch, var(--color-gold) 14%, transparent)"
-                  iconColor="var(--color-gold)"
                   valueColor="var(--color-gold)"
                 />
               </div>
