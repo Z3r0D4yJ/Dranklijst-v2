@@ -1,7 +1,8 @@
-import { Trophy, Crown, Medal } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { Crown, Medal } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
-import { useLeaderboard, type LeaderboardEntry } from '../../hooks/useLeaderboard'
+import { useLeaderboard, type LeaderboardEntry, type LeaderboardGroup } from '../../hooks/useLeaderboard'
 import { useMyGroups } from '../../hooks/useMyGroups'
 import { useThemeColor } from '../../hooks/useThemeColor'
 
@@ -65,25 +66,56 @@ function EntryRow({ entry, isMe, index }: { entry: LeaderboardEntry; isMe: boole
   )
 }
 
+function GroupView({ group, userId }: { group: LeaderboardGroup; userId: string | undefined }) {
+  return (
+    <div className="px-5 pt-5 pb-24 space-y-3">
+      {group.entries.length >= 2 && (
+        <div className="rounded-card" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '22px 16px 18px' }}>
+          <div className="flex items-end justify-center gap-2" style={{ height: 180 }}>
+            <Pillar rank={2} name={group.entries[1]?.full_name.split(' ')[0] ?? ''} total={group.entries[1]?.total ?? 0} height={100} />
+            <Pillar rank={1} name={group.entries[0]?.full_name.split(' ')[0] ?? ''} total={group.entries[0]?.total ?? 0} height={140} />
+            {group.entries[2] && (
+              <Pillar rank={3} name={group.entries[2].full_name.split(' ')[0]} total={group.entries[2].total} height={74} />
+            )}
+          </div>
+        </div>
+      )}
+
+      <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] pt-1 ml-0.5" style={{ color: 'var(--color-text-muted)' }}>Volledige ranking</p>
+
+      <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        {group.entries.map((entry, i) => (
+          <EntryRow key={entry.user_id} entry={entry} isMe={entry.user_id === userId} index={i} />
+        ))}
+        {group.entries.length === 0 && (
+          <div className="px-4 py-6 text-center">
+            <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Nog niemand gekocht.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function Leaderboard() {
   useThemeColor('--color-surface')
   const { profile } = useAuth()
   const { data: period } = useActivePeriod()
   const { data: allGroups, isLoading } = useLeaderboard(period?.id)
   const { data: myGroups } = useMyGroups()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const canSeeAll = profile?.role === 'groepsleiding' || profile?.role === 'admin'
-
   const myGroupIds = new Set((myGroups ?? []).map(g => g.id))
 
   const visibleGroups = canSeeAll
     ? (allGroups ?? [])
     : (allGroups ?? []).filter(g => myGroupIds.has(g.group_id))
 
-  const showGroupHeaders = canSeeAll || visibleGroups.length > 1
+  const activeGroup = visibleGroups.find(g => g.group_id === selectedId) ?? visibleGroups[0] ?? null
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
       {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Leaderboard</h1>
@@ -91,6 +123,35 @@ export function Leaderboard() {
           <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{period.name}</p>
         )}
       </div>
+
+      {/* ─── Group tabs (only when multiple groups) ── */}
+      {!isLoading && visibleGroups.length > 1 && (
+        <div
+          className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0"
+          style={{
+            background: 'var(--color-surface)',
+            borderBottom: '1px solid var(--color-border)',
+            scrollbarWidth: 'none',
+          }}
+        >
+          {visibleGroups.map(g => {
+            const isActive = g.group_id === (activeGroup?.group_id ?? null)
+            return (
+              <button
+                key={g.group_id}
+                onClick={() => setSelectedId(g.group_id)}
+                className="shrink-0 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors"
+                style={{
+                  background: isActive ? 'var(--color-primary)' : 'var(--color-surface-alt)',
+                  color: isActive ? '#fff' : 'var(--color-text-secondary)',
+                }}
+              >
+                {g.group_name}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* ─── Skeleton ─────────────────────────────── */}
       {isLoading && (
@@ -128,48 +189,9 @@ export function Leaderboard() {
         </div>
       )}
 
-      <div className="px-5 pt-5 pb-24 space-y-5">
-        {visibleGroups.map(group => (
-          <section key={group.group_id}>
-            {showGroupHeaders && (
-              <div className="flex items-center gap-2 mb-3 px-0.5">
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
-                  <Trophy size={14} color="var(--color-primary)" />
-                </div>
-                <h2 className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{group.group_name}</h2>
-              </div>
-            )}
-
-            {/* Podium */}
-            {group.entries.length >= 2 && (
-              <div className="rounded-card mb-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '22px 16px 18px' }}>
-                <div className="flex items-end justify-center gap-2" style={{ height: 180 }}>
-                  <Pillar rank={2} name={group.entries[1]?.full_name.split(' ')[0] ?? ''} total={group.entries[1]?.total ?? 0} height={100} />
-                  <Pillar rank={1} name={group.entries[0]?.full_name.split(' ')[0] ?? ''} total={group.entries[0]?.total ?? 0} height={140} />
-                  {group.entries[2] && (
-                    <Pillar rank={3} name={group.entries[2].full_name.split(' ')[0]} total={group.entries[2].total} height={74} />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Full list */}
-            {showGroupHeaders && (
-              <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2.5 ml-0.5" style={{ color: 'var(--color-text-muted)' }}>Volledige ranking</p>
-            )}
-            <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              {group.entries.map((entry, i) => (
-                <EntryRow key={entry.user_id} entry={entry} isMe={entry.user_id === profile?.id} index={i} />
-              ))}
-              {group.entries.length === 0 && (
-                <div className="px-4 py-6 text-center">
-                  <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Nog niemand gekocht.</p>
-                </div>
-              )}
-            </div>
-          </section>
-        ))}
-      </div>
+      {!isLoading && activeGroup && (
+        <GroupView key={activeGroup.group_id} group={activeGroup} userId={profile?.id} />
+      )}
     </div>
   )
 }
