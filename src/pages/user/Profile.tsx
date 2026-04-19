@@ -6,6 +6,7 @@ import type { IconProps } from '@phosphor-icons/react'
 import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { Switch } from '../../components/ui/switch'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
 import { usePWAInstall } from '../../hooks/usePWAInstall'
 import { useTheme, type ThemeMode } from '../../context/ThemeContext'
@@ -324,17 +325,11 @@ export function Profile() {
             }
             trailing={
               push.supported ? (
-                <button
-                  onClick={push.subscribed ? push.disable : push.enable}
+                <Switch
+                  checked={push.subscribed}
+                  onCheckedChange={(checked) => checked ? push.enable() : push.disable()}
                   disabled={push.loading}
-                  className="relative w-10 h-6 rounded-full transition-colors shrink-0 disabled:opacity-60"
-                  style={{ background: push.subscribed ? 'var(--color-success)' : 'var(--color-border-mid)' }}
-                >
-                  <span
-                    className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"
-                    style={{ transform: push.subscribed ? 'translateX(18px)' : 'translateX(2px)', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}
-                  />
-                </button>
+                />
               ) : undefined
             }
           />

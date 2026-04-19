@@ -25,12 +25,18 @@ export async function subscribeToPush(userId: string): Promise<boolean> {
   const json = sub.toJSON()
   const keys = json.keys as { p256dh: string; auth: string }
 
-  await supabase.from('push_subscriptions').upsert({
+  const { error } = await supabase.from('push_subscriptions').upsert({
     user_id: userId,
     endpoint: sub.endpoint,
     p256dh: keys.p256dh,
     auth: keys.auth,
   }, { onConflict: 'endpoint' })
+
+  if (error) {
+    console.error('Failed to save push subscription:', error)
+    await sub.unsubscribe()
+    return false
+  }
 
   return true
 }
