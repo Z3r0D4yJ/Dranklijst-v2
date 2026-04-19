@@ -65,10 +65,10 @@ interface Props {
 }
 
 export function IconChip({ tone = 'primary', icon, colorName, iconName, size = 40, iconSize }: Props) {
-  const { bg, fg } = (colorName && COLOR_MAP[colorName]) ?? TONE_STYLES[tone] ?? TONE_STYLES.neutral
+  const { bg, fg } = (colorName ? COLOR_MAP[colorName] : undefined) ?? TONE_STYLES[tone] ?? TONE_STYLES.neutral
   const radius = Math.round(size * 0.32)
   const iSize = iconSize ?? Math.round(size * 0.48)
-  const IconComponent = icon ?? (iconName && ICON_NAME_MAP[iconName]) ?? DEFAULT_ICONS[tone] ?? ShoppingCart
+  const IconComponent = icon ?? (iconName ? ICON_NAME_MAP[iconName] : undefined) ?? DEFAULT_ICONS[tone] ?? ShoppingCart
 
   return (
     <div
