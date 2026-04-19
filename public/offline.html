@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geen verbinding — Dranklijst</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: #0F172A;
+    }
+    .icon {
+      width: 72px; height: 72px;
+      background: #EFF6FF;
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 22px; font-weight: 800; margin-bottom: 8px; text-align: center; }
+    p { font-size: 14px; color: #64748B; text-align: center; line-height: 1.6; max-width: 280px; }
+    button {
+      margin-top: 32px;
+      background: #2563EB;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 32px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">
+    <svg width="36" height="36" viewBox="0 0 256 256" fill="none">
+      <path d="M228,128a100,100,0,1,1-100-100A100,100,0,0,1,228,128Z" fill="#2563EB" opacity="0.15"/>
+      <path d="M80,128l40,40,72-80" stroke="#2563EB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <h1>Geen internetverbinding</h1>
+  <p>Controleer je verbinding en probeer opnieuw. Eerder bekeken pagina's zijn wel beschikbaar.</p>
+  <button onclick="window.location.reload()">Opnieuw proberen</button>
+</body>
+</html>

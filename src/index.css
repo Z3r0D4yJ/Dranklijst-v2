@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Backgrounds */
+  --color-bg:             #F4F6FB;
+  --color-surface:        #FFFFFF;
+  --color-surface-alt:    #F8FAFC;
+  --color-border:         #ECEFF5;
+  --color-border-mid:     #E2E8F0;
+
+  /* Text */
+  --color-text-primary:   #0B1220;
+  --color-text-secondary: #5B6678;
+  --color-text-muted:     #94A3B8;
+
+  /* Primary — Chiro blauw */
+  --color-primary:        oklch(0.55 0.21 221);
+  --color-primary-pale:   oklch(0.97 0.03 221);
+  --color-primary-border: oklch(0.88 0.06 221);
+  --color-primary-on:     oklch(0.40 0.20 221);
+
+  /* Header */
+  --color-header:         oklch(0.30 0.14 260);
+  --color-header-fg:      #FFFFFF;
+
+  /* Accent — vos-oranje */
+  --color-accent:         #EA580C;
+  --color-accent-bg:      #FFF4ED;
+  --color-accent-on:      #9A3412;
+  --color-accent-border:  #FED7AA;
+
+  /* Semantic */
+  --color-success:        #059669;
+  --color-success-bg:     #ECFDF5;
+  --color-warning:        #B45309;
+  --color-warning-bg:     #FFFBEB;
+  --color-warning-border: #FDE68A;
+  --color-danger:         #DC2626;
+  --color-danger-bg:      #FEF2F2;
+
+  /* Podium */
+  --color-gold:           #D97706;
+  --color-silver:         #64748B;
+  --color-bronze:         #B45309;
+
+  /* Category tones — icon chips only */
+  --color-cat-beer-bg:   oklch(0.93 0.07 75);
+  --color-cat-beer-fg:   oklch(0.48 0.13 75);
+  --color-cat-wine-bg:   oklch(0.93 0.06 15);
+  --color-cat-wine-fg:   oklch(0.45 0.14 15);
+  --color-cat-soda-bg:   oklch(0.93 0.06 25);
+  --color-cat-soda-fg:   oklch(0.52 0.16 25);
+  --color-cat-water-bg:  oklch(0.94 0.04 210);
+  --color-cat-water-fg:  oklch(0.50 0.12 210);
+  --color-cat-coffee-bg: oklch(0.92 0.04 55);
+  --color-cat-coffee-fg: oklch(0.42 0.07 55);
+
+  /* FAB shadow — only element with shadow */
+  --shadow-fab: 0 8px 20px oklch(0.55 0.21 221 / 0.32),
+                0 2px 6px  oklch(0.55 0.21 221 / 0.22);
+
+  /* Skeleton */
+  --skel-base: var(--color-surface-alt);
+  --skel-hl:   var(--color-border);
+}
+
+.dark {
+  --color-bg:             oklch(0.18 0.02 250);
+  --color-surface:        oklch(0.23 0.02 250);
+  --color-surface-alt:    oklch(0.28 0.02 250);
+  --color-border:         oklch(0.30 0.015 250);
+  --color-border-mid:     oklch(0.36 0.015 250);
+  --color-text-primary:   oklch(0.96 0.005 250);
+  --color-text-secondary: oklch(0.72 0.01 250);
+  --color-text-muted:     oklch(0.54 0.015 250);
+
+  --color-primary:        oklch(0.68 0.17 221);
+  --color-primary-pale:   oklch(0.30 0.06 221);
+  --color-primary-border: oklch(0.42 0.10 221);
+  --color-primary-on:     oklch(0.82 0.11 221);
+
+  --color-header:         oklch(0.15 0.02 250);
+  --color-header-fg:      oklch(0.96 0.005 250);
+
+  --color-accent:         oklch(0.75 0.19 55);
+  --color-accent-bg:      oklch(0.32 0.08 55);
+  --color-accent-on:      oklch(0.88 0.14 55);
+  --color-accent-border:  oklch(0.45 0.12 55);
+
+  --color-success:        oklch(0.75 0.15 155);
+  --color-success-bg:     oklch(0.30 0.06 155);
+  --color-warning:        oklch(0.80 0.14 80);
+  --color-warning-bg:     oklch(0.32 0.06 80);
+  --color-warning-border: oklch(0.45 0.10 80);
+  --color-danger:         oklch(0.72 0.17 25);
+  --color-danger-bg:      oklch(0.30 0.07 25);
+
+  /* Category tones — dark mode */
+  --color-cat-beer-bg:   oklch(0.34 0.09 75);   --color-cat-beer-fg:   oklch(0.85 0.14 75);
+  --color-cat-wine-bg:   oklch(0.32 0.09 15);   --color-cat-wine-fg:   oklch(0.82 0.14 15);
+  --color-cat-soda-bg:   oklch(0.32 0.08 25);   --color-cat-soda-fg:   oklch(0.82 0.14 25);
+  --color-cat-water-bg:  oklch(0.32 0.06 210);  --color-cat-water-fg:  oklch(0.82 0.11 210);
+  --color-cat-coffee-bg: oklch(0.30 0.05 55);   --color-cat-coffee-fg: oklch(0.78 0.09 55);
+
+  --skel-base: var(--color-surface);
+  --skel-hl:   var(--color-surface-alt);
+}
+
+/* ─── Keyframes ─────────────────────────────────────────── */
+
+@keyframes dl-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes dl-wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
+}
+
+@keyframes dl-bubble-up {
+  0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(var(--dx, 0), -58px) scale(1); opacity: 0; }
+}
+
+@keyframes dl-toast-in {
+  0%   { transform: translate(-50%, -24px); opacity: 0; }
+  60%  { transform: translate(-50%, 4px);   opacity: 1; }
+  100% { transform: translate(-50%, 0);     opacity: 1; }
+}
+
+@keyframes dl-check-draw {
+  0%   { stroke-dashoffset: 22; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes dl-fade-in {
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Skeleton ───────────────────────────────────────────── */
+
+.dl-skel {
+  background: linear-gradient(90deg,
+    var(--skel-base) 0%, var(--skel-hl) 50%, var(--skel-base) 100%);
+  background-size: 200% 100%;
+  animation: dl-shimmer 1.6s linear infinite;
+  border-radius: 8px;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-skel,
+  [style*="dl-shimmer"],
+  [style*="dl-wiggle"],
+  [style*="dl-bubble-up"],
+  [style*="dl-check-draw"] {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Cards ──────────────────────────────────────────────── */
+
+/* Define outside @layer so it works in browsers that don't support
+   CSS Cascade Layers — Tailwind puts theme.extend tokens in @layer utilities
+   which Firefox/older Safari may ignore. */
+.rounded-card {
+  border-radius: 16px;
+}
+
+/* ─── Base ───────────────────────────────────────────────── */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Native select in dark mode */
+.dark select option {
+  background-color: oklch(0.23 0.02 250);
+  color: oklch(0.96 0.005 250);
+}
+
+/* Tabular nums on all monetary values */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

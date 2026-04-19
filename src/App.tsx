@@ -1,0 +1,87 @@
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AuthProvider } from './context/AuthContext'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { PublicRoute } from './components/PublicRoute'
+import { BottomNav } from './components/BottomNav'
+import { AdminLayout } from './components/AdminLayout'
+import { Login } from './pages/auth/Login'
+import { Register } from './pages/auth/Register'
+import { JoinGroup } from './pages/auth/JoinGroup'
+import { Home } from './pages/user/Home'
+import { Transactions } from './pages/user/Transactions'
+import { Leaderboard } from './pages/user/Leaderboard'
+import { Profile } from './pages/user/Profile'
+import { GroupManagement } from './pages/leiding/GroupManagement'
+import { Periods } from './pages/admin/Periods'
+import { Finance } from './pages/admin/Finance'
+import { Consumptions } from './pages/admin/Consumptions'
+import { Users } from './pages/admin/Users'
+import { Dashboard } from './pages/admin/Dashboard'
+import { AllTransactions } from './pages/admin/AllTransactions'
+import { Groups } from './pages/admin/Groups'
+
+const queryClient = new QueryClient()
+
+function AppLayout() {
+  return (
+    <>
+      <Outlet />
+      <BottomNav />
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            {/* Publieke routes */}
+            <Route element={<PublicRoute />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+
+            {/* Join group */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/join-group" element={<JoinGroup />} />
+            </Route>
+
+            {/* Gebruiker routes met bottom nav */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/transactions" element={<Transactions />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/profile" element={<Profile />} />
+              </Route>
+            </Route>
+
+            {/* Leiding routes */}
+            <Route element={<ProtectedRoute minRole="leiding" />}>
+              <Route element={<AppLayout />}>
+                <Route path="/leiding/groep" element={<GroupManagement />} />
+              </Route>
+            </Route>
+
+            {/* Kas / Admin routes */}
+            <Route element={<ProtectedRoute minRole="kas" />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="transacties" element={<AllTransactions />} />
+                <Route path="groepen" element={<Groups />} />
+                <Route path="periodes" element={<Periods />} />
+                <Route path="financieel" element={<Finance />} />
+                <Route path="consumpties" element={<Consumptions />} />
+                <Route path="gebruikers" element={<Users />} />
+              </Route>
+            </Route>
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  )
+}
