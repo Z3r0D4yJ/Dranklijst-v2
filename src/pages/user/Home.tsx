@@ -29,7 +29,7 @@ export function Home() {
   useThemeColor('--color-header')
   const { profile } = useAuth()
   const queryClient = useQueryClient()
-  const push = usePushSubscription()
+  usePushSubscription()
   const { unreadCount } = useNotifications()
   const [showNotifs, setShowNotifs] = useState(false)
   const { data: group, isLoading: groupLoading } = useMyGroup()
