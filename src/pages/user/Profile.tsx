@@ -514,21 +514,34 @@ export function Profile() {
           </div>
         ))}
 
-        {/* ─── Theme ──────────────────────────────── */}
+{/* ─── Theme ──────────────────────────────── */}
         <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Weergave</p>
         <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <div className="grid grid-cols-3 gap-1.5 rounded-[12px] p-1" style={{ background: 'var(--color-surface-alt)' }}>
+          <div className="relative grid grid-cols-3 gap-1.5 rounded-[12px] p-1" style={{ background: 'var(--color-surface-alt)' }}>
+            
+            {/* ─── De Glijdende Achtergrond (Slider) ─── */}
+            <div
+              className="absolute top-1 bottom-1 rounded-[8px] transition-transform duration-300 ease-out z-0"
+              style={{
+                width: 'calc((100% - 8px - 12px) / 3)',
+                transform: `translateX(calc(${THEME_OPTIONS.findIndex(o => o.value === mode)} * 100% + ${THEME_OPTIONS.findIndex(o => o.value === mode)} * 6px))`,
+                left: '4px',
+                background: 'var(--color-surface)',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.06)'
+              }}
+            />
+
             {THEME_OPTIONS.map(opt => {
               const isActive = mode === opt.value
               return (
                 <button
                   key={opt.value}
                   onClick={() => setMode(opt.value)}
-                  className="flex flex-col items-center gap-1 py-2.5 rounded-[8px] text-[12px] font-bold transition-all active:scale-95"
+                  className="relative z-10 flex flex-col items-center gap-1 py-2.5 rounded-[8px] text-[12px] font-bold transition-all duration-300 active:scale-95"
                   style={{
-                    background: isActive ? 'var(--color-surface)' : 'transparent',
+                    background: 'transparent',
                     color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                    boxShadow: isActive ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                    boxShadow: 'none',
                   }}
                 >
                   <opt.Icon size={15} weight="bold" color={isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)'} />
