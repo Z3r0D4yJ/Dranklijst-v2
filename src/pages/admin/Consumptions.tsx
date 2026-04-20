@@ -1,20 +1,21 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, PencilSimple, Eye, EyeSlash, X, Check } from '@phosphor-icons/react'
+import { Plus, PencilSimple, Eye, EyeSlash, Check } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { CustomSelect } from '../../components/CustomSelect'
+import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import type { Consumption, ConsumptionCategory } from '../../lib/database.types'
 
 const CATEGORIES: { value: ConsumptionCategory; label: string }[] = [
   { value: 'niet-alcoholisch', label: 'Frisdrank / Water' },
-  { value: 'alcoholisch',      label: 'Bier / Alcoholisch' },
+  { value: 'alcoholisch', label: 'Bier / Alcoholisch' },
 ]
 
 const CAT_LABELS: Record<string, string> = {
   'niet-alcoholisch': 'Frisdrank / Water',
-  'alcoholisch':      'Bier / Alcoholisch',
+  'alcoholisch': 'Bier / Alcoholisch',
 }
 
 interface FormState {
@@ -50,9 +51,13 @@ export function Consumptions() {
     setShowForm(true)
   }
 
-  function openEdit(c: Consumption) {
-    setEditing(c)
-    setForm({ name: c.name, price: c.price.toString(), category: c.category })
+  function openEdit(consumption: Consumption) {
+    setEditing(consumption)
+    setForm({
+      name: consumption.name,
+      price: consumption.price.toString(),
+      category: consumption.category,
+    })
     setShowForm(true)
   }
 
@@ -63,44 +68,64 @@ export function Consumptions() {
   }
 
   async function save() {
-    const price = parseFloat(form.price)
-    if (!form.name.trim() || isNaN(price) || price <= 0) {
+    const price = Number.parseFloat(form.price)
+    if (!form.name.trim() || Number.isNaN(price) || price <= 0) {
       toast.error('Vul een geldige naam en prijs in.')
       return
     }
+
+    const isEditing = Boolean(editing)
     setLoading(true)
 
-    if (editing) {
-      await supabase.from('consumptions').update({
-        name: form.name.trim(),
-        price,
-        category: form.category,
-      }).eq('id', editing.id)
-    } else {
-      await supabase.from('consumptions').insert({
-        name: form.name.trim(),
-        price,
-        category: form.category,
-        is_active: true,
-      })
+    try {
+      const { error } = editing
+        ? await supabase
+          .from('consumptions')
+          .update({
+            name: form.name.trim(),
+            price,
+            category: form.category,
+          })
+          .eq('id', editing.id)
+        : await supabase.from('consumptions').insert({
+          name: form.name.trim(),
+          price,
+          category: form.category,
+          is_active: true,
+        })
+
+      if (error) {
+        toast.error('Kon consumptie niet opslaan.')
+        return
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] }),
+        queryClient.invalidateQueries({ queryKey: ['group-consumptions'] }),
+      ])
+
+      closeForm()
+      toast.success(isEditing ? 'Consumptie bijgewerkt.' : 'Consumptie aangemaakt.')
+    } finally {
+      setLoading(false)
     }
-
-    await queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] })
-    queryClient.invalidateQueries({ queryKey: ['group-consumptions'] })
-    closeForm()
-    setLoading(false)
-    toast.success(editing ? 'Consumptie bijgewerkt.' : 'Consumptie aangemaakt.')
   }
 
-  async function toggleActive(c: Consumption) {
-    await supabase.from('consumptions').update({ is_active: !c.is_active }).eq('id', c.id)
-    await queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] })
-    queryClient.invalidateQueries({ queryKey: ['group-consumptions'] })
+  async function toggleActive(consumption: Consumption) {
+    await supabase
+      .from('consumptions')
+      .update({ is_active: !consumption.is_active })
+      .eq('id', consumption.id)
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] }),
+      queryClient.invalidateQueries({ queryKey: ['group-consumptions'] }),
+    ])
   }
 
-  const grouped = (consumptions ?? []).reduce<Record<string, Consumption[]>>((acc, c) => {
-    if (!acc[c.category]) acc[c.category] = []
-    acc[c.category].push(c)
+  const grouped = (consumptions ?? []).reduce<Record<string, Consumption[]>>((acc, consumption) => {
+    if (!acc[consumption.category]) acc[consumption.category] = []
+    acc[consumption.category].push(consumption)
     return acc
   }, {})
 
@@ -136,60 +161,78 @@ export function Consumptions() {
         Nieuwe consumptie
       </button>
 
-      {showForm && (
-        <div className="rounded-[14px] p-4 space-y-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <div className="flex items-center justify-between">
-            <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
-              {editing ? 'Consumptie bewerken' : 'Nieuwe consumptie'}
-            </p>
-            <button onClick={closeForm}><X size={18} color="var(--color-text-muted)" /></button>
-          </div>
-
-          <div className="space-y-2">
-            <input
-              type="text"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="Naam"
-              style={inputStyle}
-            />
-            <div className="flex gap-2">
-              <input
-                type="number"
-                value={form.price}
-                onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-                placeholder="Prijs (€)"
-                step="0.10"
-                min="0"
-                style={{ ...inputStyle, flex: 1, width: 'auto' }}
-              />
-              <CustomSelect
-                value={form.category}
-                onChange={v => setForm(f => ({ ...f, category: v as ConsumptionCategory }))}
-                options={CATEGORIES.map(c => ({ value: c.value, label: c.label }))}
-                style={{ flex: 1 }}
-              />
-            </div>
-          </div>
-
+      <AdminFormDrawer
+        open={showForm}
+        onOpenChange={(open) => {
+          if (!open) closeForm()
+        }}
+        title={editing ? 'Consumptie bewerken' : 'Nieuwe consumptie'}
+        description={editing ? 'Pas naam, prijs en categorie aan.' : 'Voeg een nieuwe consumptie toe aan de globale lijst.'}
+        dismissible={!loading}
+        disableClose={loading}
+        scrollBody={false}
+        bodyClassName="space-y-4"
+        footer={
           <button
             onClick={save}
             disabled={loading}
-            className="w-full text-[13px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
             style={{
               background: 'var(--color-primary)',
               color: '#fff',
-              padding: '10px',
+              padding: '12px',
               borderRadius: 12,
               border: 'none',
               fontFamily: 'inherit',
             }}
           >
             <Check size={14} weight="bold" />
-            {loading ? 'Opslaan…' : 'Opslaan'}
+            {loading ? 'Opslaan...' : 'Opslaan'}
           </button>
+        }
+      >
+        <div className="space-y-1.5">
+          <label
+            className="text-[11px] font-extrabold uppercase tracking-[1px]"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Naam
+          </label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+            placeholder="Naam"
+            style={inputStyle}
+          />
         </div>
-      )}
+
+        <div className="space-y-1.5">
+          <label
+            className="text-[11px] font-extrabold uppercase tracking-[1px]"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Prijs en categorie
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              value={form.price}
+              onChange={(event) => setForm((current) => ({ ...current, price: event.target.value }))}
+              placeholder="Prijs (EUR)"
+              step="0.10"
+              min="0"
+              style={{ ...inputStyle, flex: 1, width: 'auto' }}
+            />
+            <CustomSelect
+              value={form.category}
+              onChange={(value) => setForm((current) => ({ ...current, category: value as ConsumptionCategory }))}
+              options={CATEGORIES.map((category) => ({ value: category.value, label: category.label }))}
+              style={{ flex: 1, minWidth: 0 }}
+            />
+          </div>
+        </div>
+      </AdminFormDrawer>
 
       {isLoading && (
         <div className="flex justify-center mt-8">
@@ -197,41 +240,51 @@ export function Consumptions() {
         </div>
       )}
 
-      {Object.entries(grouped).map(([cat, items]) => (
-        <section key={cat}>
-          <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2 m-0" style={{ color: 'var(--color-text-muted)' }}>
-            {CAT_LABELS[cat] ?? cat}
+      {Object.entries(grouped).map(([category, items]) => (
+        <section key={category}>
+          <p
+            className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2 m-0"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            {CAT_LABELS[category] ?? category}
           </p>
-          <div className="rounded-[14px] overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-            {items.map((c, i) => (
+          <div
+            className="rounded-[14px] overflow-hidden"
+            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+          >
+            {items.map((consumption, index) => (
               <div
-                key={c.id}
+                key={consumption.id}
                 className="flex items-center gap-3 px-4 py-3"
                 style={{
-                  opacity: c.is_active ? 1 : 0.4,
-                  borderTop: i > 0 ? '1px solid var(--color-border)' : undefined,
+                  opacity: consumption.is_active ? 1 : 0.4,
+                  borderTop: index > 0 ? '1px solid var(--color-border)' : undefined,
                 }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>{c.name}</p>
-                  <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>€{c.price.toFixed(2)}</p>
+                  <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    {consumption.name}
+                  </p>
+                  <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                    EUR {consumption.price.toFixed(2)}
+                  </p>
                 </div>
                 <button
-                  onClick={() => openEdit(c)}
+                  onClick={() => openEdit(consumption)}
                   className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform"
                   style={{ background: 'var(--color-primary-pale)', border: 'none' }}
                 >
                   <PencilSimple size={14} color="var(--color-primary)" />
                 </button>
                 <button
-                  onClick={() => toggleActive(c)}
+                  onClick={() => toggleActive(consumption)}
                   className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform"
                   style={{
-                    background: c.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)',
+                    background: consumption.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)',
                     border: 'none',
                   }}
                 >
-                  {c.is_active
+                  {consumption.is_active
                     ? <Eye size={14} color="var(--color-success)" />
                     : <EyeSlash size={14} color="var(--color-text-muted)" />}
                 </button>

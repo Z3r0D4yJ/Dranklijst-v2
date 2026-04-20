@@ -242,7 +242,7 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--safe-area-top, env(safe-area-inset-top, 0px));
   /* Belt-and-suspenders for older Safari versions that ignore html overscroll-behavior */
   overscroll-behavior: none;
 }
@@ -277,7 +277,7 @@ button {
 
 /* Push toasts below the status bar / Dynamic Island */
 [data-sonner-toaster][data-y-position='top'] {
-  top: calc(env(safe-area-inset-top, 0px) + 16px) !important;
+  top: calc(var(--safe-area-top, env(safe-area-inset-top, 0px)) + 16px) !important;
 }
 
 .dl-toast {

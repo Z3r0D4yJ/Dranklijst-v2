@@ -14,16 +14,68 @@ type DrawerProps = VaulDrawerProps & {
 }
 
 function Drawer({
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
   shouldScaleBackground = false,
   direction = 'bottom',
+  disablePreventScroll = false,
+  noBodyStyles = true,
   repositionInputs = true,
   ...props
 }: DrawerProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const isControlled = openProp !== undefined
+  const open = isControlled ? openProp : uncontrolledOpen
+
+  const handleOpenChange = React.useCallback((nextOpen: boolean) => {
+    if (!isControlled) {
+      setUncontrolledOpen(nextOpen)
+    }
+    onOpenChange?.(nextOpen)
+  }, [isControlled, onOpenChange])
+
+  React.useEffect(() => {
+    if (!open || typeof document === 'undefined') return
+
+    const html = document.documentElement
+    const body = document.body
+    const computedBodyStyle = window.getComputedStyle(body)
+
+    const previousHtmlOverflow = html.style.overflow
+    const previousHtmlOverscroll = html.style.overscrollBehavior
+    const previousBodyOverflow = body.style.overflow
+    const previousBodyOverscroll = body.style.overscrollBehavior
+    const previousBodyPaddingTop = body.style.paddingTop
+    const previousBodyPaddingBottom = body.style.paddingBottom
+
+    html.style.overflow = 'hidden'
+    html.style.overscrollBehavior = 'none'
+    body.style.overflow = 'hidden'
+    body.style.overscrollBehavior = 'none'
+    body.style.paddingTop = computedBodyStyle.paddingTop
+    body.style.paddingBottom = computedBodyStyle.paddingBottom
+
+    return () => {
+      html.style.overflow = previousHtmlOverflow
+      html.style.overscrollBehavior = previousHtmlOverscroll
+      body.style.overflow = previousBodyOverflow
+      body.style.overscrollBehavior = previousBodyOverscroll
+      body.style.paddingTop = previousBodyPaddingTop
+      body.style.paddingBottom = previousBodyPaddingBottom
+    }
+  }, [open])
+
   return (
     <DrawerContext.Provider value={{ direction }}>
       <DrawerPrimitive.Root
+        open={open}
+        defaultOpen={defaultOpen}
+        onOpenChange={handleOpenChange}
         shouldScaleBackground={shouldScaleBackground}
         direction={direction}
+        disablePreventScroll={disablePreventScroll}
+        noBodyStyles={noBodyStyles}
         repositionInputs={repositionInputs}
         {...props}
       />

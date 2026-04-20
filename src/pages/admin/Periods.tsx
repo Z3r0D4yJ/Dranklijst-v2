@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { CalendarBlank, Stop, Plus, X, CheckCircle, Users, CurrencyEur } from '@phosphor-icons/react'
+import { CalendarBlank, Stop, Plus, CheckCircle, Users, CurrencyEur } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
+import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import type { Period } from '../../lib/database.types'
 
 interface PeriodStats {
@@ -35,43 +36,55 @@ export function Periods() {
       if (!periods) return []
 
       const result: PeriodStats[] = await Promise.all(
-        (periods as Period[]).map(async p => {
+        (periods as Period[]).map(async (period) => {
           const { data } = await supabase
             .from('transactions')
             .select('user_id, total_price')
-            .eq('period_id', p.id)
+            .eq('period_id', period.id)
 
           const rows = (data ?? []) as { user_id: string; total_price: number }[]
-          const userCount = new Set(rows.map(r => r.user_id)).size
-          const total = rows.reduce((s, r) => s + r.total_price, 0)
-          return { period: p, user_count: userCount, total }
-        })
+          const userCount = new Set(rows.map((row) => row.user_id)).size
+          const total = rows.reduce((sum, row) => sum + row.total_price, 0)
+
+          return { period, user_count: userCount, total }
+        }),
       )
+
       return result
     },
   })
+
+  function closeNewDrawer() {
+    setShowNew(false)
+    setNewName('')
+  }
 
   async function startPeriod() {
     if (!newName.trim() || !user) return
     setLoading(true)
 
-    const { error } = await supabase.from('periods').insert({
-      name: newName.trim(),
-      is_active: true,
-      created_by: user.id,
-    })
+    try {
+      const { error } = await supabase.from('periods').insert({
+        name: newName.trim(),
+        is_active: true,
+        created_by: user.id,
+      })
 
-    if (error) {
-      toast.error('Kon periode niet starten.')
-      setLoading(false)
-    } else {
-      await queryClient.invalidateQueries({ queryKey: ['period-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['active-period'] })
-      queryClient.invalidateQueries({ queryKey: ['periods'] })
-      setNewName('')
-      setShowNew(false)
-      setLoading(false)
+      if (error) {
+        toast.error('Kon periode niet starten.')
+        return
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['period-stats'] }),
+        queryClient.invalidateQueries({ queryKey: ['active-period'] }),
+        queryClient.invalidateQueries({ queryKey: ['periods'] }),
+      ])
+
+      closeNewDrawer()
       toast.success('Periode gestart.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -95,55 +108,56 @@ export function Periods() {
   }
 
   function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: 'numeric' })
+    return new Date(iso).toLocaleDateString('nl-BE', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  const inputStyle = {
+    background: 'var(--color-surface-alt)',
+    border: '1.5px solid var(--color-border-mid)',
+    borderRadius: 12,
+    padding: '10px 14px',
+    color: 'var(--color-text-primary)',
+    boxSizing: 'border-box' as const,
+    fontFamily: 'inherit',
+    width: '100%',
+    outline: 'none',
   }
 
   return (
     <div className="px-4 space-y-3">
-      {/* New period */}
-      {!showNew ? (
-        <button
-          onClick={() => setShowNew(true)}
-          className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-          style={{
-            background: 'var(--color-primary)',
-            color: '#fff',
-            padding: 13,
-            borderRadius: 14,
-            border: 'none',
-            boxShadow: 'var(--shadow-fab)',
-            fontFamily: 'inherit',
-          }}
-        >
-          <Plus size={16} weight="bold" />
-          Nieuwe periode starten
-        </button>
-      ) : (
-        <div className="rounded-[14px] p-4 space-y-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <div className="flex items-center justify-between">
-            <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>Nieuwe periode</p>
-            <button onClick={() => { setShowNew(false); setNewName('') }}>
-              <X size={18} color="var(--color-text-muted)" />
-            </button>
-          </div>
-          <input
-            type="text"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            placeholder="bv. Zomerkamp 2025"
-            className="w-full outline-none text-[14px] font-medium"
-            style={{
-              background: 'var(--color-surface-alt)',
-              border: '1.5px solid var(--color-border-mid)',
-              borderRadius: 12,
-              padding: '10px 14px',
-              color: 'var(--color-text-primary)',
-              boxSizing: 'border-box',
-              fontFamily: 'inherit',
-            }}
-            onKeyDown={e => e.key === 'Enter' && startPeriod()}
-            autoFocus
-          />
+      <button
+        onClick={() => setShowNew(true)}
+        className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+        style={{
+          background: 'var(--color-primary)',
+          color: '#fff',
+          padding: 13,
+          borderRadius: 14,
+          border: 'none',
+          boxShadow: 'var(--shadow-fab)',
+          fontFamily: 'inherit',
+        }}
+      >
+        <Plus size={16} weight="bold" />
+        Nieuwe periode starten
+      </button>
+
+      <AdminFormDrawer
+        open={showNew}
+        onOpenChange={(open) => {
+          if (!open) closeNewDrawer()
+        }}
+        title="Nieuwe periode"
+        description="Geef de nieuwe actieve periode een duidelijke naam."
+        dismissible={!loading}
+        disableClose={loading}
+        scrollBody={false}
+        bodyClassName="space-y-1.5"
+        footer={
           <button
             onClick={startPeriod}
             disabled={!newName.trim() || loading}
@@ -151,16 +165,35 @@ export function Periods() {
             style={{
               background: 'var(--color-primary)',
               color: '#fff',
-              padding: '10px',
+              padding: '12px',
               borderRadius: 12,
               border: 'none',
               fontFamily: 'inherit',
             }}
           >
-            {loading ? 'Bezig…' : 'Starten'}
+            {loading ? 'Bezig...' : 'Starten'}
           </button>
-        </div>
-      )}
+        }
+      >
+        <label
+          className="text-[11px] font-extrabold uppercase tracking-[1px]"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Naam
+        </label>
+        <input
+          type="text"
+          value={newName}
+          onChange={(event) => setNewName(event.target.value)}
+          placeholder="bv. Zomerkamp 2025"
+          style={inputStyle}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              void startPeriod()
+            }
+          }}
+        />
+      </AdminFormDrawer>
 
       {isLoading && (
         <div className="flex justify-center mt-8">
@@ -179,20 +212,34 @@ export function Periods() {
             }}
           >
             {period.is_active && (
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: 'var(--color-primary)' }} />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 3,
+                  background: 'var(--color-primary)',
+                }}
+              />
             )}
             <div className="flex items-start gap-3" style={{ paddingLeft: period.is_active ? 8 : 0 }}>
               <div
                 className="w-[34px] h-[34px] rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: period.is_active ? 'var(--color-primary-pale)' : 'var(--color-surface-alt)' }}
               >
-                <CalendarBlank size={16} color={period.is_active ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
+                <CalendarBlank
+                  size={16}
+                  color={period.is_active ? 'var(--color-primary)' : 'var(--color-text-muted)'}
+                />
               </div>
               <div className="flex-1">
-                <p className="text-[14px] font-bold m-0 mb-0.5" style={{ color: 'var(--color-text-primary)' }}>{period.name}</p>
+                <p className="text-[14px] font-bold m-0 mb-0.5" style={{ color: 'var(--color-text-primary)' }}>
+                  {period.name}
+                </p>
                 <p className="text-[12px] m-0" style={{ color: 'var(--color-text-muted)' }}>
                   {formatDate(period.started_at)}
-                  {period.ended_at ? ` → ${formatDate(period.ended_at)}` : ' · Actief'}
+                  {period.ended_at ? ` -> ${formatDate(period.ended_at)}` : ' · Actief'}
                 </p>
               </div>
               {period.is_active && (
@@ -200,14 +247,22 @@ export function Periods() {
                   onClick={() => closePeriod(period.id, period.name)}
                   disabled={closing === period.id}
                   className="flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1.5 rounded-[8px] active:scale-95 transition-transform disabled:opacity-50 shrink-0"
-                  style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)', border: 'none', fontFamily: 'inherit' }}
+                  style={{
+                    background: 'var(--color-danger-bg)',
+                    color: 'var(--color-danger)',
+                    border: 'none',
+                    fontFamily: 'inherit',
+                  }}
                 >
                   <Stop size={12} weight="fill" />
-                  {closing === period.id ? 'Bezig…' : 'Afsluiten'}
+                  {closing === period.id ? 'Bezig...' : 'Afsluiten'}
                 </button>
               )}
               {!period.is_active && (
-                <span className="flex items-center gap-1 text-[12px] font-bold shrink-0" style={{ color: 'var(--color-success)' }}>
+                <span
+                  className="flex items-center gap-1 text-[12px] font-bold shrink-0"
+                  style={{ color: 'var(--color-success)' }}
+                >
                   <CheckCircle size={14} weight="fill" />
                   Gesloten
                 </span>
@@ -219,14 +274,19 @@ export function Periods() {
               style={{ borderTop: '1px solid var(--color-border)', paddingLeft: period.is_active ? 8 : 0 }}
             >
               {[
-                { Icon: Users, val: `${user_count} leden` },
-                { Icon: CurrencyEur, val: `€${total.toFixed(2)} totaal` },
-              ].map(({ Icon, val }, j) => (
-                <div key={j} className="flex items-center gap-1.5">
-                  <div className="w-[22px] h-[22px] rounded-[6px] flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
+                { Icon: Users, value: `${user_count} leden` },
+                { Icon: CurrencyEur, value: `EUR ${total.toFixed(2)} totaal` },
+              ].map(({ Icon, value }, index) => (
+                <div key={index} className="flex items-center gap-1.5">
+                  <div
+                    className="w-[22px] h-[22px] rounded-[6px] flex items-center justify-center"
+                    style={{ background: 'var(--color-primary-pale)' }}
+                  >
                     <Icon size={11} color="var(--color-primary)" />
                   </div>
-                  <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>{val}</span>
+                  <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                    {value}
+                  </span>
                 </div>
               ))}
             </div>
