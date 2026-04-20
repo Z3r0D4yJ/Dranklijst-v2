@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EnvelopeSimple, LockSimple, User, Eye, EyeSlash } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useThemeColor } from '../../hooks/useThemeColor'
 
@@ -22,11 +23,9 @@ export function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleGoogle() {
-    setError(null)
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
@@ -35,10 +34,9 @@ export function Register() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setError(null)
 
     if (password.length < 6) {
-      setError('Wachtwoord moet minimaal 6 tekens bevatten.')
+      toast.error('Wachtwoord moet minimaal 6 tekens bevatten.')
       return
     }
 
@@ -51,7 +49,7 @@ export function Register() {
     })
 
     if (error) {
-      setError(error.message === 'User already registered'
+      toast.error(error.message === 'User already registered'
         ? 'Dit e-mailadres is al geregistreerd.'
         : 'Er ging iets mis. Probeer opnieuw.')
       setLoading(false)
@@ -101,12 +99,6 @@ export function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-          {error && (
-            <div className="rounded-xl px-4 py-3 text-[13px] font-medium" style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}>
-              {error}
-            </div>
-          )}
-
           <div>
             <label className="block text-[12px] font-bold tracking-[0.2px] mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Volledige naam</label>
             <div className="relative">

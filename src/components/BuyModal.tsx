@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, Minus, Plus, ShoppingCart } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { GroupConsumptionItem } from '../hooks/useGroupConsumptions'
@@ -22,14 +23,12 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
   const { user } = useAuth()
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const total = (item.price * quantity).toFixed(2)
 
   async function handleBuy() {
     if (!user) return
     setLoading(true)
-    setError(null)
 
     const { error } = await supabase.from('transactions').insert({
       user_id: user.id,
@@ -40,7 +39,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
     })
 
     if (error) {
-      setError('Er ging iets mis. Probeer opnieuw.')
+      toast.error('Er ging iets mis. Probeer opnieuw.')
       setLoading(false)
     } else {
       onSuccess()
@@ -119,12 +118,6 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
           <span className="text-[14px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>Totaal</span>
           <span className="text-[22px] font-extrabold tracking-[-0.5px] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>€ {Number(total).toFixed(2).replace('.', ',')}</span>
         </div>
-
-        {error && (
-          <div className="rounded-xl px-4 py-3 text-[13px] font-medium mb-4" style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)', border: '1px solid var(--color-danger-bg)' }}>
-            {error}
-          </div>
-        )}
 
         {/* CTA */}
         <button

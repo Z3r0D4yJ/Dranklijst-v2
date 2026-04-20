@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, PencilSimple, Eye, EyeSlash, X, Check } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
 import type { Consumption, ConsumptionCategory } from '../../lib/database.types'
@@ -29,7 +30,6 @@ export function Consumptions() {
   const [editing, setEditing] = useState<Consumption | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const { data: consumptions, isLoading } = useQuery({
     queryKey: ['consumptions-admin'],
@@ -46,14 +46,12 @@ export function Consumptions() {
   function openNew() {
     setEditing(null)
     setForm(EMPTY_FORM)
-    setError(null)
     setShowForm(true)
   }
 
   function openEdit(c: Consumption) {
     setEditing(c)
     setForm({ name: c.name, price: c.price.toString(), category: c.category })
-    setError(null)
     setShowForm(true)
   }
 
@@ -66,11 +64,10 @@ export function Consumptions() {
   async function save() {
     const price = parseFloat(form.price)
     if (!form.name.trim() || isNaN(price) || price <= 0) {
-      setError('Vul een geldige naam en prijs in.')
+      toast.error('Vul een geldige naam en prijs in.')
       return
     }
     setLoading(true)
-    setError(null)
 
     if (editing) {
       await supabase.from('consumptions').update({
@@ -91,6 +88,7 @@ export function Consumptions() {
     queryClient.invalidateQueries({ queryKey: ['group-consumptions'] })
     closeForm()
     setLoading(false)
+    toast.success(editing ? 'Consumptie bijgewerkt.' : 'Consumptie aangemaakt.')
   }
 
   async function toggleActive(c: Consumption) {
@@ -172,8 +170,6 @@ export function Consumptions() {
               />
             </div>
           </div>
-
-          {error && <p className="text-[12px] m-0" style={{ color: 'var(--color-danger)' }}>{error}</p>}
 
           <button
             onClick={save}

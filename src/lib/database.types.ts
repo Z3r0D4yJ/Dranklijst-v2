@@ -7,6 +7,7 @@ export interface Profile {
   id: string
   full_name: string
   role: Role
+  avatar_url: string | null
   created_at: string
 }
 
@@ -98,8 +99,8 @@ export type Database = {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: { id: string; full_name: string; role?: Role }
-        Update: { full_name?: string; role?: Role }
+        Insert: { id: string; full_name: string; role?: Role; avatar_url?: string | null }
+        Update: { full_name?: string; role?: Role; avatar_url?: string | null }
         Relationships: []
       }
       groups: {

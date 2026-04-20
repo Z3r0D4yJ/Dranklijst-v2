@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { User, MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Pagination } from '../../components/Pagination'
 import { usePagination } from '../../hooks/usePagination'
@@ -61,9 +62,11 @@ export function Users() {
   async function changeRole(userId: string, newRole: Role) {
     setUpdatingId(userId)
     setOpenDropdown(null)
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
     await queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     setUpdatingId(null)
+    if (error) toast.error('Rol kon niet worden aangepast.')
+    else toast.success('Rol bijgewerkt.')
   }
 
   const filtered = (users ?? []).filter(u =>

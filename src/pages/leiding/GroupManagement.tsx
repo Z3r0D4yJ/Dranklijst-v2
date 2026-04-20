@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Check, X, Trash, ArrowsClockwise, Copy, CheckCircle, User } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyJoinRequestResolved } from '../../lib/notifications'
@@ -151,6 +152,7 @@ export function GroupManagement() {
     await navigator.clipboard.writeText(inviteLink())
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    toast.success('Link gekopieerd!')
   }
 
   if (loading) {

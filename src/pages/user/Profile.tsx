@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt } from '@phosphor-icons/react'
+import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash, SpinnerGap } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { Switch } from '../../components/ui/switch'
@@ -158,6 +159,217 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
   )
 }
 
+function EditProfileSheet({ onClose }: { onClose: () => void }) {
+  const { profile, user, refreshProfile } = useAuth()
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const [name, setName] = useState(profile?.full_name ?? '')
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url ?? null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+
+  const [currentPw, setCurrentPw] = useState('')
+  const [newPw, setNewPw] = useState('')
+  const [showCurrentPw, setShowCurrentPw] = useState(false)
+  const [showNewPw, setShowNewPw] = useState(false)
+
+  const [saving, setSaving] = useState(false)
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarFile(file)
+    setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  async function handleSave() {
+    if (!profile || !user) return
+    setSaving(true)
+
+    try {
+      let avatarUrl = profile.avatar_url ?? null
+
+      if (avatarFile) {
+        const ext = avatarFile.name.split('.').pop()
+        const path = `${user.id}/avatar.${ext}`
+        const { error: uploadErr } = await supabase.storage
+          .from('avatars')
+          .upload(path, avatarFile, { upsert: true, contentType: avatarFile.type })
+        if (uploadErr) throw uploadErr
+        const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+        avatarUrl = `${data.publicUrl}?t=${Date.now()}`
+      }
+
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .update({ full_name: name.trim(), avatar_url: avatarUrl })
+        .eq('id', profile.id)
+      if (profileErr) throw profileErr
+
+      if (newPw) {
+        if (!currentPw) throw new Error('Vul je huidige wachtwoord in')
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: user.email!,
+          password: currentPw,
+        })
+        if (signInErr) throw new Error('Huidig wachtwoord klopt niet')
+        const { error: pwErr } = await supabase.auth.updateUser({ password: newPw })
+        if (pwErr) throw pwErr
+      }
+
+      await refreshProfile()
+      toast.success('Profiel opgeslagen.')
+      onClose()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Er ging iets mis')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[20px] pb-safe"
+        style={{ background: 'var(--color-surface)', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-9 h-1 rounded-full" style={{ background: 'var(--color-border-mid)' }} />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-2 pb-4 shrink-0" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <h2 className="text-[17px] font-extrabold tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-alt)' }}>
+            <X size={16} color="var(--color-text-secondary)" weight="bold" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+          {/* ── Avatar picker ── */}
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="relative w-[88px] h-[88px] active:scale-95 transition-transform shrink-0"
+            >
+              <div
+                className="w-full h-full rounded-full overflow-hidden"
+                style={{ background: 'var(--color-accent-bg)', border: '2.5px solid var(--color-accent-border)' }}
+              >
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User size={36} color="var(--color-accent)" weight="bold" />
+                  </div>
+                )}
+              </div>
+              <div
+                className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--color-primary)', border: '2px solid var(--color-surface)' }}
+              >
+                <Camera size={13} color="#fff" weight="bold" />
+              </div>
+            </button>
+            <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Tik op de foto om te wijzigen</p>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          </div>
+
+          {/* ── Name ── */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>Naam</label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Jouw naam"
+              className="w-full px-4 py-3.5 rounded-[12px] text-[15px] font-semibold outline-none"
+              style={{
+                background: 'var(--color-surface-alt)',
+                border: '1px solid var(--color-border-mid)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+          </div>
+
+          {/* ── Password ── */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>Wachtwoord wijzigen</label>
+            <div className="space-y-2">
+              <div className="relative">
+                <input
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={currentPw}
+                  onChange={e => setCurrentPw(e.target.value)}
+                  placeholder="Huidig wachtwoord"
+                  className="w-full px-4 py-3.5 pr-12 rounded-[12px] text-[15px] font-semibold outline-none"
+                  style={{
+                    background: 'var(--color-surface-alt)',
+                    border: '1px solid var(--color-border-mid)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw(v => !v)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
+                  {showCurrentPw
+                    ? <EyeSlash size={18} color="var(--color-text-muted)" />
+                    : <Eye size={18} color="var(--color-text-muted)" />
+                  }
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPw}
+                  onChange={e => setNewPw(e.target.value)}
+                  placeholder="Nieuw wachtwoord"
+                  className="w-full px-4 py-3.5 pr-12 rounded-[12px] text-[15px] font-semibold outline-none"
+                  style={{
+                    background: 'var(--color-surface-alt)',
+                    border: '1px solid var(--color-border-mid)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(v => !v)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
+                  {showNewPw
+                    ? <EyeSlash size={18} color="var(--color-text-muted)" />
+                    : <Eye size={18} color="var(--color-text-muted)" />
+                  }
+                </button>
+              </div>
+              <p className="text-[11px] font-medium px-1" style={{ color: 'var(--color-text-muted)' }}>
+                Laat leeg als je het wachtwoord niet wilt wijzigen
+              </p>
+            </div>
+          </div>
+
+          {/* ── Save button ── */}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-3.5 rounded-[12px] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
+            style={{ background: 'var(--color-primary)', color: '#fff' }}
+          >
+            {saving
+              ? <SpinnerGap size={18} weight="bold" className="animate-spin" />
+              : <Lock size={18} weight="bold" />
+            }
+            {saving ? 'Opslaan…' : 'Opslaan'}
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function Profile() {
   useThemeColor('--color-surface')
   const { profile, signOut } = useAuth()
@@ -170,6 +382,7 @@ export function Profile() {
   const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([])
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
   const [groupSheetId, setGroupSheetId] = useState<string | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
 
   useEffect(() => {
     if (!profile) return
@@ -202,9 +415,11 @@ export function Profile() {
 
   async function markAsPaid(paymentId: string) {
     setMarkingPaid(paymentId)
-    await supabase.from('payments').update({ status: 'pending' }).eq('id', paymentId)
+    const { error } = await supabase.from('payments').update({ status: 'pending' }).eq('id', paymentId)
     await queryClient.invalidateQueries({ queryKey: ['open-payments', profile?.id] })
     setMarkingPaid(null)
+    if (error) toast.error('Er ging iets mis. Probeer opnieuw.')
+    else toast.success('Betaling gemarkeerd. Wacht op bevestiging van de kas.')
   }
 
   const isStandalone =
@@ -224,12 +439,20 @@ export function Profile() {
       <div className="px-5 pt-4 pb-24 space-y-3.5">
         {/* ─── Identity card ──────────────────────── */}
         <div className="rounded-card p-[18px] flex items-center gap-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <div className="w-[62px] h-[62px] rounded-full overflow-hidden shrink-0" style={{ background: 'var(--color-accent-bg)', border: '2px solid var(--color-accent-border)' }}>
-            <img src="/fox.png" alt="" className="w-full h-full object-cover" style={{ objectPosition: 'center 18%' }} />
+          <div className="relative shrink-0">
+            <div className="w-[62px] h-[62px] rounded-full overflow-hidden" style={{ background: 'var(--color-accent-bg)', border: '2px solid var(--color-accent-border)' }}>
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <User size={28} color="var(--color-accent)" weight="bold" />
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-[16px] font-extrabold tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>{profile?.full_name}</p>
-            {userEmail && <p className="text-[13px] font-medium mt-0.5 mb-2" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</p>}
+          <div className="flex-1 min-w-0">
+            <p className="text-[16px] font-extrabold tracking-[-0.3px] truncate" style={{ color: 'var(--color-text-primary)' }}>{profile?.full_name}</p>
+            {userEmail && <p className="text-[13px] font-medium mt-0.5 mb-2 truncate" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</p>}
             <div className="flex gap-1.5 flex-wrap">
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] tracking-[0.2px]"
                 style={{ background: 'var(--color-primary-pale)', color: 'var(--color-primary-on)', border: '1px solid var(--color-primary-border)' }}>
@@ -243,6 +466,13 @@ export function Profile() {
               )}
             </div>
           </div>
+          <button
+            onClick={() => setEditOpen(true)}
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+            style={{ background: 'var(--color-primary-pale)', border: '1px solid var(--color-primary-border)' }}
+          >
+            <PencilSimple size={16} color="var(--color-primary)" weight="bold" />
+          </button>
         </div>
 
         {/* ─── Open payments ──────────────────────── */}
@@ -428,6 +658,9 @@ export function Profile() {
           onClose={() => setGroupSheetId(null)}
         />
       )}
+
+      {/* ─── Edit profile sheet ─────────────────── */}
+      {editOpen && <EditProfileSheet onClose={() => setEditOpen(false)} />}
     </div>
   )
 }

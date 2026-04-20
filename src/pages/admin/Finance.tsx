@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle, Clock, CurrencyEur, User, Export } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPaymentConfirmed } from '../../lib/notifications'
@@ -100,6 +101,7 @@ export function Finance() {
         : p
     ))
     setConfirming(null)
+    toast.success(`Betaling van ${payment.full_name} bevestigd.`)
   }
 
   function exportCsv() {

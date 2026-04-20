@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { CalendarBlank, Stop, Plus, X, CheckCircle, Users, CurrencyEur } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
@@ -21,7 +22,6 @@ export function Periods() {
   const [newName, setNewName] = useState('')
   const [closing, setClosing] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['period-stats'],
@@ -53,7 +53,6 @@ export function Periods() {
   async function startPeriod() {
     if (!newName.trim() || !user) return
     setLoading(true)
-    setError(null)
 
     const { error } = await supabase.from('periods').insert({
       name: newName.trim(),
@@ -62,7 +61,7 @@ export function Periods() {
     })
 
     if (error) {
-      setError('Kon periode niet starten.')
+      toast.error('Kon periode niet starten.')
       setLoading(false)
     } else {
       await queryClient.invalidateQueries({ queryKey: ['period-stats'] })
@@ -71,17 +70,17 @@ export function Periods() {
       setNewName('')
       setShowNew(false)
       setLoading(false)
+      toast.success('Periode gestart.')
     }
   }
 
   async function closePeriod(periodId: string, periodName: string) {
     setClosing(periodId)
-    setError(null)
 
     const { error } = await supabase.rpc('close_period', { p_period_id: periodId })
 
     if (error) {
-      setError('Kon periode niet afsluiten.')
+      toast.error('Kon periode niet afsluiten.')
     } else {
       queryClient.invalidateQueries({ queryKey: ['period-stats'] })
       queryClient.invalidateQueries({ queryKey: ['active-period'] })
@@ -144,7 +143,6 @@ export function Periods() {
             onKeyDown={e => e.key === 'Enter' && startPeriod()}
             autoFocus
           />
-          {error && <p className="text-[12px] m-0" style={{ color: 'var(--color-danger)' }}>{error}</p>}
           <button
             onClick={startPeriod}
             disabled={!newName.trim() || loading}

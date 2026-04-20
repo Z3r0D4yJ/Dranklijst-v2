@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { useTheme } from './context/ThemeContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PublicRoute } from './components/PublicRoute'
 import { BottomNav } from './components/BottomNav'
@@ -32,6 +34,26 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+function SonnerToaster() {
+  const { mode } = useTheme()
+  const isDark = mode === 'dark' || (mode === 'system' && document.documentElement.classList.contains('dark'))
+  return (
+    <Toaster
+      theme={isDark ? 'dark' : 'light'}
+      position="top-center"
+      gap={8}
+      toastOptions={{
+        classNames: {
+          toast:   'dl-toast',
+          error:   'dl-toast-error',
+          success: 'dl-toast-success',
+          warning: 'dl-toast-warning',
+        },
+      }}
+    />
+  )
+}
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -66,6 +88,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <SonnerToaster />
           <ScrollToTop />
           <PendingInviteHandler />
           <Routes>

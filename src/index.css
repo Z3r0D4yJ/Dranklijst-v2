@@ -34,11 +34,13 @@
   /* Semantic */
   --color-success:        #059669;
   --color-success-bg:     #ECFDF5;
+  --color-success-border: #A7F3D0;
   --color-warning:        #B45309;
   --color-warning-bg:     #FFFBEB;
   --color-warning-border: #FDE68A;
   --color-danger:         #DC2626;
   --color-danger-bg:      #FEF2F2;
+  --color-danger-border:  #FECACA;
 
   /* Podium */
   --color-gold:           #D97706;
@@ -101,11 +103,13 @@
 
   --color-success:        oklch(0.75 0.15 155);
   --color-success-bg:     oklch(0.30 0.06 155);
+  --color-success-border: oklch(0.48 0.13 155);
   --color-warning:        oklch(0.80 0.14 80);
   --color-warning-bg:     oklch(0.32 0.06 80);
   --color-warning-border: oklch(0.45 0.10 80);
   --color-danger:         oklch(0.72 0.17 25);
   --color-danger-bg:      oklch(0.30 0.07 25);
+  --color-danger-border:  oklch(0.48 0.14 25);
 
   /* Category tones — dark mode */
   --color-cat-beer-bg:   oklch(0.34 0.09 75);   --color-cat-beer-fg:   oklch(0.85 0.14 75);
@@ -245,4 +249,36 @@ button {
 /* Tabular nums on all monetary values */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* ─── Sonner toasts ──────────────────────────────────── */
+
+.dl-toast {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border-mid) !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: none !important;
+  padding: 12px 14px !important;
+}
+
+.dl-toast-success {
+  background: var(--color-success-bg) !important;
+  border-color: var(--color-success-border) !important;
+  color: var(--color-success) !important;
+}
+
+.dl-toast-error {
+  background: var(--color-danger-bg) !important;
+  border-color: var(--color-danger-border) !important;
+  color: var(--color-danger) !important;
+}
+
+.dl-toast-warning {
+  background: var(--color-warning-bg) !important;
+  border-color: var(--color-warning-border) !important;
+  color: var(--color-warning) !important;
 }

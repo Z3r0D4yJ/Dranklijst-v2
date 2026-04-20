@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EnvelopeSimple, LockSimple, Eye, EyeSlash } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useThemeColor } from '../../hooks/useThemeColor'
 
@@ -21,16 +22,14 @@ export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setError(null)
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError('Ongeldig e-mailadres of wachtwoord.')
+      toast.error('Ongeldig e-mailadres of wachtwoord.')
       setLoading(false)
     } else {
       navigate('/')
@@ -38,7 +37,6 @@ export function Login() {
   }
 
   async function handleGoogle() {
-    setError(null)
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
@@ -86,12 +84,6 @@ export function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-          {error && (
-            <div className="rounded-xl px-4 py-3 text-[13px] font-medium" style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}>
-              {error}
-            </div>
-          )}
-
           <div>
             <label className="block text-[12px] font-bold tracking-[0.2px] mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>E-mailadres</label>
             <div className="relative">

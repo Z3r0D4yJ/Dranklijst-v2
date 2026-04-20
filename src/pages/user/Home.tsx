@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Bell, CurrencyEur, Users } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { useMyGroup } from '../../hooks/useMyGroup'
@@ -24,7 +25,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 interface Bubble { id: string; x: number; y: number }
-interface Toast  { id: string; name: string }
 
 export function Home() {
   useThemeColor('--color-header')
@@ -42,8 +42,6 @@ export function Home() {
 
   const [selected, setSelected] = useState<GroupConsumptionItem | null>(null)
   const [bubbles, setBubbles] = useState<Bubble[]>([])
-  const [toast, setToast] = useState<Toast | null>(null)
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const totalSpend = (txs ?? []).reduce((s, t) => s + Number(t.total_price), 0)
@@ -69,13 +67,7 @@ export function Home() {
     const name = selected!.name
     setSelected(null)
     queryClient.invalidateQueries({ queryKey: ['transactions'] })
-
-    clearTimeout(toastTimer.current)
-    const tid = Math.random().toString(36).slice(2)
-    setToast({ id: tid, name })
-    toastTimer.current = setTimeout(() => {
-      setToast(t => (t?.id === tid ? null : t))
-    }, 2200)
+    toast.success(`${name} gekocht`)
   }, [selected, queryClient])
 
   const grouped = CATEGORY_ORDER.reduce<Record<string, GroupConsumptionItem[]>>((acc, cat) => {
@@ -246,9 +238,6 @@ export function Home() {
         <BubbleBurst key={b.id} x={b.x} y={b.y} />
       ))}
 
-      {/* ─── Toast ──────────────────────────────── */}
-      {toast && <SuccessToast key={toast.id} name={toast.name} />}
-
       {/* ─── Buy modal ──────────────────────────── */}
       {selected && period && (
         <BuyModal
@@ -295,34 +284,3 @@ function BubbleBurst({ x, y }: { x: number; y: number }) {
   )
 }
 
-function SuccessToast({ name }: { name: string }) {
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 64,
-        left: '50%',
-        background: 'var(--color-text-primary)',
-        color: 'var(--color-bg)',
-        padding: '10px 16px 10px 12px',
-        borderRadius: 99,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        fontSize: 13,
-        fontWeight: 700,
-        zIndex: 50,
-        boxShadow: '0 10px 28px rgba(0,0,0,0.28), 0 3px 8px rgba(0,0,0,0.14)',
-        animation: 'dl-toast-in 280ms cubic-bezier(0.2, 0.7, 0.3, 1.2) forwards',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <div style={{ width: 22, height: 22, borderRadius: 11, background: 'var(--color-success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 12l5 5L20 7" strokeDasharray="22" style={{ animation: 'dl-check-draw 260ms 100ms ease-out forwards', strokeDashoffset: 22 }} />
-        </svg>
-      </div>
-      {name} gekocht
-    </div>
-  )
-}
