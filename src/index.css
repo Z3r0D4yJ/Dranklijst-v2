@@ -253,6 +253,11 @@ button {
 
 /* ─── Sonner toasts ──────────────────────────────────── */
 
+/* Push toasts below the status bar / Dynamic Island */
+[data-sonner-toaster][data-y-position='top'] {
+  top: calc(env(safe-area-inset-top, 0px) + 16px) !important;
+}
+
 .dl-toast {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
   font-size: 14px !important;

@@ -42,7 +42,7 @@ function SonnerToaster() {
     <Toaster
       theme={isDark ? 'dark' : 'light'}
       position="top-center"
-      offset="calc(env(safe-area-inset-top) + 12px)"
+      offset={16}
       gap={8}
       toastOptions={{
         classNames: {
