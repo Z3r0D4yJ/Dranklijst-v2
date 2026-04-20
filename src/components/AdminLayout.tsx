@@ -1,10 +1,14 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { CalendarBlank, CurrencyEur, Package, Users, ChartBar, Receipt, Rows } from '@phosphor-icons/react'
 import { useThemeColor } from '../hooks/useThemeColor'
+import { useAuth } from '../context/AuthContext'
 import { BottomNav } from './BottomNav'
 
 export function AdminLayout() {
   useThemeColor('--color-surface')
+  const { profile } = useAuth()
+  const role = profile?.role as string | undefined
+  const canManageAdminTabs = role === 'kas' || role === 'groepsleiding' || role === 'admin'
 
   const base = 'flex items-center gap-1.5 px-1 pb-2.5 text-[13px] font-semibold whitespace-nowrap transition-colors'
   const activeStyle = { color: 'var(--color-primary)', borderBottom: '2px solid var(--color-primary)' }
@@ -30,12 +34,16 @@ export function AdminLayout() {
           <NavLink to="/admin/financieel" className={base} style={({ isActive }) => isActive ? activeStyle : inactiveStyle}>
             <CurrencyEur size={16} />Financieel
           </NavLink>
-          <NavLink to="/admin/consumpties" className={base} style={({ isActive }) => isActive ? activeStyle : inactiveStyle}>
-            <Package size={16} />Consumpties
-          </NavLink>
-          <NavLink to="/admin/gebruikers" className={base} style={({ isActive }) => isActive ? activeStyle : inactiveStyle}>
-            <Users size={16} />Gebruikers
-          </NavLink>
+          {canManageAdminTabs && (
+            <NavLink to="/admin/consumpties" className={base} style={({ isActive }) => isActive ? activeStyle : inactiveStyle}>
+              <Package size={16} />Consumpties
+            </NavLink>
+          )}
+          {canManageAdminTabs && (
+            <NavLink to="/admin/gebruikers" className={base} style={({ isActive }) => isActive ? activeStyle : inactiveStyle}>
+              <Users size={16} />Gebruikers
+            </NavLink>
+          )}
         </div>
       </div>
       <div className="mt-5 pb-24">

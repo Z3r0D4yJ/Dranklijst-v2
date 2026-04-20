@@ -34,7 +34,7 @@ interface OpenPayment {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  lid: 'Lid', leiding: 'Leiding', kas: 'Kas',
+  lid: 'Lid', leiding: 'Leiding', kas: 'Kas', groepsleiding: 'Groepsleiding', admin: 'Kas',
 }
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; Icon: typeof Sun }[] = [
@@ -570,8 +570,11 @@ export function Profile() {
     window.matchMedia('(display-mode: standalone)').matches ||
     (window.navigator as unknown as { standalone?: boolean }).standalone === true
 
+  const role = profile?.role as string | undefined
   const userEmail = (profile as unknown as { email?: string })?.email ?? ''
   const myGroupName = myGroups[0]?.name ?? ''
+  const canSeeManagement = role === 'leiding' || role === 'kas' || role === 'groepsleiding' || role === 'admin'
+  const canOpenAdminPanel = role === 'kas' || role === 'groepsleiding' || role === 'admin'
 
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
@@ -759,11 +762,11 @@ export function Profile() {
         </div>
 
         {/* ─── Leiding / Beheer navigation ────────── */}
-        {(profile?.role === 'leiding' || profile?.role === 'kas') && (
+        {canSeeManagement && (
           <>
             <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Beheer</p>
             <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              {(profile.role === 'leiding') && (
+              {(role === 'leiding') && (
                 <AccountRow
                   first
                   icon={UsersThree}
@@ -773,7 +776,7 @@ export function Profile() {
                   onClick={() => navigate('/leiding/groep')}
                 />
               )}
-              {(profile.role === 'leiding') && (
+              {(role === 'leiding') && (
                 <AccountRow
                   icon={Receipt}
                   tone="primary"
@@ -782,7 +785,7 @@ export function Profile() {
                   onClick={() => navigate('/leiding/transacties')}
                 />
               )}
-              {profile.role === 'kas' && (
+              {canOpenAdminPanel && (
                 <AccountRow
                   first
                   icon={Gear}

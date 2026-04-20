@@ -125,7 +125,7 @@ export default function App() {
               </Route>
             </Route>
 
-            {/* Kas / Admin routes */}
+            {/* Kas routes */}
             <Route element={<ProtectedRoute minRole="kas" />}>
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Navigate to="dashboard" replace />} />

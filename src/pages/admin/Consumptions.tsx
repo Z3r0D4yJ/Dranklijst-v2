@@ -36,11 +36,13 @@ export function Consumptions() {
   const { data: consumptions, isLoading } = useQuery({
     queryKey: ['consumptions-admin'],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('consumptions')
         .select('*')
         .order('category')
         .order('name')
+
+      if (error) throw error
       return (data ?? []) as Consumption[]
     },
   })
@@ -95,7 +97,7 @@ export function Consumptions() {
         })
 
       if (error) {
-        toast.error('Kon consumptie niet opslaan.')
+        toast.error(error.message || 'Kon consumptie niet opslaan.')
         return
       }
 
@@ -112,10 +114,15 @@ export function Consumptions() {
   }
 
   async function toggleActive(consumption: Consumption) {
-    await supabase
+    const { error } = await supabase
       .from('consumptions')
       .update({ is_active: !consumption.is_active })
       .eq('id', consumption.id)
+
+    if (error) {
+      toast.error(error.message || 'Kon zichtbaarheid niet aanpassen.')
+      return
+    }
 
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] }),

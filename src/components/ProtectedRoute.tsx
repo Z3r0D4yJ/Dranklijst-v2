@@ -3,10 +3,13 @@ import { useAuth } from '../context/AuthContext'
 import type { Role } from '../lib/database.types'
 import { Spinner } from './ui/spinner'
 
-const ROLE_RANK: Record<Role, number> = {
+const ROLE_RANK: Record<string, number> = {
   lid: 1,
   leiding: 2,
   kas: 3,
+  groepsleiding: 4,
+  // Legacy fallback until all profiles are migrated away from "admin".
+  admin: 3,
 }
 
 interface Props {
@@ -26,7 +29,11 @@ export function ProtectedRoute({ minRole = 'lid' }: Props) {
 
   if (!session) return <Navigate to="/login" replace />
 
-  if (profile && ROLE_RANK[profile.role] < ROLE_RANK[minRole]) {
+  const currentRole = profile?.role as string | undefined
+  const currentRank = currentRole ? (ROLE_RANK[currentRole] ?? 0) : 0
+  const requiredRank = ROLE_RANK[minRole]
+
+  if (profile && currentRank < requiredRank) {
     return <Navigate to="/" replace />
   }
 

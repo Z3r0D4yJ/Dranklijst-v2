@@ -25,7 +25,7 @@ const ROLE_LABELS: Record<string, string> = {
   lid: 'Lid',
   leiding: 'Leiding',
   kas: 'Kas',
-  admin: 'Admin',
+  admin: 'Kas',
   groepsleiding: 'Groepsleiding',
 }
 
