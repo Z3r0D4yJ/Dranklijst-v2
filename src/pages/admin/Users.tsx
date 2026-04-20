@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
+import { Spinner } from '../../components/ui/spinner'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { UserAvatar } from '../../components/UserAvatar'
@@ -103,7 +104,7 @@ export function Users() {
 
       {isLoading && (
         <div className="flex justify-center mt-8">
-          <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
         </div>
       )}
 

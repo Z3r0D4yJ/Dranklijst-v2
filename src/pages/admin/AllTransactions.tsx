@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Trash, Receipt } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
+import { Spinner } from '../../components/ui/spinner'
 import { Pagination } from '../../components/Pagination'
 import { usePagination } from '../../hooks/usePagination'
 import type { Period } from '../../lib/database.types'
@@ -146,7 +147,7 @@ export function AllTransactions() {
 
       {isLoading && (
         <div className="flex justify-center mt-8">
-          <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
         </div>
       )}
 

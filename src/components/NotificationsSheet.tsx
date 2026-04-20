@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { X, Bell, CheckCircle, Users, CurrencyEur, Warning } from '@phosphor-icons/react'
 import { useNotifications, type AppNotification } from '../hooks/useNotifications'
+import { Spinner } from './ui/spinner'
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -130,7 +131,7 @@ export function NotificationsSheet({ onClose }: Props) {
         <div className="overflow-y-auto flex-1">
           {isLoading && (
             <div className="flex justify-center py-10">
-              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+              <Spinner className="size-6" style={{ color: 'var(--color-primary)' }} />
             </div>
           )}
 

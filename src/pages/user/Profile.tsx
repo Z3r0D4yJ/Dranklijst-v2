@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash, SpinnerGap } from '@phosphor-icons/react'
+import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
+import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { Switch } from '../../components/ui/switch'
@@ -359,7 +360,7 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
             style={{ background: 'var(--color-primary)', color: '#fff' }}
           >
             {saving
-              ? <SpinnerGap size={18} weight="bold" className="animate-spin" />
+              ? <Spinner className="size-[18px]" style={{ color: '#fff' }} />
               : <Lock size={18} weight="bold" />
             }
             {saving ? 'Opslaan…' : 'Opslaan'}

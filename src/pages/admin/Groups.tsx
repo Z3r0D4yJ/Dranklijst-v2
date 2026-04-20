@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Users, CurrencyEur, CaretDown } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
+import { Spinner } from '../../components/ui/spinner'
 
 interface GroupRow {
   id: string
@@ -59,7 +60,7 @@ export function Groups() {
   if (isLoading) {
     return (
       <div className="flex justify-center mt-8">
-        <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+        <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
       </div>
     )
   }

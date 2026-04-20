@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Users, CurrencyEur, Receipt, TrendUp, CalendarBlank } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
+import { Spinner } from '../../components/ui/spinner'
 
 interface GroupStat { name: string; total: number }
 interface PeriodOption { id: string; name: string; is_active: boolean; started_at: string; ended_at: string | null }
@@ -106,7 +107,7 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="flex justify-center mt-12">
-        <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+        <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
       </div>
     )
   }
@@ -136,7 +137,7 @@ export function Dashboard() {
         <>
           {statsLoading ? (
             <div className="flex justify-center py-6">
-              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+              <Spinner className="size-6" style={{ color: 'var(--color-primary)' }} />
             </div>
           ) : (
             <>

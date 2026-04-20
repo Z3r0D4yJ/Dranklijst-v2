@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EnvelopeSimple, LockSimple, Eye, EyeSlash } from '@phosphor-icons/react'
+import { Spinner } from '../../components/ui/spinner'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useThemeColor } from '../../hooks/useThemeColor'
@@ -151,7 +152,7 @@ export function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-[14px] font-bold flex items-center justify-center active:scale-[0.98] transition-transform disabled:opacity-60 mt-1"
+            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 mt-1"
             style={{
               background: 'var(--color-primary)',
               color: '#fff',
@@ -162,7 +163,12 @@ export function Login() {
               fontFamily: 'inherit',
             }}
           >
-            {loading ? 'Bezig met inloggen…' : 'Inloggen'}
+            {loading ? (
+              <>
+                <Spinner className="size-4 shrink-0" style={{ color: '#fff' }} />
+                Bezig met inloggen…
+              </>
+            ) : 'Inloggen'}
           </button>
         </form>
 

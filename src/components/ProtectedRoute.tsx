@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import type { Role } from '../lib/database.types'
+import { Spinner } from './ui/spinner'
 
 const ROLE_RANK: Record<Role, number> = {
   lid: 1,
@@ -18,7 +19,7 @@ export function ProtectedRoute({ minRole = 'lid' }: Props) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <Spinner className="size-8" style={{ color: 'var(--color-primary)' }} />
       </div>
     )
   }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Check, X, Trash, ArrowsClockwise, Copy, CheckCircle } from '@phosphor-icons/react'
+import { Spinner } from '../../components/ui/spinner'
 import { UserAvatar } from '../../components/UserAvatar'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
@@ -159,7 +160,7 @@ export function GroupManagement() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+        <Spinner className="size-8" style={{ color: 'var(--color-primary)' }} />
       </div>
     )
   }

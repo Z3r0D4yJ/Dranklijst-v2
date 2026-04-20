@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { CheckCircle, WarningCircle, Users, ArrowRight } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { Spinner } from '../../components/ui/spinner'
 
 export function JoinViaCode() {
   const { code } = useParams<{ code: string }>()
@@ -69,7 +70,7 @@ export function JoinViaCode() {
   if (authLoading || status === 'idle' || status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <Spinner className="size-8" style={{ color: 'var(--color-primary)' }} />
       </div>
     )
   }

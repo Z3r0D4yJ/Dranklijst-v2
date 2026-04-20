@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CheckCircle, Clock, CurrencyEur, User, Export } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
+import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPaymentConfirmed } from '../../lib/notifications'
 import { CustomSelect } from '../../components/CustomSelect'
@@ -191,7 +192,7 @@ export function Finance() {
 
       {isLoading && (
         <div className="flex justify-center mt-8">
-          <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, Minus, Plus, ShoppingCart } from '@phosphor-icons/react'
+import { Spinner } from './ui/spinner'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -132,7 +133,11 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
             boxShadow: 'var(--shadow-fab)',
           }}
         >
-          <ShoppingCart size={18} weight="bold" />
+          {loading ? (
+            <Spinner className="size-4 shrink-0" style={{ color: '#fff' }} />
+          ) : (
+            <ShoppingCart size={18} weight="bold" />
+          )}
           {loading ? 'Bezig…' : `Kopen voor € ${Number(total).toFixed(2).replace('.', ',')}`}
         </button>
       </div>

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Users, Hash, ArrowRight, CheckCircle, Clock, PaperPlaneTilt } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { Spinner } from '../../components/ui/spinner'
 import { useMyGroups } from '../../hooks/useMyGroups'
 import { notifyLeidingOfJoinRequest } from '../../lib/notifications'
 import type { Group } from '../../lib/database.types'
@@ -130,7 +131,7 @@ export function JoinGroup() {
 
             {groupsLoading && (
               <div className="flex justify-center pt-10">
-                <div className="w-7 h-7 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }} />
+                <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
               </div>
             )}
 
