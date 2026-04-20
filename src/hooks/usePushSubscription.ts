@@ -14,10 +14,15 @@ export function usePushSubscription() {
       return
     }
     navigator.serviceWorker.ready.then(reg => {
-      setSupported(!!reg.pushManager)
+      const hasPush = !!reg.pushManager
+      setSupported(hasPush)
       reg.pushManager.getSubscription().then(sub => setSubscribed(!!sub))
+
+      if (hasPush && user && 'Notification' in window && Notification.permission === 'default') {
+        subscribeToPush(user.id).then(ok => setSubscribed(ok))
+      }
     })
-  }, [])
+  }, [user])
 
   async function enable() {
     if (!user) return
