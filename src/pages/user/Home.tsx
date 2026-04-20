@@ -15,6 +15,7 @@ import { useNotifications } from '../../hooks/useNotifications'
 import { useNavigate } from 'react-router-dom'
 import { BuyModal } from '../../components/BuyModal'
 import { NotificationsSheet } from '../../components/NotificationsSheet'
+import { UserAvatar } from '../../components/UserAvatar'
 import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
 
@@ -85,14 +86,13 @@ export function Home() {
       <div style={{ background: 'var(--color-header)', padding: '14px 20px 32px', color: 'var(--color-header-fg)' }}>
         <div className="flex justify-between items-start mb-[18px]">
           <div className="flex items-center gap-3">
-            <div className="w-[46px] h-[46px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/25">
-              <img
-                src="/fox.png"
-                alt=""
-                className="w-full h-full object-cover"
-                style={{ objectPosition: 'center 22%' }}
-              />
-            </div>
+            <UserAvatar
+              avatarUrl={profile?.avatar_url}
+              size={46}
+              bg="rgba(255,255,255,0.15)"
+              border="2px solid rgba(255,255,255,0.25)"
+              iconColor="rgba(255,255,255,0.9)"
+            />
             <div>
               <p className="text-[13px] font-medium opacity-70 leading-none">Hoi {firstName}</p>
               <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.4px] mt-0.5">Dorst?</h1>

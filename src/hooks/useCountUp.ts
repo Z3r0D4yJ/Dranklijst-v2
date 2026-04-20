@@ -10,6 +10,11 @@ export function useCountUp(target: number, duration = 550): number {
     const base = fromRef.current
     const delta = target - base
     if (delta === 0) return
+    if (delta < 0) {
+      fromRef.current = target
+      setValue(target)
+      return
+    }
 
     const tick = (t: number) => {
       const p = Math.min(1, (t - start) / duration)

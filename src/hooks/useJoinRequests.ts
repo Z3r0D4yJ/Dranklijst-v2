@@ -8,7 +8,7 @@ export interface JoinRequestWithProfile {
   group_id: string
   status: string
   created_at: string
-  profiles: { full_name: string } | null
+  profiles: { full_name: string; avatar_url: string | null } | null
 }
 
 export function useJoinRequests(groupId: string | null | undefined) {
@@ -20,7 +20,7 @@ export function useJoinRequests(groupId: string | null | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('join_requests')
-        .select('*, profiles(full_name)')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('group_id', groupId!)
         .eq('status', 'pending')
         .order('created_at')

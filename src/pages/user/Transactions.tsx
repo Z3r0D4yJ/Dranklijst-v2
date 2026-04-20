@@ -130,7 +130,11 @@ export function Transactions() {
             style={{ position: 'absolute', right: -20, bottom: -28, width: 150, height: 150, opacity: 0.95, pointerEvents: 'none', transform: 'rotate(8deg)' }}
           />
           <p className="text-[12px] font-semibold uppercase tracking-[0.6px] relative" style={{ opacity: 0.75 }}>Totaal verbruikt</p>
-          <p className="text-[40px] font-extrabold tracking-[-1px] mt-1 mb-2.5 tabular-nums relative">€ {total.toFixed(2).replace('.', ',')}</p>
+          {(!selectedPeriodId || isLoading) ? (
+            <div className="h-[48px] w-36 rounded-lg mt-1 mb-2.5" style={{ background: 'rgba(255,255,255,0.2)' }} />
+          ) : (
+            <p className="text-[40px] font-extrabold tracking-[-1px] mt-1 mb-2.5 tabular-nums relative">€ {total.toFixed(2).replace('.', ',')}</p>
+          )}
           {payment && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold tracking-[0.3px] relative" style={{ background: 'rgba(255,255,255,0.18)' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-white" />

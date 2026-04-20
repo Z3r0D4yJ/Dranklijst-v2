@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Check, X, Trash, ArrowsClockwise, Copy, CheckCircle, User } from '@phosphor-icons/react'
+import { Check, X, Trash, ArrowsClockwise, Copy, CheckCircle } from '@phosphor-icons/react'
+import { UserAvatar } from '../../components/UserAvatar'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -22,7 +23,7 @@ interface MemberWithProfile {
   id: string
   user_id: string
   joined_at: string
-  profiles: { full_name: string; role: string } | null
+  profiles: { full_name: string; role: string; avatar_url: string | null } | null
 }
 
 function SectionLabel({ children, count }: { children: React.ReactNode; count?: number }) {
@@ -87,7 +88,7 @@ export function GroupManagement() {
     const [membersRes, inviteRes] = await Promise.all([
       supabase
         .from('group_members')
-        .select('*, profiles(full_name, role)')
+        .select('*, profiles(full_name, role, avatar_url)')
         .eq('group_id', gId)
         .order('joined_at'),
       supabase
@@ -113,7 +114,7 @@ export function GroupManagement() {
       if (approve) {
         const { data } = await supabase
           .from('group_members')
-          .select('*, profiles(full_name, role)')
+          .select('*, profiles(full_name, role, avatar_url)')
           .eq('group_id', groupId!)
           .order('joined_at')
         if (data) setMembers(data as unknown as MemberWithProfile[])
@@ -239,12 +240,13 @@ export function GroupManagement() {
                   className="rounded-[14px] flex items-center gap-3 p-3.5"
                   style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
                 >
-                  <div
-                    className="w-[38px] h-[38px] rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: 'var(--color-primary-pale)', border: '1.5px solid var(--color-primary-border)' }}
-                  >
-                    <User size={17} color="var(--color-primary)" />
-                  </div>
+                  <UserAvatar
+                    avatarUrl={req.profiles?.avatar_url}
+                    size={38}
+                    bg="var(--color-primary-pale)"
+                    border="1.5px solid var(--color-primary-border)"
+                    iconColor="var(--color-primary)"
+                  />
                   <div className="flex-1">
                     <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
                       {req.profiles?.full_name ?? 'Onbekend'}
@@ -294,15 +296,13 @@ export function GroupManagement() {
                     className="flex items-center gap-3 px-3.5 py-3"
                     style={{ borderTop: i === 0 ? 'none' : '1px solid var(--color-border)' }}
                   >
-                    <div
-                      className="w-[38px] h-[38px] rounded-full flex items-center justify-center shrink-0"
-                      style={{
-                        background: isSelf ? 'var(--color-accent-bg)' : 'var(--color-surface-alt)',
-                        border: `1.5px solid ${isSelf ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
-                      }}
-                    >
-                      <User size={17} color={isSelf ? 'var(--color-accent)' : 'var(--color-text-secondary)'} />
-                    </div>
+                    <UserAvatar
+                      avatarUrl={member.profiles?.avatar_url}
+                      size={38}
+                      bg={isSelf ? 'var(--color-accent-bg)' : 'var(--color-surface-alt)'}
+                      border={`1.5px solid ${isSelf ? 'var(--color-accent-border)' : 'var(--color-border)'}`}
+                      iconColor={isSelf ? 'var(--color-accent)' : 'var(--color-text-secondary)'}
+                    />
                     <div className="flex-1">
                       <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
                         {member.profiles?.full_name ?? 'Onbekend'}

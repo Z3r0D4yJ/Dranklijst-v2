@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { User, MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
+import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
+import { UserAvatar } from '../../components/UserAvatar'
 import { Pagination } from '../../components/Pagination'
 import { usePagination } from '../../hooks/usePagination'
 
@@ -12,6 +13,7 @@ interface UserRow {
   id: string
   full_name: string
   role: Role
+  avatar_url: string | null
   created_at: string
   groups: string[]
 }
@@ -39,7 +41,7 @@ export function Users() {
     queryFn: async () => {
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, role, created_at')
+        .select('id, full_name, role, avatar_url, created_at')
         .order('full_name')
 
       const { data: memberships } = await supabase
@@ -52,7 +54,7 @@ export function Users() {
         if (m.groups?.name) memberMap[m.user_id].push(m.groups.name)
       }
 
-      return ((profiles ?? []) as unknown as Array<{ id: string; full_name: string; role: Role; created_at: string }>).map(p => ({
+      return ((profiles ?? []) as unknown as Array<{ id: string; full_name: string; role: Role; avatar_url: string | null; created_at: string }>).map(p => ({
         ...p,
         groups: memberMap[p.id] ?? [],
       })) as UserRow[]
@@ -119,9 +121,13 @@ export function Users() {
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-primary-pale)' }}>
-                    <User size={16} color="var(--color-primary)" />
-                  </div>
+                  <UserAvatar
+                    avatarUrl={u.avatar_url}
+                    size={36}
+                    bg="var(--color-primary-pale)"
+                    border="none"
+                    iconColor="var(--color-primary)"
+                  />
                   <div className="min-w-0">
                     <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>{u.full_name}</p>
                     {u.groups.length > 0 && (

@@ -13,6 +13,7 @@ import { usePWAInstall } from '../../hooks/usePWAInstall'
 import { useTheme, type ThemeMode } from '../../context/ThemeContext'
 import { IconChip } from '../../components/IconChip'
 import { useThemeColor } from '../../hooks/useThemeColor'
+import { UserAvatar } from '../../components/UserAvatar'
 
 interface JoinRequestWithGroup {
   id: string
@@ -86,6 +87,7 @@ interface GroupMember {
   user_id: string
   full_name: string
   role: string
+  avatar_url: string | null
 }
 
 function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; groupName: string; onClose: () => void }) {
@@ -94,10 +96,10 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
     queryFn: async () => {
       const { data } = await supabase
         .from('group_members')
-        .select('user_id, profiles(full_name, role)')
+        .select('user_id, profiles(full_name, role, avatar_url)')
         .eq('group_id', groupId)
-      return ((data ?? []) as unknown as Array<{ user_id: string; profiles: { full_name: string; role: string } | null }>)
-        .map(m => ({ user_id: m.user_id, full_name: m.profiles?.full_name ?? '?', role: m.profiles?.role ?? 'lid' })) as GroupMember[]
+      return ((data ?? []) as unknown as Array<{ user_id: string; profiles: { full_name: string; role: string; avatar_url: string | null } | null }>)
+        .map(m => ({ user_id: m.user_id, full_name: m.profiles?.full_name ?? '?', role: m.profiles?.role ?? 'lid', avatar_url: m.profiles?.avatar_url ?? null })) as GroupMember[]
     },
   })
 
@@ -144,9 +146,7 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
           ))}
           {!isLoading && (members ?? []).map(m => (
             <div key={m.user_id} className="flex items-center gap-3 py-2.5" style={{ borderBottom: '1px solid var(--color-border)' }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-accent-bg)', border: '1.5px solid var(--color-accent-border)' }}>
-                <User size={16} color="var(--color-accent)" weight="bold" />
-              </div>
+              <UserAvatar avatarUrl={m.avatar_url} size={36} />
               <div className="flex-1">
                 <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{m.full_name}</p>
                 <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>{ROLE_LABELS[m.role] ?? m.role}</p>
