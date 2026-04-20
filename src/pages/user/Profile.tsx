@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
 import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../../components/ui/drawer'
 import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -105,38 +106,32 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
   })
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40"
-        style={{ background: 'rgba(0,0,0,0.4)' }}
-        onClick={onClose}
-      />
-
-      {/* Sheet */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[20px] pb-safe"
-        style={{ background: 'var(--color-surface)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
+    <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
+      <DrawerContent
+        className="rounded-t-[20px] px-0"
+        style={{ background: 'var(--color-surface)', maxHeight: '80vh' }}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-9 h-1 rounded-full" style={{ background: 'var(--color-border-mid)' }} />
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-2 pb-4 shrink-0" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
           <div>
-            <h2 className="text-[17px] font-extrabold tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>{groupName}</h2>
-            {!isLoading && <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{members?.length ?? 0} leden</p>}
+            <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>{groupName}</DrawerTitle>
+            {!isLoading && (
+              <DrawerDescription style={{ color: 'var(--color-text-muted)' }}>
+                {members?.length ?? 0} leden
+              </DrawerDescription>
+            )}
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-alt)' }}>
-            <X size={16} color="var(--color-text-secondary)" weight="bold" />
-          </button>
-        </div>
+          <DrawerClose asChild>
+            <button
+              className="h-8 w-8 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--color-surface-alt)' }}
+            >
+              <X size={16} color="var(--color-text-secondary)" weight="bold" />
+            </button>
+          </DrawerClose>
+        </DrawerHeader>
 
-        {/* List */}
-        <div className="overflow-y-auto flex-1 px-5 py-3 space-y-1">
-          {isLoading && [0, 1, 2, 3].map(i => (
+        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-1">
+          {isLoading && [0, 1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3 py-2.5">
               <div className="dl-skel w-9 h-9 rounded-full shrink-0" />
               <div className="flex-1 space-y-1.5">
@@ -145,18 +140,26 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
               </div>
             </div>
           ))}
-          {!isLoading && (members ?? []).map(m => (
-            <div key={m.user_id} className="flex items-center gap-3 py-2.5" style={{ borderBottom: '1px solid var(--color-border)' }}>
-              <UserAvatar avatarUrl={m.avatar_url} size={36} />
+          {!isLoading && (members ?? []).map((member) => (
+            <div
+              key={member.user_id}
+              className="flex items-center gap-3 py-2.5"
+              style={{ borderBottom: '1px solid var(--color-border)' }}
+            >
+              <UserAvatar avatarUrl={member.avatar_url} size={36} />
               <div className="flex-1">
-                <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{m.full_name}</p>
-                <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>{ROLE_LABELS[m.role] ?? m.role}</p>
+                <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {member.full_name}
+                </p>
+                <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                  {ROLE_LABELS[member.role] ?? member.role}
+                </p>
               </div>
             </div>
           ))}
         </div>
-      </div>
-    </>
+      </DrawerContent>
+    </Drawer>
   )
 }
 
@@ -228,6 +231,146 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
+    <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
+      <DrawerContent
+        className="rounded-t-[20px] px-0"
+        style={{ background: 'var(--color-surface)', maxHeight: '92vh' }}
+      >
+        <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
+          <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</DrawerTitle>
+          <DrawerClose asChild>
+            <button
+              className="h-8 w-8 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--color-surface-alt)' }}
+            >
+              <X size={16} color="var(--color-text-secondary)" weight="bold" />
+            </button>
+          </DrawerClose>
+        </DrawerHeader>
+
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="relative h-[88px] w-[88px] shrink-0 active:scale-95 transition-transform"
+            >
+              <div
+                className="h-full w-full rounded-full overflow-hidden"
+                style={{ background: 'var(--color-accent-bg)', border: '2.5px solid var(--color-accent-border)' }}
+              >
+                {avatarPreview ? (
+                  <img src={avatarPreview ?? undefined} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <User size={36} color="var(--color-accent)" weight="bold" />
+                  </div>
+                )}
+              </div>
+              <div
+                className="absolute bottom-0 right-0 h-7 w-7 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--color-primary)', border: '2px solid var(--color-surface)' }}
+              >
+                <Camera size={13} color="#fff" weight="bold" />
+              </div>
+            </button>
+            <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+              Tik op de foto om te wijzigen
+            </p>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>
+              Naam
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Jouw naam"
+              className="w-full rounded-[12px] px-4 py-3.5 text-[15px] font-semibold outline-none"
+              style={{
+                background: 'var(--color-surface-alt)',
+                border: '1px solid var(--color-border-mid)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>
+              Wachtwoord wijzigen
+            </label>
+            <div className="space-y-2">
+              <div className="relative">
+                <input
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={currentPw}
+                  onChange={(event) => setCurrentPw(event.target.value)}
+                  placeholder="Huidig wachtwoord"
+                  className="w-full rounded-[12px] px-4 py-3.5 pr-12 text-[15px] font-semibold outline-none"
+                  style={{
+                    background: 'var(--color-surface-alt)',
+                    border: '1px solid var(--color-border-mid)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw((current) => !current)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
+                  {showCurrentPw
+                    ? <EyeSlash size={18} color="var(--color-text-muted)" />
+                    : <Eye size={18} color="var(--color-text-muted)" />}
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPw}
+                  onChange={(event) => setNewPw(event.target.value)}
+                  placeholder="Nieuw wachtwoord"
+                  className="w-full rounded-[12px] px-4 py-3.5 pr-12 text-[15px] font-semibold outline-none"
+                  style={{
+                    background: 'var(--color-surface-alt)',
+                    border: '1px solid var(--color-border-mid)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw((current) => !current)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                >
+                  {showNewPw
+                    ? <EyeSlash size={18} color="var(--color-text-muted)" />
+                    : <Eye size={18} color="var(--color-text-muted)" />}
+                </button>
+              </div>
+              <p className="px-1 text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                Laat leeg als je het wachtwoord niet wilt wijzigen
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-3.5 rounded-[12px] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
+            style={{ background: 'var(--color-primary)', color: '#fff' }}
+          >
+            {saving
+              ? <Spinner className="size-[18px]" style={{ color: '#fff' }} />
+              : <Lock size={18} weight="bold" />}
+            {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+
+  return (
     <>
       <div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
       <div
@@ -259,7 +402,7 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
                 style={{ background: 'var(--color-accent-bg)', border: '2.5px solid var(--color-accent-border)' }}
               >
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
+                  <img src={avatarPreview ?? undefined} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <User size={36} color="var(--color-accent)" weight="bold" />

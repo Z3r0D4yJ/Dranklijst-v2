@@ -9,6 +9,7 @@
   --color-surface-alt:    #F8FAFC;
   --color-border:         #ECEFF5;
   --color-border-mid:     #E2E8F0;
+  --color-drawer-handle:  #CBD5E1;
 
   /* Text */
   --color-text-primary:   #0B1220;
@@ -84,6 +85,7 @@
   --color-surface-alt:    oklch(0.28 0.02 250);
   --color-border:         oklch(0.30 0.015 250);
   --color-border-mid:     oklch(0.36 0.015 250);
+  --color-drawer-handle:  oklch(0.50 0.015 250);
   --color-text-primary:   oklch(0.96 0.005 250);
   --color-text-secondary: oklch(0.72 0.01 250);
   --color-text-muted:     oklch(0.54 0.015 250);
@@ -165,6 +167,16 @@
   100% { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes dl-drawer-overlay-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes dl-drawer-up {
+  0%   { opacity: 0.96; transform: translateY(26px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 /* ─── Skeleton ───────────────────────────────────────────── */
 
 .dl-skel {
@@ -175,6 +187,14 @@
   border-radius: 8px;
 }
 
+.dl-drawer-overlay {
+  animation: dl-drawer-overlay-in 160ms ease-out both;
+}
+
+.dl-drawer-panel {
+  animation: dl-drawer-up 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* ─── Reduced motion ─────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -182,7 +202,9 @@
   [style*="dl-shimmer"],
   [style*="dl-wiggle"],
   [style*="dl-bubble-up"],
-  [style*="dl-check-draw"] {
+  [style*="dl-check-draw"],
+  .dl-drawer-overlay,
+  .dl-drawer-panel {
     animation: none !important;
   }
   * {
