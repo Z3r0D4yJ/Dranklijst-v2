@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Crown, Medal } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useLeaderboard, type LeaderboardEntry, type LeaderboardGroup } from '../../hooks/useLeaderboard'
 import { useMyGroups } from '../../hooks/useMyGroups'
 import { useThemeColor } from '../../hooks/useThemeColor'
+import { useSwipe } from '../../hooks/useSwipe'
 import { badgeVariants } from '../../components/ui/badge'
 
 function Pillar({ rank, name, total, height }: { rank: number; name: string; total: number; height: number }) {
@@ -105,6 +106,7 @@ export function Leaderboard() {
   const { data: allGroups, isLoading } = useLeaderboard(period?.id)
   const { data: myGroups } = useMyGroups()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const tabBarRef = useRef<HTMLDivElement>(null)
 
   const canSeeAll = profile?.role === 'kas'
   const isLeaderLike = profile?.role === 'leiding' || profile?.role === 'kas'
@@ -126,9 +128,26 @@ export function Leaderboard() {
     : baseVisibleGroups
 
   const activeGroup = visibleGroups.find(g => g.group_id === selectedId) ?? visibleGroups[0] ?? null
+  const activeIndex = visibleGroups.findIndex(g => g.group_id === (activeGroup?.group_id ?? null))
+
+  const swipe = useSwipe({
+    onSwipeLeft: () => {
+      if (activeIndex < visibleGroups.length - 1) setSelectedId(visibleGroups[activeIndex + 1].group_id)
+    },
+    onSwipeRight: () => {
+      if (activeIndex > 0) setSelectedId(visibleGroups[activeIndex - 1].group_id)
+    },
+  })
+
+  useEffect(() => {
+    const bar = tabBarRef.current
+    if (!bar) return
+    const active = bar.querySelector<HTMLElement>('[data-active="true"]')
+    active?.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
+  }, [activeGroup?.group_id])
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }} {...swipe}>
       {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px', position: 'relative', zIndex: 10 }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Leaderboard</h1>
@@ -140,6 +159,7 @@ export function Leaderboard() {
       {/* ─── Group tabs (only when multiple groups) ── */}
       {!isLoading && visibleGroups.length > 1 && (
         <div
+          ref={tabBarRef}
           className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0"
           style={{
             background: 'var(--color-surface)',
@@ -154,6 +174,7 @@ export function Leaderboard() {
             return (
               <button
                 key={g.group_id}
+                data-active={isActive ? 'true' : undefined}
                 onClick={() => setSelectedId(g.group_id)}
                 className={badgeVariants({
                   variant: isActive ? 'default' : 'secondary',
@@ -204,7 +225,7 @@ export function Leaderboard() {
       )}
 
       {!isLoading && activeGroup && (
-        <GroupView key={activeGroup.group_id} group={activeGroup} userId={profile?.id} />
+        <GroupView group={activeGroup} userId={profile?.id} />
       )}
     </div>
   )

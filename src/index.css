@@ -195,6 +195,16 @@
   animation: dl-drawer-up 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@keyframes dl-slide-from-right {
+  0%   { opacity: 0; transform: translateX(32px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dl-slide-from-left {
+  0%   { opacity: 0; transform: translateX(-32px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
 /* ─── Reduced motion ─────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -204,7 +214,8 @@
   [style*="dl-bubble-up"],
   [style*="dl-check-draw"],
   .dl-drawer-overlay,
-  .dl-drawer-panel {
+  .dl-drawer-panel,
+  .dl-swipe-content {
     animation: none !important;
   }
   * {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Receipt } from '@phosphor-icons/react'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
@@ -6,6 +6,7 @@ import { useTransactions } from '../../hooks/useTransactions'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useThemeColor } from '../../hooks/useThemeColor'
+import { useSwipe } from '../../hooks/useSwipe'
 import { IconChip } from '../../components/IconChip'
 import { Pagination } from '../../components/Pagination'
 import { usePagination } from '../../hooks/usePagination'
@@ -41,6 +42,7 @@ export function Transactions() {
   const { user } = useAuth()
   const { data: activePeriod } = useActivePeriod()
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null)
+  const tabBarRef = useRef<HTMLDivElement>(null)
 
   const { data: periods } = useQuery({
     queryKey: ['periods'],
@@ -57,6 +59,24 @@ export function Transactions() {
   }, [activePeriod, periods, selectedPeriodId])
 
   const selectedPeriod = periods?.find(p => p.id === selectedPeriodId) ?? null
+  const activeIndex = (periods ?? []).findIndex(p => p.id === selectedPeriodId)
+
+  const swipe = useSwipe({
+    onSwipeLeft: () => {
+      if (activeIndex < (periods ?? []).length - 1) setSelectedPeriodId((periods ?? [])[activeIndex + 1].id)
+    },
+    onSwipeRight: () => {
+      if (activeIndex > 0) setSelectedPeriodId((periods ?? [])[activeIndex - 1].id)
+    },
+  })
+
+  useEffect(() => {
+    const bar = tabBarRef.current
+    if (!bar) return
+    const active = bar.querySelector<HTMLElement>('[data-active="true"]')
+    active?.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' })
+  }, [selectedPeriodId])
+
   const { data: transactions, isLoading } = useTransactions(selectedPeriod?.id)
 
   const allTx = transactions ?? []
@@ -76,7 +96,7 @@ export function Transactions() {
   })
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }} {...swipe}>
       {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Transacties</h1>
@@ -88,6 +108,7 @@ export function Transactions() {
       {/* ─── Periode-tabs ─────────────────────────── */}
       {(periods ?? []).length > 1 && (
         <div
+          ref={tabBarRef}
           className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0"
           style={{
             background: 'var(--color-surface)',
@@ -100,6 +121,7 @@ export function Transactions() {
             return (
               <button
                 key={p.id}
+                data-active={isActive ? 'true' : undefined}
                 onClick={() => setSelectedPeriodId(p.id)}
                 className={badgeVariants({
                   variant: isActive ? 'default' : 'secondary',
