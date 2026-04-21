@@ -18,6 +18,7 @@ import { NotificationsSheet } from '../../components/NotificationsSheet'
 import { UserAvatar } from '../../components/UserAvatar'
 import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
+import { Badge } from '../../components/ui/badge'
 
 const CATEGORY_ORDER = ['niet-alcoholisch', 'alcoholisch'] as const
 const CATEGORY_LABELS: Record<string, string> = {
@@ -84,11 +85,11 @@ export function Home() {
     <div ref={containerRef} className="min-h-screen pb-24 relative" style={{ background: 'var(--color-bg)' }}>
       {/* ─── Header ─────────────────────────────── */}
       <div style={{ background: 'var(--color-header)', padding: '14px 20px 32px', color: 'var(--color-header-fg)' }}>
-        <div className="flex justify-between items-start mb-[18px]">
-          <div className="flex items-center gap-3">
+        <div className="flex justify-between items-center mb-[18px]">
+          <div className="flex items-center gap-3.5">
             <UserAvatar
               avatarUrl={profile?.avatar_url}
-              size={46}
+              size={54}
               bg="rgba(255,255,255,0.15)"
               border="2px solid rgba(255,255,255,0.25)"
               iconColor="rgba(255,255,255,0.9)"
@@ -117,10 +118,10 @@ export function Home() {
 
         {group && (
           <div className="flex gap-2 items-center text-[12px] font-semibold">
-            <div className="flex items-center gap-1.5 px-[10px] py-[5px] rounded-full" style={{ background: 'rgba(255,255,255,0.14)' }}>
+            <Badge variant="glass" className="gap-1.5 px-3">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'oklch(0.80 0.15 150)' }} />
               <span className="tracking-[0.2px]">{group.name.toUpperCase()}</span>
-            </div>
+            </Badge>
             <span className="opacity-65">{period?.name ?? '—'}{period?.is_active ? ' · actief' : ''}</span>
           </div>
         )}

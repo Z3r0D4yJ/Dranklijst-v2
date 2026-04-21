@@ -10,6 +10,7 @@ import { IconChip } from '../../components/IconChip'
 import { Pagination } from '../../components/Pagination'
 import { usePagination } from '../../hooks/usePagination'
 import type { Period, ConsumptionCategory } from '../../lib/database.types'
+import { Badge, badgeVariants } from '../../components/ui/badge'
 
 function groupByDate<T extends { created_at: string }>(items: T[]) {
   const today = new Date()
@@ -100,11 +101,10 @@ export function Transactions() {
               <button
                 key={p.id}
                 onClick={() => setSelectedPeriodId(p.id)}
-                className="shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors"
-                style={{
-                  background: isActive ? 'var(--color-primary)' : 'var(--color-surface-alt)',
-                  color: isActive ? '#fff' : 'var(--color-text-secondary)',
-                }}
+                className={badgeVariants({
+                  variant: isActive ? 'default' : 'secondary',
+                  size: 'lg',
+                })}
               >
                 {p.name}
                 {p.is_active && (
@@ -136,10 +136,10 @@ export function Transactions() {
             <p className="text-[40px] font-extrabold tracking-[-1px] mt-1 mb-2.5 tabular-nums relative">€ {total.toFixed(2).replace('.', ',')}</p>
           )}
           {payment && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold tracking-[0.3px] relative" style={{ background: 'rgba(255,255,255,0.18)' }}>
+            <Badge variant="onPrimary" className="gap-1.5 px-3 relative">
               <span className="w-1.5 h-1.5 rounded-full bg-white" />
               {STATUS_LABEL[payment.status] ?? payment.status}
-            </div>
+            </Badge>
           )}
         </div>
 

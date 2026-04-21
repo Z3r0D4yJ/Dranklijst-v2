@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CaretRight, CurrencyEur, Users } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
+import { Badge } from '../../components/ui/badge'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { IconChip } from '../../components/IconChip'
 import { UserAvatar } from '../../components/UserAvatar'
@@ -130,15 +131,10 @@ export function Groups() {
 
             <div className="flex items-center gap-2 shrink-0">
               {group.total > 0 && (
-                <div
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg"
-                  style={{ background: 'var(--color-success-bg)' }}
-                >
+                <Badge variant="success" className="gap-1 px-2.5">
                   <CurrencyEur size={11} color="var(--color-success)" />
-                  <span className="text-[11px] font-bold" style={{ color: 'var(--color-success)' }}>
-                    {group.total.toFixed(2)}
-                  </span>
-                </div>
+                  {group.total.toFixed(2)}
+                </Badge>
               )}
               <CaretRight size={14} color="var(--color-text-muted)" />
             </div>

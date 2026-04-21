@@ -10,6 +10,7 @@ import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { Switch } from '../../components/ui/switch'
+import { Badge } from '../../components/ui/badge'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
 import { usePWAInstall } from '../../hooks/usePWAInstall'
 import { useTheme, type ThemeMode } from '../../context/ThemeContext'
@@ -601,15 +602,13 @@ export function Profile() {
             <p className="text-[16px] font-extrabold tracking-[-0.3px] truncate" style={{ color: 'var(--color-text-primary)' }}>{profile?.full_name}</p>
             {userEmail && <p className="text-[13px] font-medium mt-0.5 mb-2 truncate" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</p>}
             <div className="flex gap-1.5 flex-wrap">
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] tracking-[0.2px]"
-                style={{ background: 'var(--color-primary-pale)', color: 'var(--color-primary-on)', border: '1px solid var(--color-primary-border)' }}>
+              <Badge variant="primary" className="px-2.5">
                 {ROLE_LABELS[profile?.role ?? 'lid']}
-              </span>
+              </Badge>
               {myGroupName && (
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] tracking-[0.2px]"
-                  style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
+                <Badge variant="secondary" className="px-2.5">
                   {myGroupName}
-                </span>
+                </Badge>
               )}
             </div>
           </div>

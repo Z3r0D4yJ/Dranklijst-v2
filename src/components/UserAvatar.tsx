@@ -1,4 +1,5 @@
 import { User } from '@phosphor-icons/react'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 interface UserAvatarProps {
   avatarUrl?: string | null
@@ -10,20 +11,22 @@ interface UserAvatarProps {
 
 export function UserAvatar({ avatarUrl, size, bg, border, iconColor }: UserAvatarProps) {
   return (
-    <div
-      className="rounded-full overflow-hidden flex items-center justify-center shrink-0"
+    <Avatar
+      className="flex items-center justify-center shrink-0"
       style={{
         width: size,
         height: size,
-        background: bg ?? 'var(--color-accent-bg)',
         border: border ?? '1.5px solid var(--color-accent-border)',
       }}
     >
-      {avatarUrl ? (
-        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-      ) : (
+      <AvatarImage src={avatarUrl ?? undefined} alt="" />
+      <AvatarFallback
+        style={{
+          background: bg ?? 'var(--color-accent-bg)',
+        }}
+      >
         <User size={Math.round(size * 0.42)} color={iconColor ?? 'var(--color-accent)'} weight="bold" />
-      )}
-    </div>
+      </AvatarFallback>
+    </Avatar>
   )
 }

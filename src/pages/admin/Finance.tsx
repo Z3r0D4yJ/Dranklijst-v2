@@ -4,6 +4,7 @@ import { CaretRight, CheckCircle, Clock, CurrencyEur, Export, User } from '@phos
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
+import { Badge } from '../../components/ui/badge'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPaymentConfirmed } from '../../lib/notifications'
 import { CustomSelect } from '../../components/CustomSelect'
@@ -24,9 +25,9 @@ interface PaymentRow {
 }
 
 const STATUS_CONFIG = {
-  unpaid: { label: 'Te betalen', bg: 'var(--color-surface-alt)', text: 'var(--color-text-muted)' },
-  pending: { label: 'Betaald (?)', bg: 'var(--color-warning-bg)', text: 'var(--color-warning)' },
-  paid: { label: 'Bevestigd', bg: 'var(--color-success-bg)', text: 'var(--color-success)' },
+  unpaid: { label: 'Te betalen', variant: 'secondary' },
+  pending: { label: 'Betaald (?)', variant: 'warning' },
+  paid: { label: 'Bevestigd', variant: 'success' },
 } as const
 
 function PaymentDetailRow({ label, value }: { label: string; value: string }) {
@@ -209,9 +210,18 @@ export function Finance() {
           }}
           options={(periods ?? []).map((period) => ({
             value: period.id,
-            label: period.name + (period.is_active ? ' (actief)' : ''),
+            label: period.name,
+            badge: period.is_active ? 'Actief' : undefined,
+            badgeTone: 'success',
           }))}
-          icon={<CurrencyEur size={14} color="var(--color-text-muted)" />}
+          icon={
+            <div
+              className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
+              style={{ background: 'var(--color-primary-pale)' }}
+            >
+              <CurrencyEur size={13} color="var(--color-primary)" />
+            </div>
+          }
         />
       )}
 
@@ -320,9 +330,9 @@ export function Finance() {
                     Verschuldigd: <strong style={{ color: 'var(--color-text-primary)' }}>EUR {Number(payment.amount_due).toFixed(2)}</strong>
                   </p>
                 </div>
-                <span className="text-[11px] font-bold px-2 py-1 rounded-[6px] shrink-0" style={{ background: config.bg, color: config.text }}>
+                <Badge variant={config.variant} className="shrink-0">
                   {config.label}
-                </span>
+                </Badge>
                 <CaretRight size={14} color="var(--color-text-muted)" />
               </div>
 
@@ -386,15 +396,15 @@ export function Finance() {
                     {STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
                   </p>
                 </div>
-                <span
-                  className="text-[11px] font-bold px-2.5 py-1 rounded-[999px]"
-                  style={{
-                    background: STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.bg ?? STATUS_CONFIG.unpaid.bg,
-                    color: STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.text ?? STATUS_CONFIG.unpaid.text,
-                  }}
+                <Badge
+                  variant={
+                    STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.variant ??
+                    STATUS_CONFIG.unpaid.variant
+                  }
+                  className="px-3"
                 >
                   {STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
-                </span>
+                </Badge>
               </div>
               <p className="text-[12px] m-0 mt-2" style={{ color: 'var(--color-text-muted)' }}>
                 {selectedPayment.status === 'pending'

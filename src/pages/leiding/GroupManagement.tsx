@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext'
 import { notifyJoinRequestResolved } from '../../lib/notifications'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { useJoinRequests } from '../../hooks/useJoinRequests'
+import { Badge } from '../../components/ui/badge'
 
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -32,16 +33,12 @@ function SectionLabel({ children, count }: { children: React.ReactNode; count?: 
     <div className="flex items-center gap-2 mb-2">
       <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>{children}</p>
       {count != null && (
-        <span
-          className="text-[11px] font-extrabold rounded-full leading-4"
-          style={{
-            color: count > 0 ? '#fff' : 'var(--color-text-muted)',
-            background: count > 0 ? 'var(--color-primary)' : 'var(--color-surface-alt)',
-            padding: '1px 6px',
-          }}
+        <Badge
+          variant={count > 0 ? 'default' : 'secondary'}
+          className="min-w-6"
         >
           {count}
-        </span>
+        </Badge>
       )}
     </div>
   )

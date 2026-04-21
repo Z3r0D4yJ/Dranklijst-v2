@@ -1,14 +1,22 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
-import { Spinner } from '../../components/ui/spinner'
+import { Check, MagnifyingGlass, PencilSimple } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { Spinner } from '../../components/ui/spinner'
+import { Badge } from '../../components/ui/badge'
 import { supabase } from '../../lib/supabase'
 import { UserAvatar } from '../../components/UserAvatar'
 import { Pagination } from '../../components/Pagination'
+import { CustomSelect } from '../../components/CustomSelect'
+import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { usePagination } from '../../hooks/usePagination'
+import { useAuth } from '../../context/AuthContext'
+import type { Role } from '../../lib/database.types'
 
-type Role = 'lid' | 'leiding' | 'kas'
+interface GroupOption {
+  id: string
+  name: string
+}
 
 interface UserRow {
   id: string
@@ -17,65 +25,225 @@ interface UserRow {
   avatar_url: string | null
   created_at: string
   groups: string[]
+  primaryGroupId: string | null
+  primaryGroupName: string | null
 }
 
 const ROLES: { value: Role; label: string }[] = [
-  { value: 'lid',     label: 'Lid' },
+  { value: 'lid', label: 'Lid' },
   { value: 'leiding', label: 'Leiding' },
-  { value: 'kas',     label: 'Kas' },
+  { value: 'kas', label: 'Kas' },
+  { value: 'groepsleiding', label: 'Groepsleiding' },
 ]
 
-const ROLE_STYLE: Record<Role, { bg: string; text: string }> = {
-  lid:     { bg: 'var(--color-surface-alt)',  text: 'var(--color-text-secondary)' },
-  leiding: { bg: 'var(--color-primary-pale)', text: 'var(--color-primary)' },
-  kas:     { bg: 'var(--color-warning-bg)',   text: 'var(--color-warning)' },
+const ROLE_BADGE_VARIANT: Record<Role, 'secondary' | 'primary' | 'warning' | 'success'> = {
+  lid: 'secondary',
+  leiding: 'primary',
+  kas: 'warning',
+  groepsleiding: 'success',
+}
+
+const FIELD_LABEL_CLASS = 'text-[11px] font-extrabold uppercase tracking-[1px]'
+
+function normalizeRole(role: string | null | undefined): Role {
+  if (role === 'lid' || role === 'leiding' || role === 'kas' || role === 'groepsleiding') {
+    return role
+  }
+
+  if (role === 'admin') return 'kas'
+  return 'lid'
+}
+
+function roleNeedsGroup(role: Role) {
+  return role === 'lid' || role === 'leiding' || role === 'kas'
+}
+
+function getRoleLabel(role: Role) {
+  return ROLES.find((item) => item.value === role)?.label ?? role
+}
+
+function getRoleSubtitle(user: Pick<UserRow, 'role' | 'primaryGroupName'>) {
+  if (user.role === 'leiding') {
+    return user.primaryGroupName ? `Leiding van ${user.primaryGroupName}` : 'Leiding zonder hoofdgroep'
+  }
+
+  if (user.role === 'kas') {
+    return user.primaryGroupName ? `Kas en leiding van ${user.primaryGroupName}` : 'Kas zonder hoofdgroep'
+  }
+
+  if (user.role === 'groepsleiding') {
+    return 'Toegang tot alle groepen'
+  }
+
+  return user.primaryGroupName ? `Groep: ${user.primaryGroupName}` : 'Nog geen hoofdgroep'
+}
+
+function getDrawerHint(role: Role, groupName: string | null) {
+  if (role === 'leiding') {
+    return groupName
+      ? `${groupName} wordt de hoofdgroep. Deze gebruiker wordt daarnaast automatisch ook aan Leiding gekoppeld.`
+      : 'Kies eerst een hoofdgroep. Daarna wordt Leiding automatisch extra gekoppeld.'
+  }
+
+  if (role === 'kas') {
+    return groupName
+      ? `${groupName} wordt de hoofdgroep. Deze gebruiker krijgt kasrechten en wordt daarnaast ook als leiding aan ${groupName} en Leiding gekoppeld.`
+      : 'Een kas-gebruiker heeft ook een hoofdgroep nodig en wordt daarnaast automatisch aan Leiding gekoppeld.'
+  }
+
+  if (role === 'groepsleiding') {
+    return 'Groepsleiding krijgt toegang tot alle groepen en heeft geen vaste hoofdgroep nodig.'
+  }
+
+  return groupName
+    ? `${groupName} wordt de enige hoofdgroep van deze gebruiker.`
+    : 'Een lid moet exact een hoofdgroep hebben.'
 }
 
 export function Users() {
   const queryClient = useQueryClient()
+  const { profile, refreshProfile } = useAuth()
   const [search, setSearch] = useState('')
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null)
+  const [draftRole, setDraftRole] = useState<Role>('lid')
+  const [draftGroupId, setDraftGroupId] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-users'],
+  const { data: groupOptions = [] } = useQuery({
+    queryKey: ['user-group-options'],
     queryFn: async () => {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, role, avatar_url, created_at')
-        .order('full_name')
+      const { data, error } = await supabase
+        .from('groups')
+        .select('id, name')
+        .neq('name', 'Leiding')
+        .order('name')
 
-      const { data: memberships } = await supabase
-        .from('group_members')
-        .select('user_id, groups(name)')
-
-      const memberMap: Record<string, string[]> = {}
-      for (const m of (memberships ?? []) as unknown as Array<{ user_id: string; groups: { name: string } | null }>) {
-        if (!memberMap[m.user_id]) memberMap[m.user_id] = []
-        if (m.groups?.name) memberMap[m.user_id].push(m.groups.name)
-      }
-
-      return ((profiles ?? []) as unknown as Array<{ id: string; full_name: string; role: Role; avatar_url: string | null; created_at: string }>).map(p => ({
-        ...p,
-        groups: memberMap[p.id] ?? [],
-      })) as UserRow[]
+      if (error) throw error
+      return (data ?? []) as GroupOption[]
     },
   })
 
-  async function changeRole(userId: string, newRole: Role) {
-    setUpdatingId(userId)
-    setOpenDropdown(null)
-    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
-    await queryClient.invalidateQueries({ queryKey: ['admin-users'] })
-    setUpdatingId(null)
-    if (error) toast.error('Rol kon niet worden aangepast.')
-    else toast.success('Rol bijgewerkt.')
+  const { data: users, isLoading: isUsersLoading } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: async () => {
+      const [profilesResult, membershipsResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, full_name, role, avatar_url, created_at')
+          .order('full_name'),
+        supabase
+          .from('group_members')
+          .select('user_id, groups(id, name)'),
+      ])
+
+      if (profilesResult.error) throw profilesResult.error
+      if (membershipsResult.error) throw membershipsResult.error
+
+      const memberMap: Record<string, GroupOption[]> = {}
+
+      for (const membership of (membershipsResult.data ?? []) as Array<{
+        user_id: string
+        groups: GroupOption[] | GroupOption | null
+      }>) {
+        const group = Array.isArray(membership.groups) ? membership.groups[0] : membership.groups
+        if (!group) continue
+
+        if (!memberMap[membership.user_id]) {
+          memberMap[membership.user_id] = []
+        }
+
+        memberMap[membership.user_id].push(group)
+      }
+
+      return ((profilesResult.data ?? []) as Array<{
+        id: string
+        full_name: string
+        role: string
+        avatar_url: string | null
+        created_at: string
+      }>).map((profileRow) => {
+        const memberships = memberMap[profileRow.id] ?? []
+        const primaryGroup = memberships.find((group) => group.name !== 'Leiding') ?? null
+
+        return {
+          ...profileRow,
+          role: normalizeRole(profileRow.role),
+          groups: memberships.map((group) => group.name),
+          primaryGroupId: primaryGroup?.id ?? null,
+          primaryGroupName: primaryGroup?.name ?? null,
+        }
+      }) as UserRow[]
+    },
+  })
+
+  const isLoading = isUsersLoading
+
+  function openEditor(user: UserRow) {
+    setEditingUser(user)
+    setDraftRole(user.role)
+    setDraftGroupId(user.primaryGroupId ?? '')
   }
 
-  const filtered = (users ?? []).filter(u =>
-    u.full_name.toLowerCase().includes(search.toLowerCase())
+  function closeEditor() {
+    if (saving) return
+    setEditingUser(null)
+    setDraftRole('lid')
+    setDraftGroupId('')
+  }
+
+  async function saveUser() {
+    if (!editingUser) return
+
+    if (roleNeedsGroup(draftRole) && !draftGroupId) {
+      toast.error('Kies eerst een hoofdgroep.')
+      return
+    }
+
+    setSaving(true)
+
+    const { error } = await supabase.rpc('set_user_role_and_group', {
+      p_user_id: editingUser.id,
+      p_role: draftRole,
+      p_group_id: roleNeedsGroup(draftRole) ? draftGroupId : null,
+    })
+
+    if (error) {
+      setSaving(false)
+      toast.error(error.message || 'Gebruiker kon niet worden bijgewerkt.')
+      return
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+      queryClient.invalidateQueries({ queryKey: ['group-members'] }),
+      queryClient.invalidateQueries({ queryKey: ['my-group'] }),
+      queryClient.invalidateQueries({ queryKey: ['my-groups'] }),
+      queryClient.invalidateQueries({ queryKey: ['leiding-group'] }),
+      queryClient.invalidateQueries({ queryKey: ['group-transactions'] }),
+      queryClient.invalidateQueries({ queryKey: ['all-transactions'] }),
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] }),
+    ])
+
+    if (editingUser.id === profile?.id) {
+      await refreshProfile()
+    }
+
+    const savedName = editingUser.full_name
+    setSaving(false)
+    closeEditor()
+    toast.success(`${savedName} werd bijgewerkt.`)
+  }
+
+  const filtered = (users ?? []).filter((user) =>
+    user.full_name.toLowerCase().includes(search.toLowerCase()),
   )
   const { slice: pageUsers, page, totalPages, onPage } = usePagination(filtered, 25)
+  const selectedGroup = groupOptions.find((group) => group.id === draftGroupId) ?? null
+  const hasChanges = editingUser != null && (
+    draftRole !== editingUser.role ||
+    (roleNeedsGroup(draftRole) && draftGroupId !== (editingUser.primaryGroupId ?? ''))
+  )
+  const saveDisabled = saving || !editingUser || !hasChanges || (roleNeedsGroup(draftRole) && !draftGroupId)
 
   return (
     <div className="px-4 space-y-4">
@@ -88,8 +256,8 @@ export function Users() {
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Zoek gebruiker…"
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Zoek gebruiker..."
           className="w-full outline-none text-[13px]"
           style={{
             background: 'var(--color-surface)',
@@ -109,76 +277,52 @@ export function Users() {
       )}
 
       <div className="space-y-2">
-        {pageUsers.map(u => {
-          const style = ROLE_STYLE[u.role] ?? ROLE_STYLE.lid
-          const isUpdating = updatingId === u.id
-          const isOpen = openDropdown === u.id
+        {pageUsers.map((user) => {
+          const roleVariant = ROLE_BADGE_VARIANT[user.role] ?? ROLE_BADGE_VARIANT.lid
 
           return (
             <div
-              key={u.id}
+              key={user.id}
               className="rounded-[14px] p-3.5"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <UserAvatar
-                    avatarUrl={u.avatar_url}
-                    size={36}
+                    avatarUrl={user.avatar_url}
+                    size={38}
                     bg="var(--color-primary-pale)"
                     border="none"
                     iconColor="var(--color-primary)"
                   />
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>{u.full_name}</p>
-                    {u.groups.length > 0 && (
-                      <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>{u.groups.join(', ')}</p>
+                    <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      {user.full_name}
+                    </p>
+                    <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
+                      {getRoleSubtitle(user)}
+                    </p>
+                    {user.groups.length > 1 && (
+                      <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
+                        Lidmaatschappen: {user.groups.join(', ')}
+                      </p>
                     )}
                   </div>
                 </div>
 
-                <div className="relative shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge variant={roleVariant} className="px-3">
+                    {getRoleLabel(user.role)}
+                  </Badge>
                   <button
-                    onClick={() => setOpenDropdown(isOpen ? null : u.id)}
-                    disabled={isUpdating}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-opacity disabled:opacity-50"
-                    style={{ background: style.bg, color: style.text, border: 'none', fontFamily: 'inherit' }}
+                    type="button"
+                    onClick={() => openEditor(user)}
+                    className="w-9 h-9 rounded-[11px] flex items-center justify-center active:scale-95 transition-transform"
+                    style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+                    aria-label={`Bewerk ${user.full_name}`}
                   >
-                    {isUpdating ? '…' : ROLES.find(r => r.value === u.role)?.label ?? u.role}
-                    {!isUpdating && <CaretDown size={11} />}
+                    <PencilSimple size={15} color="var(--color-text-secondary)" />
                   </button>
-
-                  {isOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setOpenDropdown(null)} />
-                      <div
-                        className="absolute right-0 top-full mt-1 z-20 min-w-[140px] overflow-hidden"
-                        style={{
-                          background: 'var(--color-surface)',
-                          border: '1px solid var(--color-border-mid)',
-                          borderRadius: 12,
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
-                        }}
-                      >
-                        {ROLES.map(r => (
-                          <button
-                            key={r.value}
-                            onClick={() => changeRole(u.id, r.value)}
-                            className="w-full text-left px-4 py-2.5 text-[13px] transition-colors"
-                            style={{
-                              fontWeight: r.value === u.role ? 700 : 500,
-                              color: r.value === u.role ? 'var(--color-primary)' : 'var(--color-text-primary)',
-                              background: 'transparent',
-                              border: 'none',
-                              fontFamily: 'inherit',
-                            }}
-                          >
-                            {r.label}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
             </div>
@@ -187,12 +331,112 @@ export function Users() {
       </div>
 
       {!isLoading && filtered.length === 0 && (
-        <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen gebruikers gevonden.</p>
+        <div
+          className="rounded-[14px] px-4 py-8 text-center"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+        >
+          <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>
+            Geen gebruikers gevonden.
+          </p>
         </div>
       )}
 
       <Pagination page={page} totalPages={totalPages} onPage={onPage} />
+
+      <AdminFormDrawer
+        open={!!editingUser}
+        onOpenChange={(open) => {
+          if (!open) closeEditor()
+        }}
+        title={editingUser ? editingUser.full_name : 'Gebruiker bewerken'}
+        description="Pas rol en hoofdgroep aan vanuit dezelfde beheerflow."
+        dismissible={!saving}
+        disableClose={saving}
+        scrollBody={false}
+        bodyClassName="space-y-4"
+        footer={
+          <button
+            type="button"
+            onClick={() => void saveUser()}
+            disabled={saveDisabled}
+            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
+            style={{
+              background: 'var(--color-primary)',
+              color: '#fff',
+              padding: '12px',
+              borderRadius: 12,
+              border: 'none',
+              fontFamily: 'inherit',
+            }}
+          >
+            <Check size={14} weight="bold" />
+            {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
+        }
+      >
+        {editingUser && (
+          <>
+            <div
+              className="rounded-[14px] p-4 flex items-center gap-3"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+            >
+              <UserAvatar
+                avatarUrl={editingUser.avatar_url}
+                size={46}
+                bg="var(--color-primary-pale)"
+                border="none"
+                iconColor="var(--color-primary)"
+              />
+              <div className="min-w-0">
+                <p className="text-[14px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                  {editingUser.full_name}
+                </p>
+                <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                  {getRoleLabel(draftRole)}
+                  {roleNeedsGroup(draftRole) && selectedGroup ? ` - ${selectedGroup.name}` : ''}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={FIELD_LABEL_CLASS} style={{ color: 'var(--color-text-muted)' }}>
+                Rol
+              </label>
+              <CustomSelect
+                value={draftRole}
+                onChange={(value) => setDraftRole(value as Role)}
+                options={ROLES.map((role) => ({ value: role.value, label: role.label }))}
+              />
+            </div>
+
+            {roleNeedsGroup(draftRole) && (
+              <div className="space-y-1.5">
+                <label className={FIELD_LABEL_CLASS} style={{ color: 'var(--color-text-muted)' }}>
+                  Hoofdgroep
+                </label>
+                <CustomSelect
+                  value={draftGroupId}
+                  onChange={setDraftGroupId}
+                  options={groupOptions.map((group) => ({ value: group.id, label: group.name }))}
+                  placeholder="Kies een groep"
+                />
+              </div>
+            )}
+
+            <div
+              className="rounded-[14px] px-4 py-3"
+              style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+            >
+              <p className="text-[11px] font-extrabold uppercase tracking-[1px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                Wat gebeurt er
+              </p>
+              <p className="text-[13px] m-0 leading-[1.55]" style={{ color: 'var(--color-text-secondary)' }}>
+                {getDrawerHint(draftRole, selectedGroup?.name ?? null)}
+              </p>
+            </div>
+          </>
+        )}
+      </AdminFormDrawer>
     </div>
   )
 }

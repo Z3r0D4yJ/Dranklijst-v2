@@ -5,6 +5,7 @@ import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useLeaderboard, type LeaderboardEntry, type LeaderboardGroup } from '../../hooks/useLeaderboard'
 import { useMyGroups } from '../../hooks/useMyGroups'
 import { useThemeColor } from '../../hooks/useThemeColor'
+import { badgeVariants } from '../../components/ui/badge'
 
 function Pillar({ rank, name, total, height }: { rank: number; name: string; total: number; height: number }) {
   const tone = rank === 1 ? 'var(--color-accent)' : rank === 2 ? 'var(--color-silver)' : 'var(--color-bronze)'
@@ -106,11 +107,23 @@ export function Leaderboard() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const canSeeAll = profile?.role === 'kas'
+  const isLeaderLike = profile?.role === 'leiding' || profile?.role === 'kas'
   const myGroupIds = new Set((myGroups ?? []).map(g => g.id))
+  const ownLeaderGroupId = (myGroups ?? []).find(g => g.name !== 'Leiding')?.id ?? null
 
-  const visibleGroups = canSeeAll
+  const baseVisibleGroups = canSeeAll
     ? (allGroups ?? [])
     : (allGroups ?? []).filter(g => myGroupIds.has(g.group_id))
+
+  const visibleGroups = isLeaderLike
+    ? [...baseVisibleGroups].sort((a, b) => {
+      const priorityA = a.group_name === 'Leiding' ? 0 : a.group_id === ownLeaderGroupId ? 1 : 2
+      const priorityB = b.group_name === 'Leiding' ? 0 : b.group_id === ownLeaderGroupId ? 1 : 2
+
+      if (priorityA !== priorityB) return priorityA - priorityB
+      return a.group_name.localeCompare(b.group_name)
+    })
+    : baseVisibleGroups
 
   const activeGroup = visibleGroups.find(g => g.group_id === selectedId) ?? visibleGroups[0] ?? null
 
@@ -142,11 +155,10 @@ export function Leaderboard() {
               <button
                 key={g.group_id}
                 onClick={() => setSelectedId(g.group_id)}
-                className="shrink-0 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors"
-                style={{
-                  background: isActive ? 'var(--color-primary)' : 'var(--color-surface-alt)',
-                  color: isActive ? '#fff' : 'var(--color-text-secondary)',
-                }}
+                className={badgeVariants({
+                  variant: isActive ? 'default' : 'secondary',
+                  size: 'lg',
+                })}
               >
                 {g.group_name}
               </button>

@@ -173,7 +173,12 @@ export function AllTransactions() {
             setSelectedPeriod(value)
             setSelectedTxId(null)
           }}
-          options={(periods ?? []).map((period) => ({ value: period.id, label: period.name + (period.is_active ? ' (actief)' : '') }))}
+          options={(periods ?? []).map((period) => ({
+            value: period.id,
+            label: period.name,
+            badge: period.is_active ? 'Actief' : undefined,
+            badgeTone: 'success',
+          }))}
           placeholder="Alle periodes"
           style={{ flex: 1 }}
         />

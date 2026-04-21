@@ -69,21 +69,31 @@ export function Dashboard() {
       supabase.from('profiles').select('id, role'),
       supabase.from('transactions').select('user_id, total_price').eq('period_id', selectedPeriod),
       supabase.from('groups').select('id, name').neq('name', 'Leiding'),
-      supabase.from('group_members').select('user_id, group_id'),
+      supabase.from('group_members').select('user_id, groups(id, name)'),
     ]).then(([profilesRes, txRes, groupsRes, membershipsRes]) => {
       if (cancelled) return
 
       const allProfiles = (profilesRes.data ?? []) as { id: string; role: string }[]
       const allTx = (txRes.data ?? []) as { user_id: string; total_price: number }[]
       const allGroups = (groupsRes.data ?? []) as { id: string; name: string }[]
-      const allMemberships = (membershipsRes.data ?? []) as { user_id: string; group_id: string }[]
+      const allMemberships = (membershipsRes.data ?? []) as Array<{
+        user_id: string
+        groups: { id: string; name: string }[] | { id: string; name: string } | null
+      }>
 
       const totalRevenue = allTx.reduce((s, t) => s + Number(t.total_price), 0)
       const totalTransactions = allTx.length
       const totalUsers = allProfiles.filter(p => p.role === 'lid').length
 
+      const dashboardGroupIds = new Set(allGroups.map(group => group.id))
       const memberGroupMap: Record<string, string> = {}
-      for (const m of allMemberships) memberGroupMap[m.user_id] = m.group_id
+      for (const membership of allMemberships) {
+        const group = Array.isArray(membership.groups) ? membership.groups[0] : membership.groups
+        if (!group) continue
+        if (!dashboardGroupIds.has(group.id)) continue
+        if (memberGroupMap[membership.user_id]) continue
+        memberGroupMap[membership.user_id] = group.id
+      }
 
       const groupTotals: Record<string, number> = {}
       for (const t of allTx) {
@@ -121,7 +131,12 @@ export function Dashboard() {
         <CustomSelect
           value={selectedPeriod}
           onChange={v => { manuallySelected.current = true; setSelectedPeriod(v) }}
-          options={periods.map(p => ({ value: p.id, label: p.name + (p.is_active ? ' (actief)' : '') }))}
+          options={periods.map(p => ({
+            value: p.id,
+            label: p.name,
+            badge: p.is_active ? 'Actief' : undefined,
+            badgeTone: 'success',
+          }))}
           icon={
             <div
               className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
