@@ -401,7 +401,6 @@ export function Finance() {
                     STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.variant ??
                     STATUS_CONFIG.unpaid.variant
                   }
-                  className="px-3"
                 >
                   {STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
                 </Badge>

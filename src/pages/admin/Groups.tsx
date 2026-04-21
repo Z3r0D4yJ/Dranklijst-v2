@@ -131,7 +131,7 @@ export function Groups() {
 
             <div className="flex items-center gap-2 shrink-0">
               {group.total > 0 && (
-                <Badge variant="success" className="gap-1 px-2.5">
+                <Badge variant="success" className="gap-1">
                   <CurrencyEur size={11} color="var(--color-success)" />
                   {group.total.toFixed(2)}
                 </Badge>

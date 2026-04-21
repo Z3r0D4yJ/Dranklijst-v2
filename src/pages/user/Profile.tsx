@@ -11,6 +11,8 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { Switch } from '../../components/ui/switch'
 import { Badge } from '../../components/ui/badge'
+import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
+import type { Role } from '../../lib/database.types'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
 import { usePWAInstall } from '../../hooks/usePWAInstall'
 import { useTheme, type ThemeMode } from '../../context/ThemeContext'
@@ -602,11 +604,11 @@ export function Profile() {
             <p className="text-[16px] font-extrabold tracking-[-0.3px] truncate" style={{ color: 'var(--color-text-primary)' }}>{profile?.full_name}</p>
             {userEmail && <p className="text-[13px] font-medium mt-0.5 mb-2 truncate" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</p>}
             <div className="flex gap-1.5 flex-wrap">
-              <Badge variant="primary" className="px-2.5">
+              <Badge variant={ROLE_BADGE_VARIANT[(profile?.role ?? 'lid') as Role] ?? 'secondary'}>
                 {ROLE_LABELS[profile?.role ?? 'lid']}
               </Badge>
               {myGroupName && (
-                <Badge variant="secondary" className="px-2.5">
+                <Badge variant="secondary">
                   {myGroupName}
                 </Badge>
               )}
@@ -651,10 +653,10 @@ export function Profile() {
               </button>
             )}
             {payment.status === 'pending' && (
-              <div className="flex items-center gap-2 rounded-[10px] px-3 py-2" style={{ background: 'rgba(0,0,0,0.05)' }}>
-                <Clock size={14} color="var(--color-warning)" />
-                <p className="text-[12px] font-medium" style={{ color: 'var(--color-warning)' }}>Wacht op bevestiging van de kas</p>
-              </div>
+              <Badge variant="warning" size="sm" className="gap-1.5">
+                <Clock size={12} />
+                Wacht op bevestiging van de kas
+              </Badge>
             )}
           </div>
         ))}

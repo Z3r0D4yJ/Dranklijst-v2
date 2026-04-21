@@ -12,6 +12,7 @@ import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { usePagination } from '../../hooks/usePagination'
 import { useAuth } from '../../context/AuthContext'
 import type { Role } from '../../lib/database.types'
+import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
 
 interface GroupOption {
   id: string
@@ -36,12 +37,6 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'groepsleiding', label: 'Groepsleiding' },
 ]
 
-const ROLE_BADGE_VARIANT: Record<Role, 'secondary' | 'primary' | 'warning' | 'success'> = {
-  lid: 'secondary',
-  leiding: 'primary',
-  kas: 'warning',
-  groepsleiding: 'success',
-}
 
 const FIELD_LABEL_CLASS = 'text-[11px] font-extrabold uppercase tracking-[1px]'
 
@@ -311,7 +306,7 @@ export function Users() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={roleVariant} className="px-3">
+                  <Badge variant={roleVariant}>
                     {getRoleLabel(user.role)}
                   </Badge>
                   <button

@@ -258,7 +258,7 @@ export function Periods() {
                 </button>
               )}
               {!period.is_active && (
-                <Badge variant="success" size="default" className="gap-1">
+                <Badge variant="success" className="gap-1">
                   <CheckCircle size={14} weight="fill" />
                   Gesloten
                 </Badge>

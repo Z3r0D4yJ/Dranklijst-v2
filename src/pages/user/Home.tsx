@@ -119,7 +119,7 @@ export function Home() {
         {group && (
           <div className="flex gap-2 items-center text-[12px] font-semibold">
             <Badge variant="glass" className="gap-1.5 px-3">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'oklch(0.80 0.15 150)' }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-success)' }} />
               <span className="tracking-[0.2px]">{group.name.toUpperCase()}</span>
             </Badge>
             <span className="opacity-65">{period?.name ?? '—'}{period?.is_active ? ' · actief' : ''}</span>
