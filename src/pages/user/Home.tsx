@@ -20,6 +20,10 @@ import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
 import { Badge } from '../../components/ui/badge'
 
+const ROLE_LABELS: Record<string, string> = {
+  lid: 'Lid', leiding: 'Leiding', kas: 'Kas', groepsleiding: 'Groepsleiding', admin: 'Admin',
+}
+
 const CATEGORY_ORDER = ['niet-alcoholisch', 'alcoholisch'] as const
 const CATEGORY_LABELS: Record<string, string> = {
   'niet-alcoholisch': 'Frisdrank',
@@ -116,13 +120,19 @@ export function Home() {
           </button>
         </div>
 
-        {group && (
-          <div className="flex gap-2 items-center text-[12px] font-semibold">
+        {profile && (
+          <div className="flex gap-2 items-center flex-wrap">
             <Badge variant="glass" className="gap-1.5 px-3">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-success)' }} />
-              <span className="tracking-[0.2px]">{group.name.toUpperCase()}</span>
+              {ROLE_LABELS[profile.role]}
             </Badge>
-            <span className="opacity-65">{period?.name ?? '—'}{period?.is_active ? ' · actief' : ''}</span>
+            {period && (
+              <Badge variant="glass" className="gap-1.5 px-3">
+                {period.is_active && (
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'var(--color-success)' }} />
+                )}
+                {period.name}
+              </Badge>
+            )}
           </div>
         )}
       </div>

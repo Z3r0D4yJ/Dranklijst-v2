@@ -3,11 +3,11 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 export function useMyGroup() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
 
   return useQuery({
-    queryKey: ['my-group', user?.id],
-    enabled: !!user,
+    queryKey: ['my-group', user?.id, profile?.role],
+    enabled: !!user && !!profile,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('group_members')
@@ -21,9 +21,13 @@ export function useMyGroup() {
         groups: { id: string; name: string } | null
       }>
 
-      // Return first non-Leiding group
-      const main = memberships.find(m => m.groups?.name !== 'Leiding')
-      return main?.groups ?? null
+      // Leiding buys in the Leiding group context, not their chapter group
+      if (profile?.role === 'leiding') {
+        const leiding = memberships.find(m => m.groups?.name === 'Leiding')
+        if (leiding?.groups) return leiding.groups
+      }
+
+      return memberships.find(m => m.groups?.name !== 'Leiding')?.groups ?? null
     },
   })
 }
