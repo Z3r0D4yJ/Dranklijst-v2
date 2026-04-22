@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { CustomSelect } from '../../components/CustomSelect'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
+import { IconActionButton } from '../../components/ui/action-button'
 import type { Consumption, ConsumptionCategory } from '../../lib/database.types'
 
 const CATEGORIES: { value: ConsumptionCategory; label: string }[] = [
@@ -25,7 +26,6 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = { name: '', price: '', category: 'niet-alcoholisch' }
-const ACTION_ICON_BUTTON_CLASS = 'w-9 h-9 rounded-[11px] flex items-center justify-center active:scale-95 transition-transform'
 
 export function Consumptions() {
   const queryClient = useQueryClient()
@@ -283,30 +283,22 @@ export function Consumptions() {
                     EUR {consumption.price.toFixed(2)}
                   </p>
                 </div>
-                <button
+                <IconActionButton
                   onClick={() => openEdit(consumption)}
-                  className={ACTION_ICON_BUTTON_CLASS}
-                  style={{
-                    background: 'var(--color-primary-pale)',
-                    border: '1px solid var(--color-primary-border)',
-                  }}
+                  variant="primary-soft"
+                  aria-label={`Bewerk ${consumption.name}`}
                 >
-                  <PencilSimple size={15} color="var(--color-primary)" />
-                </button>
-                <button
+                  <PencilSimple size={15} color="currentColor" />
+                </IconActionButton>
+                <IconActionButton
                   onClick={() => toggleActive(consumption)}
-                  className={ACTION_ICON_BUTTON_CLASS}
-                  style={{
-                    background: consumption.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)',
-                    border: consumption.is_active
-                      ? '1px solid var(--color-success-border)'
-                      : '1px solid var(--color-border)',
-                  }}
+                  variant={consumption.is_active ? 'success-soft' : 'neutral'}
+                  aria-label={consumption.is_active ? `${consumption.name} verbergen` : `${consumption.name} zichtbaar maken`}
                 >
                   {consumption.is_active
-                    ? <Eye size={15} color="var(--color-success)" />
-                    : <EyeSlash size={15} color="var(--color-text-muted)" />}
-                </button>
+                    ? <Eye size={15} color="currentColor" />
+                    : <EyeSlash size={15} color="currentColor" />}
+                </IconActionButton>
               </div>
             ))}
           </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CaretDown, Check, X } from '@phosphor-icons/react'
 import { Badge } from './ui/badge'
+import { IconActionButton } from './ui/action-button'
 import {
   Drawer,
   DrawerClose,
@@ -310,14 +311,12 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
                 </DrawerDescription>
               </div>
               <DrawerClose asChild>
-                <button
-                  type="button"
+                <IconActionButton
                   aria-label="Sluiten"
-                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                  style={{ background: 'var(--color-surface-alt)' }}
+                  size="sm"
                 >
-                  <X size={16} color="var(--color-text-secondary)" weight="bold" />
-                </button>
+                  <X size={16} color="currentColor" weight="bold" />
+                </IconActionButton>
               </DrawerClose>
             </DrawerHeader>
 

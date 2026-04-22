@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Minus, Plus, ShoppingCart } from '@phosphor-icons/react'
 import { Spinner } from './ui/spinner'
+import { IconActionButton } from './ui/action-button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerTitle } from './ui/drawer'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
@@ -80,12 +81,9 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
             </DrawerDescription>
           </div>
           <DrawerClose asChild>
-            <button
-              className="h-[34px] w-[34px] shrink-0 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-              style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
-            >
-              <X size={17} color="var(--color-text-muted)" />
-            </button>
+            <IconActionButton aria-label="Sluiten">
+              <X size={17} color="currentColor" />
+            </IconActionButton>
           </DrawerClose>
         </div>
 

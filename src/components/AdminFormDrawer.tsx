@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { X } from '@phosphor-icons/react'
 import { cn } from '../lib/utils'
+import { IconActionButton } from './ui/action-button'
 import {
   Drawer,
   DrawerClose,
@@ -185,15 +186,13 @@ export function AdminFormDrawer({
             )}
           </div>
           <DrawerClose asChild>
-            <button
-              type="button"
+            <IconActionButton
               aria-label="Sluiten"
+              size="sm"
               disabled={disableClose}
-              className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50 disabled:active:scale-100"
-              style={{ background: 'var(--color-surface-alt)' }}
             >
-              <X size={16} color="var(--color-text-secondary)" weight="bold" />
-            </button>
+              <X size={16} color="currentColor" weight="bold" />
+            </IconActionButton>
           </DrawerClose>
         </DrawerHeader>
 

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { X, Bell, CheckCircle, Users, CurrencyEur, Warning } from '@phosphor-icons/react'
 import { useNotifications, type AppNotification } from '../hooks/useNotifications'
 import { Spinner } from './ui/spinner'
+import { ActionPillButton, IconActionButton } from './ui/action-button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from './ui/drawer'
 
 function timeAgo(iso: string): string {
@@ -108,22 +109,18 @@ export function NotificationsSheet({ onClose }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
-              <button
+              <ActionPillButton
                 onClick={markAllRead}
-                className="flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-bold active:scale-95 transition-transform"
-                style={{ background: 'var(--color-primary-pale)', color: 'var(--color-primary)' }}
+                variant="primary-soft"
               >
-                <CheckCircle size={13} weight="fill" />
+                <CheckCircle size={13} color="currentColor" weight="fill" />
                 Alles gelezen
-              </button>
+              </ActionPillButton>
             )}
             <DrawerClose asChild>
-              <button
-                className="h-8 w-8 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                style={{ background: 'var(--color-surface-alt)' }}
-              >
-                <X size={16} color="var(--color-text-secondary)" weight="bold" />
-              </button>
+              <IconActionButton size="sm">
+                <X size={16} color="currentColor" weight="bold" />
+              </IconActionButton>
             </DrawerClose>
           </div>
         </DrawerHeader>

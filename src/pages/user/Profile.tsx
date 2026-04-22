@@ -19,6 +19,7 @@ import { useTheme, type ThemeMode } from '../../context/ThemeContext'
 import { IconChip } from '../../components/IconChip'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { UserAvatar } from '../../components/UserAvatar'
+import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
 
 interface JoinRequestWithGroup {
   id: string
@@ -124,12 +125,14 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
             )}
           </div>
           <DrawerClose asChild>
-            <button
-              className="h-8 w-8 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--color-surface-alt)' }}
+            <IconActionButton
+              size="sm"
+              variant="neutral"
+              className="!rounded-full"
+              aria-label="Sluiten"
             >
-              <X size={16} color="var(--color-text-secondary)" weight="bold" />
-            </button>
+              <X size={16} color="currentColor" weight="bold" />
+            </IconActionButton>
           </DrawerClose>
         </DrawerHeader>
 
@@ -246,12 +249,14 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
         <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
           <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</DrawerTitle>
           <DrawerClose asChild>
-            <button
-              className="h-8 w-8 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--color-surface-alt)' }}
+            <IconActionButton
+              size="sm"
+              variant="neutral"
+              className="!rounded-full"
+              aria-label="Sluiten"
             >
-              <X size={16} color="var(--color-text-secondary)" weight="bold" />
-            </button>
+              <X size={16} color="currentColor" weight="bold" />
+            </IconActionButton>
           </DrawerClose>
         </DrawerHeader>
 
@@ -273,12 +278,13 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
                   </div>
                 )}
               </div>
-              <div
-                className="absolute bottom-0 right-0 h-7 w-7 rounded-full flex items-center justify-center"
+              <span
+                className="absolute bottom-0 right-0 inline-flex h-7 w-7 items-center justify-center rounded-full border font-bold text-white"
                 style={{ background: 'var(--color-primary)', border: '2px solid var(--color-surface)' }}
+                aria-hidden="true"
               >
-                <Camera size={13} color="#fff" weight="bold" />
-              </div>
+                <Camera size={13} color="currentColor" weight="bold" />
+              </span>
             </button>
             <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
               Tik op de foto om te wijzigen
@@ -618,13 +624,14 @@ export function Profile() {
               )}
             </div>
           </div>
-          <button
+          <IconActionButton
             onClick={() => setEditOpen(true)}
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 active:scale-95 transition-transform"
-            style={{ background: 'var(--color-primary-pale)', border: '1px solid var(--color-primary-border)' }}
+            variant="primary-soft"
+            className="shrink-0 !rounded-full"
+            aria-label="Profiel bewerken"
           >
-            <PencilSimple size={16} color="var(--color-primary)" weight="bold" />
-          </button>
+            <PencilSimple size={16} color="currentColor" weight="bold" />
+          </IconActionButton>
         </div>
 
         {/* ─── Open payments ──────────────────────── */}
@@ -735,9 +742,9 @@ export function Profile() {
               label="Installeer app"
               sub="Voeg toe aan startscherm"
               trailing={
-                <button onClick={pwa.install} className="text-[12px] font-bold px-3 py-1 rounded-[8px] active:scale-95 transition-transform" style={{ background: 'var(--color-primary-pale)', color: 'var(--color-primary)' }}>
+                <ActionPillButton onClick={pwa.install} variant="primary-soft">
                   Installen
-                </button>
+                </ActionPillButton>
               }
             />
           )}

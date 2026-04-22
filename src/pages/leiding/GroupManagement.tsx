@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Check, X, Trash, ArrowsClockwise, Copy, CheckCircle } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { Spinner } from '../../components/ui/spinner'
 import { UserAvatar } from '../../components/UserAvatar'
-import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { notifyJoinRequestResolved } from '../../lib/notifications'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { useJoinRequests } from '../../hooks/useJoinRequests'
 import { Badge } from '../../components/ui/badge'
+import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
 
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -30,8 +31,10 @@ interface MemberWithProfile {
 
 function SectionLabel({ children, count }: { children: React.ReactNode; count?: number }) {
   return (
-    <div className="flex items-center gap-2 mb-2">
-      <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>{children}</p>
+    <div className="mb-2 flex items-center gap-2">
+      <p className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
+        {children}
+      </p>
       {count != null && (
         <Badge
           variant={count > 0 ? 'default' : 'secondary'}
@@ -60,7 +63,7 @@ export function GroupManagement() {
   const { data: requests } = useJoinRequests(groupId)
 
   useEffect(() => {
-    loadData()
+    void loadData()
   }, [])
 
   async function loadData() {
@@ -72,27 +75,27 @@ export function GroupManagement() {
       .eq('user_id', profile.id)
 
     const ownGroup = (memberships as unknown as Array<{ group_id: string; groups: { name: string } | null }>)
-      ?.find(m => m.groups?.name !== 'Leiding')
+      ?.find((membership) => membership.groups?.name !== 'Leiding')
 
     if (!ownGroup) {
       setLoading(false)
       return
     }
 
-    const gId = ownGroup.group_id
+    const nextGroupId = ownGroup.group_id
     setGroupName(ownGroup.groups?.name ?? '')
-    setGroupId(gId)
+    setGroupId(nextGroupId)
 
     const [membersRes, inviteRes] = await Promise.all([
       supabase
         .from('group_members')
         .select('*, profiles(full_name, role, avatar_url)')
-        .eq('group_id', gId)
+        .eq('group_id', nextGroupId)
         .order('joined_at'),
       supabase
         .from('invite_codes')
         .select('id, code')
-        .eq('group_id', gId)
+        .eq('group_id', nextGroupId)
         .maybeSingle(),
     ])
 
@@ -103,27 +106,34 @@ export function GroupManagement() {
 
   async function resolveRequest(requestId: string, userId: string, approve: boolean) {
     setActionLoading(requestId)
+
     const { error } = await supabase.rpc('resolve_join_request', {
       p_request_id: requestId,
       p_approved: approve,
     })
+
     if (!error) {
       await queryClient.invalidateQueries({ queryKey: ['join-requests', groupId] })
+
       if (approve) {
         const { data } = await supabase
           .from('group_members')
           .select('*, profiles(full_name, role, avatar_url)')
           .eq('group_id', groupId!)
           .order('joined_at')
+
         if (data) setMembers(data as unknown as MemberWithProfile[])
       }
+
       notifyJoinRequestResolved(userId, groupName, approve)
     }
+
     setActionLoading(null)
   }
 
   async function removeMember(memberId: string, memberUserId: string) {
     if (memberUserId === profile?.id) return
+
     setActionLoading(memberId)
     await supabase.from('group_members').delete().eq('id', memberId)
     await loadData()
@@ -132,6 +142,7 @@ export function GroupManagement() {
 
   async function handleGenerateCode() {
     if (!groupId || !profile) return
+
     setCodeLoading(true)
     const code = generateCode()
     const { data } = await supabase
@@ -139,6 +150,7 @@ export function GroupManagement() {
       .upsert({ group_id: groupId, code, created_by: profile.id }, { onConflict: 'group_id' })
       .select('id, code')
       .single()
+
     if (data) setInviteCode(data as InviteCode)
     setCodeLoading(false)
   }
@@ -156,7 +168,7 @@ export function GroupManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+      <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <Spinner className="size-8" style={{ color: 'var(--color-primary)' }} />
       </div>
     )
@@ -164,112 +176,116 @@ export function GroupManagement() {
 
   return (
     <div className="min-h-screen pb-8" style={{ background: 'var(--color-bg)' }}>
-      {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
-        <h1 className="text-[22px] font-extrabold tracking-[-0.5px] m-0 mb-0.5" style={{ color: 'var(--color-text-primary)' }}>Groepsbeheer</h1>
-        <p className="text-[12px] font-medium m-0" style={{ color: 'var(--color-text-muted)' }}>{groupName} · {members.length} leden</p>
+        <h1 className="m-0 mb-0.5 text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>
+          Groepsbeheer
+        </h1>
+        <p className="m-0 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+          {groupName} - {members.length} leden
+        </p>
       </div>
 
-      <div className="px-5 pt-4 pb-8 flex flex-col gap-5">
-
-        {/* ─── Uitnodigingslink ─────────────────────── */}
+      <div className="flex flex-col gap-5 px-5 pb-8 pt-4">
         <section>
           <SectionLabel>Uitnodigingslink</SectionLabel>
           <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             {inviteCode ? (
               <>
-                <div className="flex items-center justify-between mb-3.5">
+                <div className="mb-3.5 flex items-center justify-between">
                   <div>
-                    <p className="text-[11px] font-extrabold uppercase tracking-[1px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>Code</p>
-                    <p className="text-[26px] font-extrabold tracking-[0.28em] m-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>{inviteCode.code}</p>
+                    <p className="m-0 mb-1 text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>
+                      Code
+                    </p>
+                    <p className="m-0 text-[26px] font-extrabold tracking-[0.28em] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                      {inviteCode.code}
+                    </p>
                   </div>
-                  <button
+                  <IconActionButton
                     onClick={handleGenerateCode}
                     disabled={codeLoading}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
-                    style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+                    variant="neutral"
                     title="Nieuwe code genereren"
+                    aria-label="Nieuwe code genereren"
                   >
-                    <ArrowsClockwise size={15} color="var(--color-text-muted)" className={codeLoading ? 'animate-spin' : ''} />
-                  </button>
+                    <ArrowsClockwise size={15} color="currentColor" className={codeLoading ? 'animate-spin' : ''} />
+                  </IconActionButton>
                 </div>
-                <button
+
+                <ActionPillButton
                   onClick={copyLink}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-[10px] text-[13px] font-bold active:scale-[0.98] transition-all"
-                  style={{
-                    background: copied ? 'var(--color-success-bg)' : 'var(--color-primary-pale)',
-                    color: copied ? 'var(--color-success)' : 'var(--color-primary)',
-                    border: 'none',
-                    fontFamily: 'inherit',
-                  }}
+                  variant={copied ? 'success-soft' : 'primary-soft'}
+                  className="w-full"
                 >
-                  {copied ? <CheckCircle size={14} weight="fill" /> : <Copy size={14} />}
+                  {copied ? <CheckCircle size={14} color="currentColor" weight="fill" /> : <Copy size={14} color="currentColor" />}
                   {copied ? 'Link gekopieerd!' : 'Kopieer uitnodigingslink'}
-                </button>
+                </ActionPillButton>
               </>
             ) : (
-              <div className="text-center space-y-3">
-                <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Nog geen uitnodigingscode aangemaakt</p>
-                <button
+              <div className="space-y-3 text-center">
+                <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+                  Nog geen uitnodigingscode aangemaakt
+                </p>
+                <ActionPillButton
                   onClick={handleGenerateCode}
                   disabled={codeLoading}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-bold rounded-xl active:scale-[0.98] transition-transform disabled:opacity-50"
-                  style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', fontFamily: 'inherit' }}
+                  variant="primary-soft"
+                  size="md"
                 >
-                  {codeLoading ? 'Bezig…' : 'Code aanmaken'}
-                </button>
+                  {codeLoading ? 'Bezig...' : 'Code aanmaken'}
+                </ActionPillButton>
               </div>
             )}
           </div>
         </section>
 
-        {/* ─── Aanvragen ──────────────────────────── */}
         <section>
           <SectionLabel count={(requests ?? []).length}>Aanvragen</SectionLabel>
           {(requests ?? []).length === 0 ? (
             <div className="rounded-[14px] px-4 py-[18px] text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen openstaande aanvragen</p>
+              <p className="m-0 text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+                Geen openstaande aanvragen
+              </p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {requests!.map(req => (
+              {requests!.map((request) => (
                 <div
-                  key={req.id}
-                  className="rounded-[14px] flex items-center gap-3 p-3.5"
+                  key={request.id}
+                  className="flex items-center gap-3 rounded-[14px] p-3.5"
                   style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
                 >
                   <UserAvatar
-                    avatarUrl={req.profiles?.avatar_url}
+                    avatarUrl={request.profiles?.avatar_url}
                     size={38}
                     bg="var(--color-primary-pale)"
                     border="1.5px solid var(--color-primary-border)"
                     iconColor="var(--color-primary)"
                   />
                   <div className="flex-1">
-                    <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
-                      {req.profiles?.full_name ?? 'Onbekend'}
+                    <p className="m-0 text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                      {request.profiles?.full_name ?? 'Onbekend'}
                     </p>
-                    <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                      {new Date(req.created_at).toLocaleDateString('nl-BE')}
+                    <p className="m-0 mt-0.5 text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
+                      {new Date(request.created_at).toLocaleDateString('nl-BE')}
                     </p>
                   </div>
                   <div className="flex gap-1.5">
-                    <button
-                      onClick={() => resolveRequest(req.id, req.user_id, false)}
-                      disabled={actionLoading === req.id}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
-                      style={{ background: 'var(--color-danger-bg)', border: 'none' }}
+                    <IconActionButton
+                      onClick={() => resolveRequest(request.id, request.user_id, false)}
+                      disabled={actionLoading === request.id}
+                      variant="danger-soft"
+                      aria-label={`Weiger ${request.profiles?.full_name ?? 'aanvraag'}`}
                     >
-                      <X size={16} color="var(--color-danger)" weight="bold" />
-                    </button>
-                    <button
-                      onClick={() => resolveRequest(req.id, req.user_id, true)}
-                      disabled={actionLoading === req.id}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
-                      style={{ background: 'var(--color-success-bg)', border: 'none' }}
+                      <X size={16} color="currentColor" weight="bold" />
+                    </IconActionButton>
+                    <IconActionButton
+                      onClick={() => resolveRequest(request.id, request.user_id, true)}
+                      disabled={actionLoading === request.id}
+                      variant="success-soft"
+                      aria-label={`Keur ${request.profiles?.full_name ?? 'aanvraag'} goed`}
                     >
-                      <Check size={16} color="var(--color-success)" weight="bold" />
-                    </button>
+                      <Check size={16} color="currentColor" weight="bold" />
+                    </IconActionButton>
                   </div>
                 </div>
               ))}
@@ -277,22 +293,24 @@ export function GroupManagement() {
           )}
         </section>
 
-        {/* ─── Leden ──────────────────────────────── */}
         <section>
           <SectionLabel count={members.length}>Leden</SectionLabel>
           {members.length === 0 ? (
             <div className="rounded-card px-4 py-6 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Nog geen leden in deze groep</p>
+              <p className="m-0 text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+                Nog geen leden in deze groep
+              </p>
             </div>
           ) : (
             <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              {members.map((member, i) => {
+              {members.map((member, index) => {
                 const isSelf = member.user_id === profile?.id
+
                 return (
                   <div
                     key={member.id}
                     className="flex items-center gap-3 px-3.5 py-3"
-                    style={{ borderTop: i === 0 ? 'none' : '1px solid var(--color-border)' }}
+                    style={{ borderTop: index === 0 ? 'none' : '1px solid var(--color-border)' }}
                   >
                     <UserAvatar
                       avatarUrl={member.profiles?.avatar_url}
@@ -302,23 +320,28 @@ export function GroupManagement() {
                       iconColor={isSelf ? 'var(--color-accent)' : 'var(--color-text-secondary)'}
                     />
                     <div className="flex-1">
-                      <p className="text-[14px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
+                      <p className="m-0 text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
                         {member.profiles?.full_name ?? 'Onbekend'}
-                        {isSelf && <span className="ml-1.5 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>(jij)</span>}
+                        {isSelf && (
+                          <span className="ml-1.5 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                            (jij)
+                          </span>
+                        )}
                       </p>
-                      <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                      <p className="m-0 mt-0.5 text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
                         {member.profiles?.role === 'leiding' ? 'Leiding' : 'Lid'}
                       </p>
                     </div>
                     {!isSelf && (
-                      <button
+                      <IconActionButton
                         onClick={() => removeMember(member.id, member.user_id)}
                         disabled={actionLoading === member.id}
-                        className="w-8 h-8 rounded-[8px] flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
-                        style={{ background: 'var(--color-danger-bg)', border: 'none' }}
+                        variant="danger-soft"
+                        size="sm"
+                        aria-label={`Verwijder ${member.profiles?.full_name ?? 'lid'}`}
                       >
-                        <Trash size={14} color="var(--color-danger)" />
-                      </button>
+                        <Trash size={14} color="currentColor" />
+                      </IconActionButton>
                     )}
                   </div>
                 )
@@ -326,7 +349,6 @@ export function GroupManagement() {
             </div>
           )}
         </section>
-
       </div>
     </div>
   )
