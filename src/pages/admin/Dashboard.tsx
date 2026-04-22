@@ -25,7 +25,7 @@ function StatCard({ label, value, icon, iconBg, valueColor }: {
   return (
     <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
         <div className="w-7 h-7 rounded-[9px] flex items-center justify-center" style={{ background: iconBg }}>
           {icon}
         </div>
@@ -35,7 +35,6 @@ function StatCard({ label, value, icon, iconBg, valueColor }: {
   )
 }
 
-const BAR_COLORS = ['var(--color-primary)', 'oklch(0.60 0.18 221)', 'oklch(0.65 0.15 221)', 'oklch(0.70 0.12 221)', 'oklch(0.75 0.09 221)']
 
 export function Dashboard() {
   const [periods, setPeriods] = useState<PeriodOption[]>([])
@@ -168,16 +167,16 @@ export function Dashboard() {
                 <StatCard
                   label="Leden"
                   value={String(data?.totalUsers ?? 0)}
-                  icon={<Users size={13} color="var(--color-accent)" />}
-                  iconBg="var(--color-accent-bg)"
-                  valueColor="var(--color-accent)"
+                  icon={<Users size={13} color="var(--color-text-muted)" />}
+                  iconBg="var(--color-surface-alt)"
+                  valueColor="var(--color-text-primary)"
                 />
                 <StatCard
                   label="Top groep"
                   value={data?.topGroup ?? '—'}
-                  icon={<TrendUp size={13} color="var(--color-gold)" />}
-                  iconBg="color-mix(in oklch, var(--color-gold) 14%, transparent)"
-                  valueColor="var(--color-gold)"
+                  icon={<TrendUp size={13} color="var(--color-warning)" />}
+                  iconBg="var(--color-warning-bg)"
+                  valueColor="var(--color-warning)"
                 />
               </div>
 
@@ -194,7 +193,7 @@ export function Dashboard() {
                           <div className="flex-1 h-6 rounded-[6px] overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
                             <div
                               className="h-full rounded-[6px] flex items-center justify-end pr-2"
-                              style={{ width: `${pct}%`, background: BAR_COLORS[i % BAR_COLORS.length] }}
+                              style={{ width: `${pct}%`, background: 'var(--color-primary)' }}
                             >
                               <span className="text-[11px] font-extrabold text-white tabular-nums">€{Math.round(b.total)}</span>
                             </div>

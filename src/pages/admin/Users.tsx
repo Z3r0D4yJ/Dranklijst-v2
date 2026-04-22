@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, MagnifyingGlass, PencilSimple } from '@phosphor-icons/react'
+import { Check, MagnifyingGlass, PencilSimple, Users as UsersIcon } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { supabase } from '../../lib/supabase'
@@ -59,19 +60,11 @@ function getRoleLabel(role: Role) {
 }
 
 function getRoleSubtitle(user: Pick<UserRow, 'role' | 'primaryGroupName'>) {
-  if (user.role === 'leiding') {
-    return user.primaryGroupName ? `Leiding van ${user.primaryGroupName}` : 'Leiding zonder hoofdgroep'
-  }
-
-  if (user.role === 'kas') {
-    return user.primaryGroupName ? `Kas en leiding van ${user.primaryGroupName}` : 'Kas zonder hoofdgroep'
-  }
-
   if (user.role === 'groepsleiding') {
-    return 'Toegang tot alle groepen'
+    return 'Alle groepen zichtbaar'
   }
 
-  return user.primaryGroupName ? `Groep: ${user.primaryGroupName}` : 'Nog geen hoofdgroep'
+  return user.primaryGroupName ? `Hoofdgroep: ${user.primaryGroupName}` : 'Geen hoofdgroep'
 }
 
 function getDrawerHint(role: Role, groupName: string | null) {
@@ -233,6 +226,10 @@ export function Users() {
   const filtered = (users ?? []).filter((user) =>
     user.full_name.toLowerCase().includes(search.toLowerCase()),
   )
+  const totalUsers = (users ?? []).length
+  const memberCount = (users ?? []).filter((user) => user.role === 'lid').length
+  const leidingKasCount = (users ?? []).filter((user) => user.role === 'leiding' || user.role === 'kas').length
+  const groepsleidingCount = (users ?? []).filter((user) => user.role === 'groepsleiding').length
   const { slice: pageUsers, page, totalPages, onPage } = usePagination(filtered, 25)
   const selectedGroup = groupOptions.find((group) => group.id === draftGroupId) ?? null
   const hasChanges = editingUser != null && (
@@ -242,28 +239,71 @@ export function Users() {
   const saveDisabled = saving || !editingUser || !hasChanges || (roleNeedsGroup(draftRole) && !draftGroupId)
 
   return (
-    <div className="px-4 space-y-4">
-      <div className="relative">
-        <MagnifyingGlass
-          size={16}
-          color="var(--color-text-muted)"
-          style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-        />
-        <input
-          type="text"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Zoek gebruiker..."
-          className="w-full outline-none text-[13px]"
-          style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border-mid)',
-            borderRadius: 12,
-            padding: '10px 14px 10px 40px',
-            color: 'var(--color-text-primary)',
-            fontFamily: 'inherit',
-          }}
-        />
+    <div className="px-4 space-y-4 pb-content-end-comfort">
+      <AdminOverviewCard
+        icon={UsersIcon}
+        tone="primary"
+        eyebrow="Gebruikers"
+        title={`${totalUsers} accounts`}
+        description="Beheer hier rollen, hoofdgroepen en bijkomende rechten voor alle gebruikers."
+      >
+        <div className="grid grid-cols-2 gap-2.5">
+          <AdminStatTile
+            label="Leden"
+            value={String(memberCount)}
+            icon={UsersIcon}
+            tone="neutral"
+          />
+          <AdminStatTile
+            label="Leiding/Kas"
+            value={String(leidingKasCount)}
+            icon={Check}
+            tone="primary"
+            valueTone="primary"
+          />
+          <AdminStatTile
+            label="Groepsleiding"
+            value={String(groepsleidingCount)}
+            icon={Check}
+            tone="success"
+            valueTone="success"
+            className="col-span-2"
+          />
+        </div>
+      </AdminOverviewCard>
+
+      <div
+        className="rounded-card border p-3.5"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <p
+          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Zoeken
+        </p>
+        <div className="relative mt-2">
+          <MagnifyingGlass
+            size={16}
+            color="var(--color-text-muted)"
+            style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Zoek gebruiker..."
+            className="w-full outline-none text-[13px]"
+            style={{
+              background: 'var(--color-surface-alt)',
+              border: '1px solid var(--color-border-mid)',
+              borderRadius: 12,
+              padding: '10px 14px 10px 40px',
+              color: 'var(--color-text-primary)',
+              fontFamily: 'inherit',
+            }}
+          />
+        </div>
       </div>
 
       {isLoading && (
@@ -272,15 +312,28 @@ export function Users() {
         </div>
       )}
 
+      {filtered.length > 0 && (
+        <p
+          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Gebruikers
+        </p>
+      )}
+
       <div className="space-y-2">
         {pageUsers.map((user) => {
           const roleVariant = ROLE_BADGE_VARIANT[user.role] ?? ROLE_BADGE_VARIANT.lid
+          const isSelf = user.id === profile?.id
 
           return (
             <div
               key={user.id}
               className="rounded-card p-3.5"
-              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+              style={{
+                background: 'var(--color-surface)',
+                border: `1px solid ${isSelf ? 'var(--color-primary-border)' : 'var(--color-border)'}`,
+              }}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
@@ -298,16 +351,23 @@ export function Users() {
                     <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
                       {getRoleSubtitle(user)}
                     </p>
-                    {user.groups.length > 1 && (
-                      <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
-                        Lidmaatschappen: {user.groups.join(', ')}
-                      </p>
+                    {(user.groups.length > 1 || isSelf) && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {user.groups.length > 1 && (
+                          <Badge variant="muted" size="sm">
+                            +{user.groups.length - 1} extra
+                          </Badge>
+                        )}
+                        {isSelf && (
+                          <Badge variant="primary" size="sm">Jij</Badge>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={roleVariant}>
+                  <Badge variant={roleVariant} size="sm">
                     {getRoleLabel(user.role)}
                   </Badge>
                   <IconActionButton
@@ -326,14 +386,11 @@ export function Users() {
       </div>
 
       {!isLoading && filtered.length === 0 && (
-        <div
-          className="rounded-card px-4 py-8 text-center"
-          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-        >
-          <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>
-            Geen gebruikers gevonden.
-          </p>
-        </div>
+        <AdminEmptyState
+          icon={UsersIcon}
+          title="Geen gebruikers gevonden"
+          description="Pas je zoekterm aan om een gebruiker terug te vinden."
+        />
       )}
 
       <Pagination page={page} totalPages={totalPages} onPage={onPage} />
@@ -357,7 +414,7 @@ export function Users() {
             className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
             style={{
               background: 'var(--color-primary)',
-              color: '#fff',
+              color: 'white',
               padding: '12px',
               borderRadius: 12,
               border: 'none',
@@ -371,25 +428,29 @@ export function Users() {
       >
         {editingUser && (
           <>
-            <div
-              className="rounded-card p-4 flex items-center gap-3"
-              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-            >
-              <UserAvatar
-                avatarUrl={editingUser.avatar_url}
-                size={46}
-                bg="var(--color-primary-pale)"
-                border="none"
-                iconColor="var(--color-primary)"
-              />
-              <div className="min-w-0">
-                <p className="text-[14px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
-                  {editingUser.full_name}
-                </p>
-                <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="rounded-card border p-4" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+              <div className="flex items-center gap-3">
+                <UserAvatar
+                  avatarUrl={editingUser.avatar_url}
+                  size={46}
+                  bg="var(--color-primary-pale)"
+                  border="none"
+                  iconColor="var(--color-primary)"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    {editingUser.full_name}
+                  </p>
+                  <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                    {getRoleSubtitle({
+                      role: draftRole,
+                      primaryGroupName: selectedGroup?.name ?? editingUser.primaryGroupName,
+                    })}
+                  </p>
+                </div>
+                <Badge variant={ROLE_BADGE_VARIANT[draftRole]}>
                   {getRoleLabel(draftRole)}
-                  {roleNeedsGroup(draftRole) && selectedGroup ? ` - ${selectedGroup.name}` : ''}
-                </p>
+                </Badge>
               </div>
             </div>
 

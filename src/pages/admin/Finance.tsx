@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, CheckCircle, Clock, CurrencyEur, Export, User } from '@phosphor-icons/react'
+import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
@@ -11,6 +12,7 @@ import { notifyPaymentConfirmed } from '../../lib/notifications'
 import { CustomSelect } from '../../components/CustomSelect'
 import { Pagination } from '../../components/Pagination'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
+import { ActionPillButton } from '../../components/ui/action-button'
 import { usePagination } from '../../hooks/usePagination'
 import type { Period } from '../../lib/database.types'
 
@@ -31,13 +33,31 @@ const STATUS_CONFIG = {
   paid: { label: 'Bevestigd', variant: 'success' },
 } as const
 
+function getStatusTone(status: string) {
+  if (status === 'paid') return 'success' as const
+  if (status === 'pending') return 'warning' as const
+  return 'danger' as const
+}
+
+function getStatusHint(status: string, paidAt: string | null) {
+  if (status === 'paid' && paidAt) {
+    return `Bevestigd op ${new Date(paidAt).toLocaleDateString('nl-BE')}`
+  }
+
+  if (status === 'pending') {
+    return 'Wacht op bevestiging door de kas'
+  }
+
+  return null
+}
+
 function PaymentDetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div
       className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-3"
       style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
     >
-      <span className="text-[12px] font-bold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
+      <span className="text-[11px] font-extrabold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
         {label}
       </span>
       <span className="text-[13px] font-bold text-right" style={{ color: 'var(--color-text-primary)' }}>
@@ -66,7 +86,6 @@ export function Finance() {
         .order('started_at', { ascending: false })
       return (data ?? []) as Period[]
     },
-    staleTime: 0,
   })
 
   useEffect(() => {
@@ -200,63 +219,46 @@ export function Finance() {
   const { slice: pagePayments, page, totalPages, onPage } = usePagination(payments, 25)
 
   return (
-    <div className="px-4 space-y-3">
-      {(periods ?? []).length > 0 && (
-        <CustomSelect
-          value={selectedPeriod}
-          onChange={(value) => {
-            manuallySelected.current = true
-            setSelectedPeriod(value)
-            setSelectedPaymentId(null)
-          }}
-          options={(periods ?? []).map((period) => ({
-            value: period.id,
-            label: period.name,
-            badge: period.is_active ? 'Actief' : undefined,
-            badgeTone: 'success',
-          }))}
-          icon={
-            <div
-              className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
-              style={{ background: 'var(--color-primary-pale)' }}
-            >
-              <CurrencyEur size={13} color="var(--color-primary)" />
-            </div>
-          }
-        />
-      )}
-
-      {payments.length > 0 && (
-        <>
+    <div className="px-4 space-y-3 pb-content-end-comfort">
+      {currentPeriod && (
+        <AdminOverviewCard
+          icon={CurrencyEur}
+          tone="primary"
+          eyebrow="Financieel overzicht"
+          title={currentPeriod.name}
+          description="Volg hier de openstaande, gemarkeerde en bevestigde betalingen per periode."
+          badge={<Badge variant={currentPeriod.is_active ? 'success' : 'secondary'}>{currentPeriod.is_active ? 'Actief' : 'Afgesloten'}</Badge>}
+        >
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                Openstaand
-              </p>
-              <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-danger)' }}>
-                EUR {unpaidTotal.toFixed(2)}
-              </p>
-            </div>
-            <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                Ontvangen
-              </p>
-              <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-success)' }}>
-                EUR {paidTotal.toFixed(2)}
-              </p>
-            </div>
+            <AdminStatTile
+              label="Openstaand"
+              value={`EUR ${unpaidTotal.toFixed(2)}`}
+              icon={Clock}
+              tone="danger"
+              valueTone="danger"
+            />
+            <AdminStatTile
+              label="Ontvangen"
+              value={`EUR ${paidTotal.toFixed(2)}`}
+              icon={CheckCircle}
+              tone="success"
+              valueTone="success"
+            />
           </div>
 
-          <div className="rounded-card px-3.5 py-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-            <div className="flex justify-between mb-1.5">
+          <div
+            className="mt-2.5 rounded-[12px] border px-3.5 py-3"
+            style={{ background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' }}
+          >
+            <div className="flex items-center justify-between gap-3">
               <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                Betaald
+                Voortgang
               </span>
               <span className="text-[12px] font-extrabold" style={{ color: 'var(--color-success)' }}>
                 {paidPct}%
               </span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
+            <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-surface)' }}>
               <div
                 style={{
                   width: `${paidPct}%`,
@@ -268,24 +270,57 @@ export function Finance() {
               />
             </div>
           </div>
+        </AdminOverviewCard>
+      )}
 
-          <button
-            type="button"
-            onClick={exportCsv}
-            className="w-full flex items-center justify-center gap-2 text-[13px] font-bold active:scale-[0.98] transition-transform"
-            style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 12,
-              padding: 10,
-              color: 'var(--color-text-secondary)',
-              fontFamily: 'inherit',
-            }}
+      {(periods ?? []).length > 0 && (
+        <div
+          className="rounded-card border p-3.5"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <p
+            className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+            style={{ color: 'var(--color-text-muted)' }}
           >
-            <Export size={15} color="var(--color-text-muted)" />
-            Exporteer CSV
-          </button>
-        </>
+            Periode
+          </p>
+          <div className="mt-2">
+            <CustomSelect
+              value={selectedPeriod}
+              onChange={(value) => {
+                manuallySelected.current = true
+                setSelectedPeriod(value)
+                setSelectedPaymentId(null)
+              }}
+              options={(periods ?? []).map((period) => ({
+                value: period.id,
+                label: period.name,
+                badge: period.is_active ? 'Actief' : undefined,
+                badgeTone: 'success',
+              }))}
+              icon={
+                <div
+                  className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
+                  style={{ background: 'var(--color-primary-pale)' }}
+                >
+                  <CurrencyEur size={13} color="var(--color-primary)" />
+                </div>
+              }
+            />
+          </div>
+          {payments.length > 0 && (
+            <ActionPillButton
+              type="button"
+              onClick={exportCsv}
+              variant="neutral"
+              size="md"
+              className="mt-2.5 w-full"
+            >
+              <Export size={15} color="currentColor" />
+              Exporteer CSV
+            </ActionPillButton>
+          )}
+        </div>
       )}
 
       {isLoading && (
@@ -295,21 +330,31 @@ export function Finance() {
       )}
 
       {!isLoading && payments.length === 0 && selectedPeriod && (
-        <div className="rounded-card px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>
-            Geen betalingen voor deze periode.
-          </p>
-          {currentPeriod?.is_active && (
-            <p className="text-[12px] m-0 mt-1" style={{ color: 'var(--color-text-muted)' }}>
-              Sluit de periode af om betalingen aan te maken.
-            </p>
-          )}
-        </div>
+        <AdminEmptyState
+          icon={CurrencyEur}
+          title="Geen betalingen voor deze periode"
+          description={
+            currentPeriod?.is_active
+              ? 'Sluit de periode af om automatisch betalingen aan te maken.'
+              : 'Voor deze periode zijn nog geen betaalrecords beschikbaar.'
+          }
+        />
+      )}
+
+      {payments.length > 0 && (
+        <p
+          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Betalingen
+        </p>
       )}
 
       <div className="flex flex-col gap-2">
         {pagePayments.map((payment) => {
           const config = STATUS_CONFIG[payment.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.unpaid
+          const tone = getStatusTone(payment.status)
+          const statusHint = getStatusHint(payment.status, payment.paid_at)
 
           return (
             <button
@@ -319,30 +364,38 @@ export function Finance() {
               className="w-full rounded-card p-3.5 text-left active:scale-[0.99] transition-transform"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
             >
-              <div className="flex items-center gap-2.5">
-                <IconChip tone="primary" icon={User} size={34} />
-                <div className="flex-1">
-                  <p className="text-[13px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
-                    {payment.full_name}
-                  </p>
-                  <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                    Verschuldigd: <strong style={{ color: 'var(--color-text-primary)' }}>EUR {Number(payment.amount_due).toFixed(2)}</strong>
-                  </p>
+              <div className="flex items-start gap-3">
+                <IconChip tone={tone} icon={payment.status === 'paid' ? CheckCircle : payment.status === 'pending' ? Clock : User} size={34} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                        {payment.full_name}
+                      </p>
+                      {statusHint && (
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          <Badge variant="muted" size="sm">
+                            {statusHint}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <p className="m-0 text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                          EUR {Number(payment.amount_due).toFixed(2)}
+                        </p>
+                        <div className="mt-1">
+                          <Badge variant={config.variant} size="sm" className="shrink-0">
+                            {config.label}
+                          </Badge>
+                        </div>
+                      </div>
+                      <CaretRight size={14} color="var(--color-text-muted)" />
+                    </div>
+                  </div>
                 </div>
-                <Badge variant={config.variant} className="shrink-0">
-                  {config.label}
-                </Badge>
-                <CaretRight size={14} color="var(--color-text-muted)" />
               </div>
-
-              {payment.status === 'paid' && payment.paid_at && (
-                <div className="mt-2 flex items-center gap-1.5">
-                  <Clock size={12} color="var(--color-text-muted)" />
-                  <p className="text-[12px] m-0" style={{ color: 'var(--color-text-muted)' }}>
-                    Betaald op {new Date(payment.paid_at).toLocaleDateString('nl-BE')}
-                  </p>
-                </div>
-              )}
             </button>
           )
         })}
@@ -385,16 +438,19 @@ export function Finance() {
       >
         {selectedPayment && (
           <>
-            <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>
-                    Status
-                  </p>
-                  <p className="text-[17px] font-extrabold m-0 mt-1" style={{ color: 'var(--color-text-primary)' }}>
-                    {STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
-                  </p>
-                </div>
+            <AdminOverviewCard
+              icon={selectedPayment.status === 'paid' ? CheckCircle : selectedPayment.status === 'pending' ? Clock : User}
+              tone={getStatusTone(selectedPayment.status)}
+              eyebrow="Betalingsstatus"
+              title={STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
+              description={
+                selectedPayment.status === 'pending'
+                  ? 'Deze gebruiker gaf aan betaald te hebben. Controleer en bevestig hieronder.'
+                  : selectedPayment.status === 'paid'
+                    ? 'Deze betaling is al bevestigd in de kas.'
+                    : 'Deze gebruiker heeft nog geen betaling gemarkeerd.'
+              }
+              badge={
                 <Badge
                   variant={
                     STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.variant ??
@@ -403,33 +459,23 @@ export function Finance() {
                 >
                   {STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
                 </Badge>
-              </div>
-              <p className="text-[12px] m-0 mt-2" style={{ color: 'var(--color-text-muted)' }}>
-                {selectedPayment.status === 'pending'
-                  ? 'Deze gebruiker gaf aan betaald te hebben. Controleer en bevestig hieronder.'
-                  : selectedPayment.status === 'paid'
-                    ? 'Deze betaling is al bevestigd in de kas.'
-                    : 'Deze gebruiker heeft nog geen betaling gemarkeerd.'}
-              </p>
-            </div>
+              }
+            />
 
             <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                  Verschuldigd
-                </p>
-                <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                  EUR {Number(selectedPayment.amount_due).toFixed(2)}
-                </p>
-              </div>
-              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                  Ontvangen
-                </p>
-                <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-success)' }}>
-                  EUR {Number(selectedPayment.amount_paid).toFixed(2)}
-                </p>
-              </div>
+              <AdminStatTile
+                label="Verschuldigd"
+                value={`EUR ${Number(selectedPayment.amount_due).toFixed(2)}`}
+                icon={Clock}
+                tone="danger"
+              />
+              <AdminStatTile
+                label="Ontvangen"
+                value={`EUR ${Number(selectedPayment.amount_paid).toFixed(2)}`}
+                icon={CheckCircle}
+                tone="success"
+                valueTone="success"
+              />
             </div>
 
             <div className="space-y-2">

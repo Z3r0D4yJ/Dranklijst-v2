@@ -180,7 +180,7 @@ export function Periods() {
             className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
             style={{
               background: 'var(--color-primary)',
-              color: '#fff',
+              color: 'white',
               padding: '12px',
               borderRadius: 12,
               border: 'none',

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { CaretRight, Receipt, Trash } from '@phosphor-icons/react'
+import { CaretRight, CurrencyEur, Receipt, Trash } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router-dom'
+import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
 import { Spinner } from '../../components/ui/spinner'
 import { Pagination } from '../../components/Pagination'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
+import { Badge } from '../../components/ui/badge'
 import { usePagination } from '../../hooks/usePagination'
 import type { Period } from '../../lib/database.types'
 
@@ -41,6 +43,15 @@ function TxDetailRow({ label, value }: { label: string; value: string }) {
       </span>
     </div>
   )
+}
+
+function formatTransactionMoment(iso: string) {
+  return new Date(iso).toLocaleDateString('nl-BE', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function AllTransactions() {
@@ -135,6 +146,8 @@ export function AllTransactions() {
   const allTx = transactions ?? []
   const selectedTx = allTx.find((tx) => tx.id === selectedTxId) ?? null
   const selectedPeriodName = periods?.find((period) => period.id === selectedTx?.period_id)?.name ?? 'Onbekende periode'
+  const selectedPeriodInfo = periods?.find((period) => period.id === selectedPeriod) ?? null
+  const selectedGroupInfo = groups?.find((group) => group.id === selectedGroup) ?? null
   const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, PAGE_SIZE)
   const total = allTx.reduce((sum, tx) => sum + tx.total_price, 0)
 
@@ -185,46 +198,68 @@ export function AllTransactions() {
   }
 
   return (
-    <div className="px-4 space-y-3">
-      <div className="flex gap-2.5">
-        <CustomSelect
-          value={selectedPeriod}
-          onChange={(value) => {
-            updatePeriodFilter(value)
-          }}
-          options={(periods ?? []).map((period) => ({
-            value: period.id,
-            label: period.name,
-            badge: period.is_active ? 'Actief' : undefined,
-            badgeTone: 'success',
-          }))}
-          placeholder="Alle periodes"
-          style={{ flex: 1 }}
-        />
-        <CustomSelect
-          value={selectedGroup}
-          onChange={(value) => {
-            setSelectedGroup(value)
-          }}
-          options={(groups ?? []).map((group) => ({ value: group.id, label: group.name }))}
-          placeholder="Alle groepen"
-          style={{ flex: 1 }}
-        />
-      </div>
-
-      {allTx.length > 0 && (
-        <div className="rounded-card px-4 py-3 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <div className="flex items-center gap-2">
-            <IconChip tone="primary" icon={Receipt} size={32} />
-            <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              {allTx.length} transacties
-            </span>
-          </div>
-          <span className="text-[20px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-            EUR {total.toFixed(2)}
-          </span>
+    <div className="px-4 space-y-3 pb-content-end-comfort">
+      <AdminOverviewCard
+        icon={Receipt}
+        tone="primary"
+        eyebrow="Transactieoverzicht"
+        title={selectedPeriodInfo?.name ?? 'Alle periodes'}
+        description={
+          selectedGroupInfo
+            ? `Gefilterd op ${selectedGroupInfo.name}. Tik op een rij om de aankoopdetails te bekijken of te verwijderen.`
+            : 'Bekijk hier alle aankopen per periode en groep in dezelfde beheerflow.'
+        }
+        badge={selectedPeriodInfo?.is_active ? <Badge variant="success">Actief</Badge> : undefined}
+      >
+        <div className="grid grid-cols-2 gap-2.5">
+          <AdminStatTile
+            label="Aantal"
+            value={String(allTx.length)}
+            icon={Receipt}
+            tone="primary"
+          />
+          <AdminStatTile
+            label="Omzet"
+            value={`EUR ${total.toFixed(2)}`}
+            icon={CurrencyEur}
+            tone="primary"
+            valueTone="primary"
+          />
         </div>
-      )}
+      </AdminOverviewCard>
+
+      <div
+        className="rounded-card border p-3.5"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <p
+          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Filters
+        </p>
+        <div className="mt-2 flex gap-2.5">
+          <CustomSelect
+            value={selectedPeriod}
+            onChange={updatePeriodFilter}
+            options={(periods ?? []).map((period) => ({
+              value: period.id,
+              label: period.name,
+              badge: period.is_active ? 'Actief' : undefined,
+              badgeTone: 'success',
+            }))}
+            placeholder="Alle periodes"
+            style={{ flex: 1 }}
+          />
+          <CustomSelect
+            value={selectedGroup}
+            onChange={setSelectedGroup}
+            options={(groups ?? []).map((group) => ({ value: group.id, label: group.name }))}
+            placeholder="Alle groepen"
+            style={{ flex: 1 }}
+          />
+        </div>
+      </div>
 
       {isLoading && (
         <div className="flex justify-center mt-8">
@@ -233,11 +268,20 @@ export function AllTransactions() {
       )}
 
       {!isLoading && allTx.length === 0 && (
-        <div className="rounded-card px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>
-            Geen transacties gevonden.
-          </p>
-        </div>
+        <AdminEmptyState
+          icon={Receipt}
+          title="Geen transacties gevonden"
+          description="Pas je filters aan of wacht tot er nieuwe aankopen in deze periode verschijnen."
+        />
+      )}
+
+      {allTx.length > 0 && (
+        <p
+          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          Transacties
+        </p>
       )}
 
       <div className="flex flex-col gap-2">
@@ -249,23 +293,37 @@ export function AllTransactions() {
             className="w-full rounded-card px-3.5 py-3 text-left active:scale-[0.99] transition-transform"
             style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
-                  {tx.full_name}
-                </p>
-                <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                  {tx.group_name} - {tx.consumption_name} x{tx.quantity}
-                </p>
-                <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                  {new Date(tx.created_at).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[14px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                  EUR {tx.total_price.toFixed(2)}
-                </span>
-                <CaretRight size={14} color="var(--color-text-muted)" />
+            <div className="flex items-start gap-3">
+              <IconChip tone="primary" icon={Receipt} size={34} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      {tx.full_name}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      <Badge variant="secondary" size="sm">
+                        {tx.group_name}
+                      </Badge>
+                      <Badge
+                        variant="secondary"
+                        size="sm"
+                        className="max-w-full whitespace-normal break-words text-left leading-[1.25]"
+                      >
+                        {tx.consumption_name} x{tx.quantity}
+                      </Badge>
+                      <Badge variant="muted" size="sm">
+                        {formatTransactionMoment(tx.created_at)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                      EUR {tx.total_price.toFixed(2)}
+                    </span>
+                    <CaretRight size={14} color="var(--color-text-muted)" />
+                  </div>
+                </div>
               </div>
             </div>
           </button>
@@ -349,17 +407,13 @@ export function AllTransactions() {
       >
         {selectedTx && (
           <>
-            <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>
-                Totaal
-              </p>
-              <p className="text-[24px] font-extrabold mt-1 mb-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                EUR {selectedTx.total_price.toFixed(2)}
-              </p>
-              <p className="text-[12px] m-0 mt-2" style={{ color: 'var(--color-text-muted)' }}>
-                Bekijk hieronder de details van deze aankoop. Verwijderen blijft mogelijk vanuit deze drawer.
-              </p>
-            </div>
+            <AdminOverviewCard
+              icon={Receipt}
+              tone="primary"
+              eyebrow="Totaal"
+              title={`EUR ${selectedTx.total_price.toFixed(2)}`}
+              description="Bekijk hieronder de details van deze aankoop. Verwijderen blijft mogelijk vanuit deze drawer."
+            />
 
             <div className="space-y-2">
               <TxDetailRow label="Consumptie" value={selectedTx.consumption_name} />

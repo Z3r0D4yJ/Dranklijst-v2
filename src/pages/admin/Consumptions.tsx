@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, PencilSimple, Eye, EyeSlash, Check } from '@phosphor-icons/react'
+import { Plus, PencilSimple, Eye, EyeSlash, Check, BeerBottle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
+import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
+import { Badge } from '../../components/ui/badge'
 import { CustomSelect } from '../../components/CustomSelect'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { IconActionButton } from '../../components/ui/action-button'
@@ -26,6 +29,13 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = { name: '', price: '', category: 'niet-alcoholisch' }
+const CLAMPED_NAME_STYLE: CSSProperties = {
+  color: 'var(--color-text-primary)',
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+}
 
 export function Consumptions() {
   const queryClient = useQueryClient()
@@ -136,6 +146,9 @@ export function Consumptions() {
     acc[consumption.category].push(consumption)
     return acc
   }, {})
+  const totalConsumptions = (consumptions ?? []).length
+  const activeCount = (consumptions ?? []).filter((consumption) => consumption.is_active).length
+  const hiddenCount = totalConsumptions - activeCount
 
   const inputStyle = {
     background: 'var(--color-surface-alt)',
@@ -152,6 +165,36 @@ export function Consumptions() {
 
   return (
     <div className="px-4 space-y-4 pb-content-end-comfort">
+      <AdminOverviewCard
+        icon={BeerBottle}
+        tone="primary"
+        eyebrow="Consumpties"
+        title={`${totalConsumptions} items in de globale lijst`}
+        description="Beheer hier de centrale consumpties en bepaal welke items zichtbaar blijven voor groepen."
+      >
+        <div className="grid grid-cols-3 gap-2.5">
+          <AdminStatTile
+            label="Totaal"
+            value={String(totalConsumptions)}
+            icon={BeerBottle}
+            tone="primary"
+          />
+          <AdminStatTile
+            label="Actief"
+            value={String(activeCount)}
+            icon={Eye}
+            tone="success"
+            valueTone="success"
+          />
+          <AdminStatTile
+            label="Verborgen"
+            value={String(hiddenCount)}
+            icon={EyeSlash}
+            tone="neutral"
+          />
+        </div>
+      </AdminOverviewCard>
+
       <button
         onClick={openNew}
         className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
@@ -253,53 +296,85 @@ export function Consumptions() {
         </div>
       )}
 
+      {!isLoading && totalConsumptions === 0 && (
+        <AdminEmptyState
+          icon={BeerBottle}
+          title="Nog geen consumpties"
+          description="Voeg hierboven je eerste consumptie toe aan de globale lijst."
+        />
+      )}
+
       {Object.entries(grouped).map(([category, items]) => (
-        <section key={category}>
-          <p
-            className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2 m-0"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            {CAT_LABELS[category] ?? category}
-          </p>
+        <section key={category} className="space-y-2">
           <div
             className="rounded-card overflow-hidden"
             style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
           >
-            {items.map((consumption, index) => (
-              <div
-                key={consumption.id}
-                className="flex items-center gap-3 px-4 py-3.5"
-                style={{
-                  opacity: consumption.is_active ? 1 : 0.4,
-                  borderTop: index > 0 ? '1px solid var(--color-border)' : undefined,
-                }}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
-                    {consumption.name}
+            <div
+              className="flex items-center justify-between gap-3 px-4 py-3"
+              style={{ background: 'var(--color-surface-alt)', borderBottom: '1px solid var(--color-border)' }}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <IconChip tone={category as ConsumptionCategory} size={34} />
+                <div className="min-w-0">
+                  <p
+                    className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+                    style={{ color: 'var(--color-text-muted)' }}
+                  >
+                    Categorie
                   </p>
-                  <p className="text-[11px] m-0 mt-0.5 tabular-nums" style={{ color: 'var(--color-text-muted)' }}>
-                    EUR {consumption.price.toFixed(2)}
+                  <p className="m-0 mt-0.5 text-[13px] font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    {CAT_LABELS[category] ?? category}
                   </p>
                 </div>
-                <IconActionButton
-                  onClick={() => openEdit(consumption)}
-                  variant="primary-soft"
-                  aria-label={`Bewerk ${consumption.name}`}
-                >
-                  <PencilSimple size={15} color="currentColor" />
-                </IconActionButton>
-                <IconActionButton
-                  onClick={() => toggleActive(consumption)}
-                  variant={consumption.is_active ? 'success-soft' : 'neutral'}
-                  aria-label={consumption.is_active ? `${consumption.name} verbergen` : `${consumption.name} zichtbaar maken`}
-                >
-                  {consumption.is_active
-                    ? <Eye size={15} color="currentColor" />
-                    : <EyeSlash size={15} color="currentColor" />}
-                </IconActionButton>
               </div>
-            ))}
+              <Badge variant="secondary">{items.length} items</Badge>
+            </div>
+
+            <div>
+              {items.map((consumption, index) => (
+                <div
+                  key={consumption.id}
+                  className="flex items-center gap-3 px-4 py-3.5"
+                  style={{
+                    opacity: consumption.is_active ? 1 : 0.72,
+                    borderTop: index > 0 ? '1px solid var(--color-border)' : undefined,
+                  }}
+                >
+                  <div className="min-w-0 flex-1 pr-1">
+                    <p className="m-0 text-[13px] font-semibold leading-[1.3]" style={CLAMPED_NAME_STYLE}>
+                      {consumption.name}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      <Badge variant={consumption.is_active ? 'success' : 'secondary'} size="sm">
+                        {consumption.is_active ? 'Actief' : 'Verborgen'}
+                      </Badge>
+                    </div>
+                    <p className="text-[12px] m-0 mt-1.5 font-extrabold tabular-nums whitespace-nowrap" style={{ color: 'var(--color-text-primary)' }}>
+                      EUR {consumption.price.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2 self-center">
+                    <IconActionButton
+                      onClick={() => openEdit(consumption)}
+                      variant="primary-soft"
+                      aria-label={`Bewerk ${consumption.name}`}
+                    >
+                      <PencilSimple size={15} color="currentColor" />
+                    </IconActionButton>
+                    <IconActionButton
+                      onClick={() => toggleActive(consumption)}
+                      variant={consumption.is_active ? 'success-soft' : 'neutral'}
+                      aria-label={consumption.is_active ? `${consumption.name} verbergen` : `${consumption.name} zichtbaar maken`}
+                    >
+                      {consumption.is_active
+                        ? <Eye size={15} color="currentColor" />
+                        : <EyeSlash size={15} color="currentColor" />}
+                    </IconActionButton>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       ))}

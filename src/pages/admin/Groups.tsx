@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CaretRight, CurrencyEur, Users } from '@phosphor-icons/react'
+import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { IconChip } from '../../components/IconChip'
 import { UserAvatar } from '../../components/UserAvatar'
+import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
 
 interface GroupMemberRow {
   full_name: string
@@ -92,6 +94,8 @@ export function Groups() {
   })
 
   const selectedGroup = (groups ?? []).find((group) => group.id === selectedGroupId) ?? null
+  const totalMembers = (groups ?? []).reduce((sum, group) => sum + group.memberCount, 0)
+  const totalTurnover = (groups ?? []).reduce((sum, group) => sum + group.total, 0)
 
   if (isLoading) {
     return (
@@ -103,6 +107,37 @@ export function Groups() {
 
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
+      <AdminOverviewCard
+        icon={Users}
+        tone="primary"
+        eyebrow="Groepen"
+        title={`${(groups ?? []).length} groepen`}
+        description="Bekijk per groep het aantal leden en de omzet van de actieve periode. Tik op een groep voor alle leden."
+      >
+        <div className="grid grid-cols-2 gap-2.5">
+          <AdminStatTile
+            label="Leden"
+            value={String(totalMembers)}
+            icon={Users}
+            tone="primary"
+          />
+          <AdminStatTile
+            label="Omzet"
+            value={`EUR ${totalTurnover.toFixed(2)}`}
+            icon={CurrencyEur}
+            tone="primary"
+            valueTone="primary"
+          />
+        </div>
+      </AdminOverviewCard>
+
+      <p
+        className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
+        Alle groepen
+      </p>
+
       {(groups ?? []).map((group) => (
         <button
           key={group.id}
@@ -118,19 +153,19 @@ export function Groups() {
                 <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                   {group.name}
                 </p>
-                <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                  {group.memberCount} leden
-                </p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <Badge variant="secondary" size="sm">{group.memberCount} leden</Badge>
+                  <Badge variant={group.total > 0 ? 'primary' : 'secondary'} size="sm">
+                    {group.total > 0 ? 'Actieve omzet' : 'Nog geen omzet'}
+                  </Badge>
+                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {group.total > 0 && (
-                <Badge variant="success" className="gap-1">
-                  <CurrencyEur size={11} color="var(--color-success)" />
-                  <span className="tabular-nums">{group.total.toFixed(2)}</span>
-                </Badge>
-              )}
+              <span className="text-[15px] font-extrabold tabular-nums" style={{ color: group.total > 0 ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
+                EUR {group.total.toFixed(2)}
+              </span>
               <CaretRight size={14} color="var(--color-text-muted)" />
             </div>
           </div>
@@ -154,39 +189,39 @@ export function Groups() {
       >
         {selectedGroup && (
           <>
-            <div className="grid grid-cols-2 gap-2.5 px-5 pt-5 pb-4">
-              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                  Leden
-                </p>
-                <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                  {selectedGroup.memberCount}
-                </p>
-              </div>
-              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                  Actieve periode
-                </p>
-                <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-success)' }}>
-                  EUR {selectedGroup.total.toFixed(2)}
-                </p>
-              </div>
+            <div className="px-5 pt-5 pb-4">
+              <AdminOverviewCard
+                icon={Users}
+                tone="primary"
+                eyebrow="Groepsdetail"
+                title={selectedGroup.name}
+                description="Bekijk hieronder alle gekoppelde leden van deze groep."
+              >
+                <div className="grid grid-cols-2 gap-2.5">
+                  <AdminStatTile
+                    label="Leden"
+                    value={String(selectedGroup.memberCount)}
+                    icon={Users}
+                    tone="primary"
+                  />
+                  <AdminStatTile
+                    label="Omzet"
+                    value={`EUR ${selectedGroup.total.toFixed(2)}`}
+                    icon={CurrencyEur}
+                    tone="primary"
+                    valueTone="primary"
+                  />
+                </div>
+              </AdminOverviewCard>
             </div>
 
             {selectedGroup.members.length === 0 ? (
               <div className="px-5 pb-5">
-                <div
-                  className="rounded-card px-4 py-12 flex flex-col items-center text-center"
-                  style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-                >
-                  <IconChip tone="primary" icon={Users} size={48} />
-                  <p className="text-[14px] font-bold mt-3" style={{ color: 'var(--color-text-primary)' }}>
-                    Nog geen leden
-                  </p>
-                  <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                    Leden van deze groep verschijnen hier.
-                  </p>
-                </div>
+                <AdminEmptyState
+                  icon={Users}
+                  title="Nog geen leden"
+                  description="Leden van deze groep verschijnen hier zodra ze gekoppeld zijn."
+                />
               </div>
             ) : (
               <div style={{ borderTop: '1px solid var(--color-border)' }}>
@@ -208,9 +243,12 @@ export function Groups() {
                         {member.full_name}
                       </p>
                       <p className="text-[12px] font-medium m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                        {ROLE_LABELS[member.role] ?? member.role}
+                        Gekoppeld aan {selectedGroup.name}
                       </p>
                     </div>
+                    <Badge variant={ROLE_BADGE_VARIANT[member.role as keyof typeof ROLE_BADGE_VARIANT] ?? 'secondary'} size="sm">
+                      {ROLE_LABELS[member.role] ?? member.role}
+                    </Badge>
                   </div>
                 ))}
               </div>
