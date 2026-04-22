@@ -55,7 +55,7 @@ export function AdminLayout() {
     >
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 0' }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px] pb-4" style={{ color: 'var(--color-text-primary)' }}>Beheer</h1>
-        <div ref={tabBarRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-0">
+        <div ref={tabBarRef} data-swipe-ignore className="flex gap-4 overflow-x-auto scrollbar-hide pb-0">
           <NavLink to="/admin/dashboard" className={base} style={({ isActive }) => isActive ? activeStyle : inactiveStyle}>
             <ChartBar size={16} />Dashboard
           </NavLink>

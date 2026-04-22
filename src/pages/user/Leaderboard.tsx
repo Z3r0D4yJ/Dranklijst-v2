@@ -160,6 +160,7 @@ export function Leaderboard() {
       {!isLoading && visibleGroups.length > 1 && (
         <div
           ref={tabBarRef}
+          data-swipe-ignore
           className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0"
           style={{
             background: 'var(--color-surface)',
