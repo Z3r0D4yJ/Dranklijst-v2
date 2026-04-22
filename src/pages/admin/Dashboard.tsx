@@ -126,7 +126,7 @@ export function Dashboard() {
   const currentPeriod = periods.find(p => p.id === selectedPeriod)
 
   return (
-    <div className="px-4 space-y-3">
+    <div className="px-4 space-y-3 pb-content-end-comfort">
       {/* Period picker */}
       {periods.length > 0 && (
         <CustomSelect

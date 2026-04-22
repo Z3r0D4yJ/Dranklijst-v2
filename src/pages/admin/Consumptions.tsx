@@ -151,7 +151,7 @@ export function Consumptions() {
   }
 
   return (
-    <div className="px-4 space-y-4">
+    <div className="px-4 space-y-4 pb-content-end-comfort">
       <button
         onClick={openNew}
         className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"

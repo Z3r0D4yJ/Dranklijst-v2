@@ -96,7 +96,7 @@ export function Transactions() {
   })
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }} {...swipe}>
+    <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }} {...swipe}>
       {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Transacties</h1>
@@ -142,7 +142,7 @@ export function Transactions() {
         </div>
       )}
 
-      <div className="px-5 pt-4 pb-24 space-y-4">
+      <div className="px-5 pt-4 space-y-4">
         {/* ─── Total card ──────────────────────────── */}
         <div className="rounded-card overflow-hidden relative" style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff' }}>
           <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: 70, background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />

@@ -39,7 +39,7 @@ export function Pagination({ page, totalPages, onPage }: Props) {
   )
 
   return (
-    <div className="flex items-center justify-center gap-1.5 py-2">
+    <div className="flex items-center justify-center gap-1.5 pt-2 pb-5">
       {btn(<CaretLeft size={13} weight="bold" />, page - 1, page === 1)}
       {pages.map((p, i) =>
         p === '…'

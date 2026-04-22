@@ -471,13 +471,13 @@ export function Profile() {
   const canOpenAdminPanel = role === 'kas' || role === 'groepsleiding' || role === 'admin'
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }}>
       {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Profiel</h1>
       </div>
 
-      <div className="px-5 pt-4 pb-24 space-y-3.5">
+      <div className="px-5 pt-4 space-y-3.5 pb-content-end-comfort">
         {/* ─── Identity card ──────────────────────── */}
         <div className="rounded-card p-4 flex items-center gap-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="relative shrink-0">

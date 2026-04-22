@@ -87,7 +87,7 @@ export function Home() {
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
 
   return (
-    <div ref={containerRef} className="min-h-screen pb-24 relative" style={{ background: 'var(--color-bg)' }}>
+    <div ref={containerRef} className="min-h-screen pb-nav-fab-clearance relative" style={{ background: 'var(--color-bg)' }}>
       {/* ─── Header ─────────────────────────────── */}
       <div style={{ background: 'var(--color-header)', padding: '14px 20px 32px', color: 'var(--color-header-fg)' }}>
         <div className="flex justify-between items-center mb-[18px]">
@@ -202,7 +202,7 @@ export function Home() {
 
       {/* ─── Consumption grid ───────────────────── */}
       {!isLoading && group && period && (
-        <div className="px-5 pt-[22px] pb-[120px] space-y-5">
+        <div className="px-5 pt-[22px] space-y-5">
           {Object.entries(grouped).map(([category, items]) => (
             <section key={category}>
               <div className="flex items-baseline justify-between mb-3 px-0.5">

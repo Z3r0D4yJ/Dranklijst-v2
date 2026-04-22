@@ -49,7 +49,7 @@ export function AdminLayout() {
 
   return (
     <div
-      className="min-h-screen pb-8"
+      className="min-h-screen pb-nav-clearance"
       style={{ background: 'var(--color-bg)' }}
       {...swipe}
     >
@@ -83,7 +83,7 @@ export function AdminLayout() {
           )}
         </div>
       </div>
-      <div className="mt-5 pb-24">
+      <div className="mt-5">
         <Outlet />
       </div>
       <BottomNav />

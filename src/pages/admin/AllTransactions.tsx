@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, Receipt, Trash } from '@phosphor-icons/react'
+import { useSearchParams } from 'react-router-dom'
 import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
@@ -44,11 +45,12 @@ function TxDetailRow({ label, value }: { label: string; value: string }) {
 
 export function AllTransactions() {
   const queryClient = useQueryClient()
-  const [selectedPeriod, setSelectedPeriod] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
   const [selectedGroup, setSelectedGroup] = useState('')
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [armedDelete, setArmedDelete] = useState(false)
+  const selectedPeriod = searchParams.get('period') ?? ''
 
   const { data: periods } = useQuery({
     queryKey: ['periods'],
@@ -147,6 +149,23 @@ export function AllTransactions() {
     }
   }, [selectedTx, selectedTxId])
 
+  useEffect(() => {
+    setSelectedTxId(null)
+    setArmedDelete(false)
+  }, [selectedPeriod, selectedGroup])
+
+  function updatePeriodFilter(value: string) {
+    const nextSearchParams = new URLSearchParams(searchParams)
+
+    if (value) {
+      nextSearchParams.set('period', value)
+    } else {
+      nextSearchParams.delete('period')
+    }
+
+    setSearchParams(nextSearchParams, { replace: true })
+  }
+
   async function deleteTransaction(id: string) {
     setDeletingId(id)
 
@@ -171,8 +190,7 @@ export function AllTransactions() {
         <CustomSelect
           value={selectedPeriod}
           onChange={(value) => {
-            setSelectedPeriod(value)
-            setSelectedTxId(null)
+            updatePeriodFilter(value)
           }}
           options={(periods ?? []).map((period) => ({
             value: period.id,
@@ -187,7 +205,6 @@ export function AllTransactions() {
           value={selectedGroup}
           onChange={(value) => {
             setSelectedGroup(value)
-            setSelectedTxId(null)
           }}
           options={(groups ?? []).map((group) => ({ value: group.id, label: group.name }))}
           placeholder="Alle groepen"

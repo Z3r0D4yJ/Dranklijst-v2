@@ -135,7 +135,7 @@ export function JoinGroup() {
         </p>
       </div>
 
-      <div className="flex-1 space-y-4 px-5 pb-24 pt-5">
+      <div className="flex-1 space-y-4 px-5 pb-page-clearance pt-5">
         {mode === 'browse' && (
           <>
             {requestError && (

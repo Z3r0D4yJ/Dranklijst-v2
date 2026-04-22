@@ -19,6 +19,10 @@ interface PeriodStats {
   total: number
 }
 
+function formatMemberCount(count: number) {
+  return `${count} ${count === 1 ? 'lid' : 'leden'}`
+}
+
 export function Periods() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -109,6 +113,7 @@ export function Periods() {
       notifyPeriodClosed(periodId, periodName)
       navigate('/admin/financieel')
     }
+
     setClosing(null)
   }
 
@@ -118,6 +123,11 @@ export function Periods() {
       month: 'short',
       year: 'numeric',
     })
+  }
+
+  function goToTransactions(periodId: string) {
+    const params = new URLSearchParams({ period: periodId })
+    navigate(`/admin/transacties?${params.toString()}`)
   }
 
   const inputStyle = {
@@ -133,7 +143,7 @@ export function Periods() {
   }
 
   return (
-    <div className="px-4 space-y-3">
+    <div className="px-4 space-y-3 pb-content-end-comfort">
       <button
         onClick={() => setShowNew(true)}
         className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
@@ -211,75 +221,191 @@ export function Periods() {
       )}
 
       <div className="flex flex-col gap-2.5">
-        {(stats ?? []).map(({ period, user_count, total }) => (
-          <div
-            key={period.id}
-            className="rounded-card p-3.5 relative overflow-hidden"
-            style={{
-              background: 'var(--color-surface)',
-              border: `1px solid ${period.is_active ? 'var(--color-primary-border)' : 'var(--color-border)'}`,
-            }}
-          >
-            {period.is_active && (
+        {(stats ?? []).map(({ period, user_count, total }) =>
+          period.is_active ? (
+            <div
+              key={period.id}
+              className="rounded-card p-4"
+              style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-primary-border)',
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <IconChip tone="primary" icon={CalendarBlank} size={38} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p
+                        className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+                        style={{ color: 'var(--color-text-muted)' }}
+                      >
+                        Actieve periode
+                      </p>
+                      <p
+                        className="mt-1 truncate text-[16px] font-extrabold tracking-[-0.4px]"
+                        style={{ color: 'var(--color-text-primary)' }}
+                      >
+                        {period.name}
+                      </p>
+                      <p
+                        className="mt-1 text-[12px] font-medium"
+                        style={{ color: 'var(--color-text-muted)' }}
+                      >
+                        Gestart op {formatDate(period.started_at)}
+                      </p>
+                    </div>
+                    <Badge variant="primary">
+                      Actief
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
               <div
+                className="mt-3 rounded-[12px] px-3.5 py-3.5"
                 style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 3,
-                  background: 'var(--color-primary)',
+                  background: 'var(--color-primary-pale)',
+                  border: '1px solid var(--color-primary-border)',
                 }}
-              />
-            )}
-            <div className="flex items-start gap-3" style={{ paddingLeft: period.is_active ? 8 : 0 }}>
-              <IconChip tone={period.is_active ? 'primary' : 'neutral'} icon={CalendarBlank} size={34} />
-              <div className="flex-1">
-                <p className="text-[14px] font-bold m-0 mb-0.5" style={{ color: 'var(--color-text-primary)' }}>
-                  {period.name}
+              >
+                <p
+                  className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  Huidige omzet
                 </p>
-                <p className="text-[12px] m-0" style={{ color: 'var(--color-text-muted)' }}>
-                  {formatDate(period.started_at)}
-                  {period.ended_at ? ` -> ${formatDate(period.ended_at)}` : ' · Actief'}
+                <p
+                  className="mt-1 text-[28px] font-extrabold tracking-[-0.7px] tabular-nums"
+                  style={{ color: 'var(--color-primary)' }}
+                >
+                  EUR {total.toFixed(2)}
+                </p>
+                <p
+                  className="mt-2 text-[12px] font-medium leading-[1.55]"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  Bij afsluiten worden de openstaande betalingen voor deze periode aangemaakt.
                 </p>
               </div>
-              {period.is_active && (
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => goToTransactions(period.id)}
+                  className="inline-flex items-center gap-2 rounded-[12px] px-3 py-2.5 active:scale-[0.98] transition-transform"
+                  style={{
+                    background: 'var(--color-surface-alt)',
+                    border: '1px solid var(--color-border)',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <IconChip tone="primary" icon={Users} size={24} />
+                  <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {formatMemberCount(user_count)}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goToTransactions(period.id)}
+                  className="inline-flex items-center gap-2 rounded-[12px] px-3 py-2.5 active:scale-[0.98] transition-transform"
+                  style={{
+                    background: 'var(--color-surface-alt)',
+                    border: '1px solid var(--color-border)',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <IconChip tone="primary" icon={CurrencyEur} size={24} />
+                  <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                    EUR {total.toFixed(2)} totaal
+                  </span>
+                </button>
+              </div>
+
+              <div className="mt-3">
                 <ActionPillButton
                   onClick={() => closePeriod(period.id, period.name)}
                   disabled={closing === period.id}
                   variant="danger-soft"
-                  size="sm"
+                  size="md"
+                  className="w-full"
                 >
-                  <Stop size={12} weight="fill" />
-                  {closing === period.id ? 'Bezig...' : 'Afsluiten'}
+                  <Stop size={13} weight="fill" />
+                  {closing === period.id ? 'Periode wordt afgesloten...' : 'Periode afsluiten'}
                 </ActionPillButton>
-              )}
-              {!period.is_active && (
-                <Badge variant="success" className="gap-1">
-                  <CheckCircle size={14} weight="fill" />
-                  Gesloten
-                </Badge>
-              )}
+              </div>
             </div>
-
+          ) : (
             <div
-              className="flex gap-4 mt-3 pt-2.5"
-              style={{ borderTop: '1px solid var(--color-border)', paddingLeft: period.is_active ? 8 : 0 }}
+              key={period.id}
+              className="rounded-card p-3.5"
+              style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+              }}
             >
-              {[
-                { icon: Users, value: `${user_count} leden` },
-                { icon: CurrencyEur, value: `EUR ${total.toFixed(2)} totaal` },
-              ].map(({ icon, value }, index) => (
-                <div key={index} className="flex items-center gap-1.5">
-                  <IconChip tone="primary" icon={icon} size={24} />
-                  <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                    {value}
-                  </span>
+              <div className="flex items-start gap-3">
+                <IconChip tone="neutral" icon={CalendarBlank} size={34} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p
+                        className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+                        style={{ color: 'var(--color-text-muted)' }}
+                      >
+                        Afgesloten periode
+                      </p>
+                      <p
+                        className="mt-1 truncate text-[14px] font-bold"
+                        style={{ color: 'var(--color-text-primary)' }}
+                      >
+                        {period.name}
+                      </p>
+                    </div>
+                    <Badge variant="success" className="gap-1">
+                      <CheckCircle size={14} weight="fill" />
+                      Gesloten
+                    </Badge>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge variant="secondary" className="gap-1.5">
+                      <CalendarBlank size={12} weight="bold" />
+                      {formatDate(period.started_at)}
+                    </Badge>
+                    <Badge variant="success" className="gap-1.5">
+                      <CheckCircle size={12} weight="fill" />
+                      {formatDate(period.ended_at ?? period.started_at)}
+                    </Badge>
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              <div
+                className="flex gap-4 mt-3 pt-2.5"
+                style={{ borderTop: '1px solid var(--color-border)' }}
+              >
+                {[
+                  { icon: Users, value: formatMemberCount(user_count) },
+                  { icon: CurrencyEur, value: `EUR ${total.toFixed(2)} totaal` },
+                ].map(({ icon, value }, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => goToTransactions(period.id)}
+                    className="flex items-center gap-1.5 rounded-[12px] active:scale-[0.98] transition-transform"
+                    style={{ fontFamily: 'inherit' }}
+                  >
+                    <IconChip tone="primary" icon={icon} size={24} />
+                    <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                      {value}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ),
+        )}
       </div>
     </div>
   )

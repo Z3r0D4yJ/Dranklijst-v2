@@ -78,6 +78,11 @@
   --skel-base: var(--color-surface-alt);
   --skel-hl:   var(--color-border);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-nav-height: 84px;
+  --bottom-nav-clearance: calc(var(--bottom-nav-height) + 12px);
+  --bottom-nav-fab-clearance: calc(var(--bottom-nav-height) + 40px);
+  --page-bottom-clearance: calc(24px + var(--safe-area-bottom));
+  --content-end-comfort: 28px;
   --app-safe-screen-height: calc(
     100dvh - var(--safe-area-top, env(safe-area-inset-top, 0px)) + var(--safe-area-bottom)
   );
@@ -285,6 +290,22 @@ body {
 
 .pb-safe {
   padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.pb-page-clearance {
+  padding-bottom: var(--page-bottom-clearance) !important;
+}
+
+.pb-nav-clearance {
+  padding-bottom: var(--bottom-nav-clearance) !important;
+}
+
+.pb-nav-fab-clearance {
+  padding-bottom: var(--bottom-nav-fab-clearance) !important;
+}
+
+.pb-content-end-comfort {
+  padding-bottom: var(--content-end-comfort) !important;
 }
 
 button {

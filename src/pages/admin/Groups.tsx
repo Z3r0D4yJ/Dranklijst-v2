@@ -102,7 +102,7 @@ export function Groups() {
   }
 
   return (
-    <div className="px-4 space-y-3">
+    <div className="px-4 space-y-3 pb-content-end-comfort">
       {(groups ?? []).map((group) => (
         <button
           key={group.id}
