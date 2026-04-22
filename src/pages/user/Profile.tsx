@@ -598,7 +598,7 @@ export function Profile() {
 
       <div className="px-5 pt-4 pb-24 space-y-3.5">
         {/* ─── Identity card ──────────────────────── */}
-        <div className="rounded-card p-[18px] flex items-center gap-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div className="rounded-card p-4 flex items-center gap-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="relative shrink-0">
             <div className="w-[62px] h-[62px] rounded-full overflow-hidden" style={{ background: 'var(--color-accent-bg)', border: '2px solid var(--color-accent-border)' }}>
               {profile?.avatar_url ? (

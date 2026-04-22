@@ -114,12 +114,12 @@ export function Register() {
                 onChange={e => setFullName(e.target.value)}
                 placeholder="Jan Janssens"
                 required
-                className="w-full outline-none text-[14px] font-medium"
+                className="w-full outline-none text-[15px] font-semibold"
                 style={{
                   background: 'var(--color-surface-alt)',
                   border: '1.5px solid var(--color-border-mid)',
-                  borderRadius: 14,
-                  padding: '12px 14px 12px 42px',
+                  borderRadius: 12,
+                  padding: '14px 14px 14px 42px',
                   color: 'var(--color-text-primary)',
                   boxSizing: 'border-box',
                   fontFamily: 'inherit',
@@ -142,12 +142,12 @@ export function Register() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="naam@voorbeeld.be"
                 required
-                className="w-full outline-none text-[14px] font-medium"
+                className="w-full outline-none text-[15px] font-semibold"
                 style={{
                   background: 'var(--color-surface-alt)',
                   border: '1.5px solid var(--color-border-mid)',
-                  borderRadius: 14,
-                  padding: '12px 14px 12px 42px',
+                  borderRadius: 12,
+                  padding: '14px 14px 14px 42px',
                   color: 'var(--color-text-primary)',
                   boxSizing: 'border-box',
                   fontFamily: 'inherit',
@@ -170,12 +170,12 @@ export function Register() {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Minimaal 6 tekens"
                 required
-                className="w-full outline-none text-[14px] font-medium"
+                className="w-full outline-none text-[15px] font-semibold"
                 style={{
                   background: 'var(--color-surface-alt)',
                   border: '1.5px solid var(--color-border-mid)',
-                  borderRadius: 14,
-                  padding: '12px 42px 12px 42px',
+                  borderRadius: 12,
+                  padding: '14px 42px 14px 42px',
                   color: 'var(--color-text-primary)',
                   boxSizing: 'border-box',
                   fontFamily: 'inherit',

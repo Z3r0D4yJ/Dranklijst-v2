@@ -58,7 +58,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
   return (
     <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
       <DrawerContent
-        className="mx-auto w-full max-w-md rounded-t-[28px] px-5 pb-6"
+        className="mx-auto w-full max-w-md rounded-t-[24px] px-5 pb-6"
         style={{ background: 'var(--color-surface)' }}
       >
         <div className="mb-6 flex items-start gap-3 pt-2">
@@ -121,7 +121,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
         </div>
 
         <div
-          className="mt-3 mb-5 rounded-[14px] px-5 py-4 flex items-center justify-between"
+          className="mt-3 mb-5 rounded-card px-5 py-4 flex items-center justify-between"
           style={{ background: 'var(--color-surface-alt)' }}
         >
           <span className="text-[14px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>
@@ -141,14 +141,13 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
           className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
           style={{
             background: 'var(--color-primary)',
-            color: '#fff',
+            color: 'white',
             padding: '14px 16px',
             borderRadius: 14,
-            boxShadow: 'var(--shadow-fab)',
           }}
         >
           {loading ? (
-            <Spinner className="size-4 shrink-0" style={{ color: '#fff' }} />
+            <Spinner className="size-4 shrink-0" style={{ color: 'white' }} />
           ) : (
             <ShoppingCart size={18} weight="bold" />
           )}

@@ -157,7 +157,7 @@ export function Consumptions() {
         className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
         style={{
           background: 'var(--color-primary)',
-          color: '#fff',
+          color: 'white',
           padding: 13,
           borderRadius: 14,
           border: 'none',
@@ -189,7 +189,7 @@ export function Consumptions() {
             className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
             style={{
               background: 'var(--color-primary)',
-              color: '#fff',
+              color: 'white',
               padding: '12px',
               borderRadius: 12,
               border: 'none',
@@ -228,7 +228,7 @@ export function Consumptions() {
           >
             Prijs en categorie
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <input
               type="number"
               value={form.price}
@@ -263,13 +263,13 @@ export function Consumptions() {
             {CAT_LABELS[category] ?? category}
           </p>
           <div
-            className="rounded-[14px] overflow-hidden"
+            className="rounded-card overflow-hidden"
             style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
           >
             {items.map((consumption, index) => (
               <div
                 key={consumption.id}
-                className="flex items-center gap-3 px-4 py-3"
+                className="flex items-center gap-3 px-4 py-3.5"
                 style={{
                   opacity: consumption.is_active ? 1 : 0.4,
                   borderTop: index > 0 ? '1px solid var(--color-border)' : undefined,

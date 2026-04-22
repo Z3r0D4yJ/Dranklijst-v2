@@ -23,14 +23,14 @@ function StatCard({ label, value, icon, iconBg, valueColor }: {
   valueColor: string
 }) {
   return (
-    <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+    <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
+        <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
         <div className="w-7 h-7 rounded-[9px] flex items-center justify-center" style={{ background: iconBg }}>
           {icon}
         </div>
       </div>
-      <p className="text-[22px] font-extrabold tracking-[-0.5px] m-0 tabular-nums" style={{ color: valueColor, fontSize: value.length > 6 ? 16 : 22 }}>{value}</p>
+      <p className="text-[20px] font-extrabold tracking-[-0.5px] m-0 tabular-nums" style={{ color: valueColor }}>{value}</p>
     </div>
   )
 }
@@ -182,7 +182,7 @@ export function Dashboard() {
               </div>
 
               {(data?.groupStats?.filter(g => g.total > 0).length ?? 0) > 0 && (
-                <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
                   <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] m-0 mb-3" style={{ color: 'var(--color-text-muted)' }}>Omzet per groep</p>
                   <div className="flex flex-col gap-2.5">
                     {(data?.groupStats ?? []).filter(g => g.total > 0).map((b, i) => {
@@ -207,7 +207,7 @@ export function Dashboard() {
               )}
 
               {data?.totalTransactions === 0 && (
-                <div className="rounded-[14px] px-4 py-6 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <div className="rounded-card px-4 py-6 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
                   <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>Geen transacties voor deze periode.</p>
                 </div>
               )}

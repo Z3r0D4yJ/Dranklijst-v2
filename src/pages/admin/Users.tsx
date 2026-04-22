@@ -279,7 +279,7 @@ export function Users() {
           return (
             <div
               key={user.id}
-              className="rounded-[14px] p-3.5"
+              className="rounded-card p-3.5"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
             >
               <div className="flex items-center justify-between gap-3">
@@ -292,7 +292,7 @@ export function Users() {
                     iconColor="var(--color-primary)"
                   />
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {user.full_name}
                     </p>
                     <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
@@ -327,7 +327,7 @@ export function Users() {
 
       {!isLoading && filtered.length === 0 && (
         <div
-          className="rounded-[14px] px-4 py-8 text-center"
+          className="rounded-card px-4 py-8 text-center"
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
         >
           <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>
@@ -372,7 +372,7 @@ export function Users() {
         {editingUser && (
           <>
             <div
-              className="rounded-[14px] p-4 flex items-center gap-3"
+              className="rounded-card p-4 flex items-center gap-3"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
             >
               <UserAvatar
@@ -419,7 +419,7 @@ export function Users() {
             )}
 
             <div
-              className="rounded-[14px] px-4 py-3"
+              className="rounded-card px-4 py-3"
               style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
             >
               <p className="text-[11px] font-extrabold uppercase tracking-[1px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>

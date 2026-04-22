@@ -35,8 +35,8 @@ export function JoinViaCode() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--color-bg)' }}>
         <div className="w-full max-w-sm text-center space-y-5">
-          <div className="w-16 h-16 bg-[#EFF6FF] rounded-2xl flex items-center justify-center mx-auto">
-            <Users size={32} color="#2563EB" />
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto" style={{ background: 'var(--color-primary-pale)' }}>
+            <Users size={32} color="var(--color-primary)" />
           </div>
           <div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Je bent uitgenodigd!</h1>
@@ -79,8 +79,8 @@ export function JoinViaCode() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--color-bg)' }}>
         <div className="w-full max-w-sm text-center space-y-5">
-          <div className="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle size={36} color="#10B981" weight="fill" />
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ background: 'var(--color-success-bg)' }}>
+            <CheckCircle size={36} color="var(--color-success)" weight="fill" />
           </div>
           <div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Welkom bij {groupName}!</h1>
@@ -103,8 +103,8 @@ export function JoinViaCode() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--color-bg)' }}>
       <div className="w-full max-w-sm text-center space-y-5">
-        <div className="w-16 h-16 bg-[#FEF2F2] rounded-full flex items-center justify-center mx-auto">
-          <WarningCircle size={36} color="#EF4444" weight="fill" />
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ background: 'var(--color-danger-bg)' }}>
+          <WarningCircle size={36} color="var(--color-danger)" weight="fill" />
         </div>
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Ongeldige link</h1>

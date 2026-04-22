@@ -5,7 +5,8 @@ import { CalendarBlank, Stop, Plus, CheckCircle, Users, CurrencyEur } from '@pho
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
-import { Badge, badgeVariants } from '../../components/ui/badge'
+import { Badge } from '../../components/ui/badge'
+import { ActionPillButton } from '../../components/ui/action-button'
 import { IconChip } from '../../components/IconChip'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
@@ -212,7 +213,7 @@ export function Periods() {
         {(stats ?? []).map(({ period, user_count, total }) => (
           <div
             key={period.id}
-            className="rounded-[14px] p-3.5 relative overflow-hidden"
+            className="rounded-card p-3.5 relative overflow-hidden"
             style={{
               background: 'var(--color-surface)',
               border: `1px solid ${period.is_active ? 'var(--color-primary-border)' : 'var(--color-border)'}`,
@@ -242,18 +243,15 @@ export function Periods() {
                 </p>
               </div>
               {period.is_active && (
-                <button
+                <ActionPillButton
                   onClick={() => closePeriod(period.id, period.name)}
                   disabled={closing === period.id}
-                  className={`${badgeVariants({
-                    variant: 'danger',
-                    size: 'lg',
-                  })} active:scale-95 transition-transform disabled:opacity-50`}
-                  style={{ fontFamily: 'inherit' }}
+                  variant="danger-soft"
+                  size="sm"
                 >
                   <Stop size={12} weight="fill" />
                   {closing === period.id ? 'Bezig...' : 'Afsluiten'}
-                </button>
+                </ActionPillButton>
               )}
               {!period.is_active && (
                 <Badge variant="success" className="gap-1">

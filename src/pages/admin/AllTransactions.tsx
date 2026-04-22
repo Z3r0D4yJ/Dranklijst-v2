@@ -167,7 +167,7 @@ export function AllTransactions() {
 
   return (
     <div className="px-4 space-y-3">
-      <div className="flex gap-2">
+      <div className="flex gap-2.5">
         <CustomSelect
           value={selectedPeriod}
           onChange={(value) => {
@@ -196,14 +196,14 @@ export function AllTransactions() {
       </div>
 
       {allTx.length > 0 && (
-        <div className="rounded-[14px] px-4 py-3 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div className="rounded-card px-4 py-3 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="flex items-center gap-2">
             <IconChip tone="primary" icon={Receipt} size={32} />
             <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {allTx.length} transacties
             </span>
           </div>
-          <span className="text-[18px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+          <span className="text-[20px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
             EUR {total.toFixed(2).replace('.', ',')}
           </span>
         </div>
@@ -216,7 +216,7 @@ export function AllTransactions() {
       )}
 
       {!isLoading && allTx.length === 0 && (
-        <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div className="rounded-card px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>
             Geen transacties gevonden.
           </p>
@@ -229,7 +229,7 @@ export function AllTransactions() {
             key={tx.id}
             type="button"
             onClick={() => setSelectedTxId(tx.id)}
-            className="w-full rounded-[14px] px-3.5 py-3 text-left active:scale-[0.99] transition-transform"
+            className="w-full rounded-card px-3.5 py-3 text-left active:scale-[0.99] transition-transform"
             style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
           >
             <div className="flex items-start justify-between gap-3">
@@ -332,7 +332,7 @@ export function AllTransactions() {
       >
         {selectedTx && (
           <>
-            <div className="rounded-[14px] p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+            <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
               <p className="text-[11px] font-bold uppercase tracking-[0.9px] m-0" style={{ color: 'var(--color-text-muted)' }}>
                 Totaal
               </p>

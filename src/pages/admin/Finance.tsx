@@ -37,7 +37,7 @@ function PaymentDetailRow({ label, value }: { label: string; value: string }) {
       className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-3"
       style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
     >
-      <span className="text-[12px] font-bold uppercase tracking-[0.8px]" style={{ color: 'var(--color-text-muted)' }}>
+      <span className="text-[12px] font-bold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
         {label}
       </span>
       <span className="text-[13px] font-bold text-right" style={{ color: 'var(--color-text-primary)' }}>
@@ -229,16 +229,16 @@ export function Finance() {
       {payments.length > 0 && (
         <>
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="rounded-[14px] p-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
                 Openstaand
               </p>
               <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-danger)' }}>
                 EUR {unpaidTotal.toFixed(2)}
               </p>
             </div>
-            <div className="rounded-[14px] p-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
                 Ontvangen
               </p>
               <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-success)' }}>
@@ -247,7 +247,7 @@ export function Finance() {
             </div>
           </div>
 
-          <div className="rounded-[14px] px-3.5 py-2.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <div className="rounded-card px-3.5 py-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <div className="flex justify-between mb-1.5">
               <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                 Betaald
@@ -295,7 +295,7 @@ export function Finance() {
       )}
 
       {!isLoading && payments.length === 0 && selectedPeriod && (
-        <div className="rounded-[14px] px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div className="rounded-card px-4 py-8 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <p className="text-[13px] m-0" style={{ color: 'var(--color-text-muted)' }}>
             Geen betalingen voor deze periode.
           </p>
@@ -316,7 +316,7 @@ export function Finance() {
               key={payment.id}
               type="button"
               onClick={() => setSelectedPaymentId(payment.id)}
-              className="w-full rounded-[14px] p-3.5 text-left active:scale-[0.99] transition-transform"
+              className="w-full rounded-card p-3.5 text-left active:scale-[0.99] transition-transform"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
             >
               <div className="flex items-center gap-2.5">
@@ -385,10 +385,10 @@ export function Finance() {
       >
         {selectedPayment && (
           <>
-            <div className="rounded-[14px] p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+            <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.9px] m-0" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>
                     Status
                   </p>
                   <p className="text-[17px] font-extrabold m-0 mt-1" style={{ color: 'var(--color-text-primary)' }}>
@@ -414,16 +414,16 @@ export function Finance() {
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
                   Verschuldigd
                 </p>
                 <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
                   EUR {Number(selectedPayment.amount_due).toFixed(2)}
                 </p>
               </div>
-              <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
                   Ontvangen
                 </p>
                 <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-success)' }}>

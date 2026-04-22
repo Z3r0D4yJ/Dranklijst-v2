@@ -144,7 +144,7 @@ export function Transactions() {
 
       <div className="px-5 pt-4 pb-24 space-y-4">
         {/* ─── Total card ──────────────────────────── */}
-        <div className="rounded-[20px] overflow-hidden relative" style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff' }}>
+        <div className="rounded-card overflow-hidden relative" style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff' }}>
           <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: 70, background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', right: 30, bottom: -20, width: 80, height: 80, borderRadius: 40, background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
           <img

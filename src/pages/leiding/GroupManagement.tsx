@@ -175,7 +175,7 @@ export function GroupManagement() {
   }
 
   return (
-    <div className="min-h-screen pb-8" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
         <h1 className="m-0 mb-0.5 text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>
           Groepsbeheer
@@ -185,7 +185,7 @@ export function GroupManagement() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-5 px-5 pb-8 pt-4">
+      <div className="flex flex-col gap-5 px-5 pb-24 pt-4">
         <section>
           <SectionLabel>Uitnodigingslink</SectionLabel>
           <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
