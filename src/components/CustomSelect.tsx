@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CaretDown } from '@phosphor-icons/react'
 import { Badge } from './ui/badge'
 
@@ -43,19 +43,68 @@ function SelectBadge({ label, tone = 'success' }: { label: string; tone?: Option
   )
 }
 
+function getMenuLayout(wrapper: HTMLDivElement) {
+  const parent = wrapper.parentElement
+  if (!parent) return null
+
+  const wrapperRect = wrapper.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
+  const parentStyle = window.getComputedStyle(parent)
+  const isHorizontalGroup =
+    (parentStyle.display === 'flex' || parentStyle.display === 'inline-flex') &&
+    parent.childElementCount > 1 &&
+    parentRect.width - wrapperRect.width > 24
+
+  if (!isHorizontalGroup) return null
+
+  return {
+    left: parentRect.left - wrapperRect.left,
+    width: parentRect.width,
+  }
+}
+
 export function CustomSelect({ value, onChange, options, placeholder, icon, style, className }: Props) {
   const [open, setOpen] = useState(false)
+  const [menuLayout, setMenuLayout] = useState<{ left: number; width: number } | null>(null)
   const ref = useRef<HTMLDivElement>(null)
 
-  const selected = options.find(o => o.value === value)
-  const displayLabel = selected?.label ?? placeholder ?? '—'
+  const selected = options.find((option) => option.value === value)
+  const displayLabel = selected?.label ?? placeholder ?? '-'
   const hasEmpty = placeholder !== undefined
 
   useEffect(() => {
-    if (!open) return
-    function onDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    if (!open) {
+      setMenuLayout(null)
+      return
     }
+
+    function updateMenuLayout() {
+      const wrapper = ref.current
+      if (!wrapper) {
+        setMenuLayout(null)
+        return
+      }
+
+      setMenuLayout(getMenuLayout(wrapper))
+    }
+
+    updateMenuLayout()
+    window.addEventListener('resize', updateMenuLayout)
+
+    return () => {
+      window.removeEventListener('resize', updateMenuLayout)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+
+    function onDown(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
   }, [open])
@@ -64,7 +113,7 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
     <div ref={ref} className={`relative ${className ?? ''}`} style={style}>
       <button
         type="button"
-        onClick={() => setOpen(v => !v)}
+        onClick={() => setOpen((current) => !current)}
         className="w-full flex items-center gap-2.5 text-[13px] font-semibold active:scale-[0.98] transition-transform"
         style={{
           background: 'var(--color-surface)',
@@ -87,25 +136,34 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
           size={12}
           color="var(--color-text-muted)"
           weight="bold"
-          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 180ms ease', flexShrink: 0 }}
+          style={{
+            transform: open ? 'rotate(180deg)' : 'rotate(0)',
+            transition: 'transform 180ms ease',
+            flexShrink: 0,
+          }}
         />
       </button>
 
       {open && (
         <div
-          className="absolute left-0 right-0 top-full mt-1 z-50 overflow-hidden"
+          className="absolute top-full mt-1 z-50 overflow-hidden"
           style={{
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border-mid)',
             borderRadius: 12,
             boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+            left: menuLayout?.left ?? 0,
+            width: menuLayout?.width ?? '100%',
             minWidth: '100%',
           }}
         >
           {hasEmpty && (
             <button
               type="button"
-              onClick={() => { onChange(''); setOpen(false) }}
+              onClick={() => {
+                onChange('')
+                setOpen(false)
+              }}
               className="w-full text-left px-4 text-[13px]"
               style={{
                 height: SELECT_HEIGHT,
@@ -119,25 +177,29 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
               {placeholder}
             </button>
           )}
-          {options.map((o, i) => (
+
+          {options.map((option, index) => (
             <button
-              key={o.value}
+              key={option.value}
               type="button"
-              onClick={() => { onChange(o.value); setOpen(false) }}
+              onClick={() => {
+                onChange(option.value)
+                setOpen(false)
+              }}
               className="w-full flex items-center gap-2.5 px-4 text-[13px]"
               style={{
                 height: SELECT_HEIGHT,
-                fontWeight: o.value === value ? 700 : 500,
-                color: o.value === value ? 'var(--color-primary)' : 'var(--color-text-primary)',
+                fontWeight: option.value === value ? 700 : 500,
+                color: option.value === value ? 'var(--color-primary)' : 'var(--color-text-primary)',
                 background: 'transparent',
                 border: 'none',
-                borderTop: i > 0 || hasEmpty ? '1px solid var(--color-border)' : 'none',
+                borderTop: index > 0 || hasEmpty ? '1px solid var(--color-border)' : 'none',
                 fontFamily: 'inherit',
               }}
             >
-              <span className="flex-1 text-left truncate">{o.label}</span>
-              {o.badge && (
-                <SelectBadge label={o.badge} tone={o.badgeTone} />
+              <span className="flex-1 text-left truncate">{option.label}</span>
+              {option.badge && (
+                <SelectBadge label={option.badge} tone={option.badgeTone} />
               )}
             </button>
           ))}

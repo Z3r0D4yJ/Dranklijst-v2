@@ -156,7 +156,9 @@ export function Periods() {
         description="Geef de nieuwe actieve periode een duidelijke naam."
         dismissible={!loading}
         disableClose={loading}
-        scrollBody={false}
+        scrollBody
+        fixed={false}
+        repositionInputs={false}
         bodyClassName="space-y-1.5"
         footer={
           <button
@@ -187,6 +189,9 @@ export function Periods() {
           value={newName}
           onChange={(event) => setNewName(event.target.value)}
           placeholder="bv. Zomerkamp 2025"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="words"
           style={inputStyle}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {

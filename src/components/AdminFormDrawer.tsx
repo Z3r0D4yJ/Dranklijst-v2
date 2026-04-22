@@ -36,6 +36,8 @@ interface AdminFormDrawerProps {
   footerClassName?: string
   maxHeight?: string
   scrollBody?: boolean
+  fixed?: boolean
+  repositionInputs?: boolean
 }
 
 export function AdminFormDrawer({
@@ -50,8 +52,10 @@ export function AdminFormDrawer({
   contentClassName,
   bodyClassName,
   footerClassName,
-  maxHeight = '92vh',
+  maxHeight = 'var(--drawer-max-height)',
   scrollBody = true,
+  fixed,
+  repositionInputs,
 }: AdminFormDrawerProps) {
   const closeFrameRef = useRef<number | null>(null)
   const restoreFrameRef = useRef<number | null>(null)
@@ -161,6 +165,8 @@ export function AdminFormDrawer({
       open
       onOpenChange={handleOpenChange}
       dismissible={dismissible}
+      fixed={fixed}
+      repositionInputs={repositionInputs}
     >
     <DrawerContent
         className={cn('mx-auto w-full max-w-md rounded-t-[24px] px-0', contentClassName)}

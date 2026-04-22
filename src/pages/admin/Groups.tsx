@@ -155,7 +155,7 @@ export function Groups() {
         }
         bodyClassName="px-0 py-0"
         contentClassName="max-w-md"
-        maxHeight="80vh"
+        maxHeight="var(--drawer-max-height-compact)"
       >
         {selectedGroup && (
           <>

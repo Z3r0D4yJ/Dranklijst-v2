@@ -177,7 +177,9 @@ export function Consumptions() {
         description={editing ? 'Pas naam, prijs en categorie aan.' : 'Voeg een nieuwe consumptie toe aan de globale lijst.'}
         dismissible={!loading}
         disableClose={loading}
-        scrollBody={false}
+        scrollBody
+        fixed={false}
+        repositionInputs={false}
         bodyClassName="space-y-4"
         footer={
           <button
@@ -210,6 +212,10 @@ export function Consumptions() {
             value={form.name}
             onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
             placeholder="Naam"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="words"
+            spellCheck={false}
             style={inputStyle}
           />
         </div>

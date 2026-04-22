@@ -112,7 +112,7 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
     <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
       <DrawerContent
         className="rounded-t-[20px] px-0"
-        style={{ background: 'var(--color-surface)', maxHeight: '80vh' }}
+        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height-compact)' }}
       >
         <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
           <div>
@@ -234,10 +234,14 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
+    <Drawer
+      open
+      onOpenChange={(open: boolean) => { if (!open) onClose() }}
+      repositionInputs={false}
+    >
       <DrawerContent
         className="rounded-t-[20px] px-0"
-        style={{ background: 'var(--color-surface)', maxHeight: '92vh' }}
+        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height)' }}
       >
         <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
           <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</DrawerTitle>
@@ -378,7 +382,7 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
       <div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
       <div
         className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[20px] pb-safe"
-        style={{ background: 'var(--color-surface)', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
+        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height)', display: 'flex', flexDirection: 'column' }}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1 shrink-0">

@@ -78,6 +78,15 @@
   --skel-base: var(--color-surface-alt);
   --skel-hl:   var(--color-border);
   --app-safe-screen-height: calc(100dvh - var(--safe-area-top, env(safe-area-inset-top, 0px)));
+  --drawer-max-height: 92vh;
+  --drawer-max-height-compact: 80vh;
+}
+
+@supports (height: 100svh) {
+  :root {
+    --drawer-max-height: 92svh;
+    --drawer-max-height-compact: 80svh;
+  }
 }
 
 .dark {

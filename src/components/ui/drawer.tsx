@@ -22,6 +22,7 @@ function Drawer({
   disablePreventScroll = false,
   noBodyStyles = true,
   repositionInputs = true,
+  fixed = direction === 'bottom',
   ...props
 }: DrawerProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
@@ -77,6 +78,7 @@ function Drawer({
         disablePreventScroll={disablePreventScroll}
         noBodyStyles={noBodyStyles}
         repositionInputs={repositionInputs}
+        fixed={fixed}
         {...props}
       />
     </DrawerContext.Provider>
@@ -110,8 +112,8 @@ type DrawerContentProps = VaulContentProps & {
 }
 
 const DIRECTION_CLASSES: Record<NonNullable<DrawerDirection>, string> = {
-  bottom: 'inset-x-0 bottom-0 mt-24 max-h-[92vh] rounded-t-[28px] border-b-0',
-  top: 'inset-x-0 top-0 mb-24 max-h-[92vh] rounded-b-[28px] border-t-0',
+  bottom: 'inset-x-0 bottom-0 mt-24 max-h-[var(--drawer-max-height)] rounded-t-[28px] border-b-0',
+  top: 'inset-x-0 top-0 mb-24 max-h-[var(--drawer-max-height)] rounded-b-[28px] border-t-0',
   left: 'inset-y-0 left-0 h-full w-[min(92vw,420px)] rounded-r-[28px] border-l-0',
   right: 'inset-y-0 right-0 h-full w-[min(92vw,420px)] rounded-l-[28px] border-r-0',
 }
@@ -134,7 +136,7 @@ const DrawerContent = React.forwardRef<
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
-          'fixed z-50 flex flex-col border border-[var(--color-border)] bg-[color:var(--color-surface)] shadow-none outline-none',
+          'fixed z-50 flex flex-col overflow-hidden border border-[var(--color-border)] bg-[color:var(--color-surface)] shadow-none outline-none',
           DIRECTION_CLASSES[resolvedDirection],
           className,
         )}

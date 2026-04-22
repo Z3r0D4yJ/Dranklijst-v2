@@ -95,7 +95,7 @@ export function NotificationsSheet({ onClose }: Props) {
     <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
       <DrawerContent
         className="rounded-t-[24px] px-0"
-        style={{ background: 'var(--color-surface)', maxHeight: '80vh' }}
+        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height-compact)' }}
       >
         <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)] pb-3.5">
           <div>
