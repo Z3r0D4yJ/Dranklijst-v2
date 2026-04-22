@@ -77,7 +77,10 @@
   /* Skeleton */
   --skel-base: var(--color-surface-alt);
   --skel-hl:   var(--color-border);
-  --app-safe-screen-height: calc(100dvh - var(--safe-area-top, env(safe-area-inset-top, 0px)));
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --app-safe-screen-height: calc(
+    100dvh - var(--safe-area-top, env(safe-area-inset-top, 0px)) + var(--safe-area-bottom)
+  );
   --drawer-max-height: 92vh;
   --drawer-max-height-compact: 80vh;
 }
@@ -278,6 +281,10 @@ body {
 
 .h-screen {
   height: var(--app-safe-screen-height) !important;
+}
+
+.pb-safe {
+  padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)) !important;
 }
 
 button {

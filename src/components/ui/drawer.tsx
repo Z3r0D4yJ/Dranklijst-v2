@@ -13,7 +13,8 @@ type DrawerProps = VaulDrawerProps & {
   shouldScaleBackground?: boolean
 }
 
-function Drawer({
+function DrawerRoot({
+  RootComponent,
   open: openProp,
   defaultOpen = false,
   onOpenChange,
@@ -24,7 +25,8 @@ function Drawer({
   repositionInputs = true,
   fixed = direction === 'bottom',
   ...props
-}: DrawerProps) {
+}: DrawerProps & { RootComponent: typeof DrawerPrimitive.Root }) {
+  const shouldManageDocumentScroll = RootComponent === DrawerPrimitive.Root
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
   const isControlled = openProp !== undefined
   const open = isControlled ? openProp : uncontrolledOpen
@@ -37,6 +39,7 @@ function Drawer({
   }, [isControlled, onOpenChange])
 
   React.useEffect(() => {
+    if (!shouldManageDocumentScroll) return
     if (!open || typeof document === 'undefined') return
 
     const html = document.documentElement
@@ -65,11 +68,11 @@ function Drawer({
       body.style.paddingTop = previousBodyPaddingTop
       body.style.paddingBottom = previousBodyPaddingBottom
     }
-  }, [open])
+  }, [open, shouldManageDocumentScroll])
 
   return (
     <DrawerContext.Provider value={{ direction }}>
-      <DrawerPrimitive.Root
+      <RootComponent
         open={open}
         defaultOpen={defaultOpen}
         onOpenChange={handleOpenChange}
@@ -84,7 +87,16 @@ function Drawer({
     </DrawerContext.Provider>
   )
 }
+
+function Drawer(props: DrawerProps) {
+  return <DrawerRoot RootComponent={DrawerPrimitive.Root} {...props} />
+}
 Drawer.displayName = 'Drawer'
+
+function DrawerNested(props: DrawerProps) {
+  return <DrawerRoot RootComponent={DrawerPrimitive.NestedRoot} {...props} />
+}
+DrawerNested.displayName = 'DrawerNested'
 
 const DrawerTrigger = DrawerPrimitive.Trigger
 
@@ -201,6 +213,7 @@ DrawerDescription.displayName = DrawerPrimitive.Description.displayName
 
 export {
   Drawer,
+  DrawerNested,
   DrawerClose,
   DrawerContent,
   DrawerDescription,

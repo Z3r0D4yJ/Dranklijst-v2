@@ -39,6 +39,7 @@ const ROLES: { value: Role; label: string }[] = [
 
 
 const FIELD_LABEL_CLASS = 'text-[11px] font-extrabold uppercase tracking-[1px]'
+const ACTION_ICON_BUTTON_CLASS = 'w-9 h-9 rounded-[11px] flex items-center justify-center active:scale-95 transition-transform'
 
 function normalizeRole(role: string | null | undefined): Role {
   if (role === 'lid' || role === 'leiding' || role === 'kas' || role === 'groepsleiding') {
@@ -312,11 +313,14 @@ export function Users() {
                   <button
                     type="button"
                     onClick={() => openEditor(user)}
-                    className="w-9 h-9 rounded-[11px] flex items-center justify-center active:scale-95 transition-transform"
-                    style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+                    className={ACTION_ICON_BUTTON_CLASS}
+                    style={{
+                      background: 'var(--color-primary-pale)',
+                      border: '1px solid var(--color-primary-border)',
+                    }}
                     aria-label={`Bewerk ${user.full_name}`}
                   >
-                    <PencilSimple size={15} color="var(--color-text-secondary)" />
+                    <PencilSimple size={15} color="var(--color-primary)" />
                   </button>
                 </div>
               </div>

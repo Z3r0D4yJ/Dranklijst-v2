@@ -25,6 +25,7 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = { name: '', price: '', category: 'niet-alcoholisch' }
+const ACTION_ICON_BUTTON_CLASS = 'w-9 h-9 rounded-[11px] flex items-center justify-center active:scale-95 transition-transform'
 
 export function Consumptions() {
   const queryClient = useQueryClient()
@@ -284,22 +285,27 @@ export function Consumptions() {
                 </div>
                 <button
                   onClick={() => openEdit(consumption)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform"
-                  style={{ background: 'var(--color-primary-pale)', border: 'none' }}
+                  className={ACTION_ICON_BUTTON_CLASS}
+                  style={{
+                    background: 'var(--color-primary-pale)',
+                    border: '1px solid var(--color-primary-border)',
+                  }}
                 >
-                  <PencilSimple size={14} color="var(--color-primary)" />
+                  <PencilSimple size={15} color="var(--color-primary)" />
                 </button>
                 <button
                   onClick={() => toggleActive(consumption)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform"
+                  className={ACTION_ICON_BUTTON_CLASS}
                   style={{
                     background: consumption.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)',
-                    border: 'none',
+                    border: consumption.is_active
+                      ? '1px solid var(--color-success-border)'
+                      : '1px solid var(--color-border)',
                   }}
                 >
                   {consumption.is_active
-                    ? <Eye size={14} color="var(--color-success)" />
-                    : <EyeSlash size={14} color="var(--color-text-muted)" />}
+                    ? <Eye size={15} color="var(--color-success)" />
+                    : <EyeSlash size={15} color="var(--color-text-muted)" />}
                 </button>
               </div>
             ))}

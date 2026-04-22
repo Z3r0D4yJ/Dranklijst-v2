@@ -74,7 +74,7 @@ export function Login() {
           background: 'var(--color-surface)',
           borderRadius: '24px 24px 0 0',
           marginTop: -18,
-          padding: '24px 20px 28px',
+          padding: '24px 20px calc(28px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)))',
           position: 'relative',
           zIndex: 1,
         }}

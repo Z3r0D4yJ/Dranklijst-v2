@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { CaretDown } from '@phosphor-icons/react'
+import { CaretDown, Check, X } from '@phosphor-icons/react'
 import { Badge } from './ui/badge'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerNested,
+  DrawerTitle,
+} from './ui/drawer'
 
 interface Option {
   value: string
@@ -20,6 +29,17 @@ interface Props {
 }
 
 const SELECT_HEIGHT = 44
+const SHEET_OPTION_HEIGHT = 52
+
+function supportsTouchSheet() {
+  if (typeof window === 'undefined') return false
+
+  const coarsePointer =
+    window.matchMedia('(pointer: coarse)').matches ||
+    window.matchMedia('(any-pointer: coarse)').matches
+
+  return coarsePointer || navigator.maxTouchPoints > 0
+}
 
 function getBadgeVariant(tone: Option['badgeTone']) {
   switch (tone) {
@@ -66,6 +86,8 @@ function getMenuLayout(wrapper: HTMLDivElement) {
 export function CustomSelect({ value, onChange, options, placeholder, icon, style, className }: Props) {
   const [open, setOpen] = useState(false)
   const [menuLayout, setMenuLayout] = useState<{ left: number; width: number } | null>(null)
+  const [useTouchSheet, setUseTouchSheet] = useState(false)
+  const [useNestedSheet, setUseNestedSheet] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   const selected = options.find((option) => option.value === value)
@@ -73,7 +95,22 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
   const hasEmpty = placeholder !== undefined
 
   useEffect(() => {
-    if (!open) {
+    if (typeof window === 'undefined') return
+
+    function updateTouchMode() {
+      setUseTouchSheet(supportsTouchSheet())
+    }
+
+    updateTouchMode()
+    window.addEventListener('resize', updateTouchMode)
+
+    return () => {
+      window.removeEventListener('resize', updateTouchMode)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!open || useTouchSheet) {
       setMenuLayout(null)
       return
     }
@@ -94,10 +131,10 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
     return () => {
       window.removeEventListener('resize', updateMenuLayout)
     }
-  }, [open])
+  }, [open, useTouchSheet])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || useTouchSheet) return
 
     function onDown(event: MouseEvent) {
       if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -107,13 +144,54 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
 
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
-  }, [open])
+  }, [open, useTouchSheet])
+
+  function renderOption(option: Option, closeAfter = true, showTopBorder = true) {
+    return (
+      <button
+        key={option.value}
+        type="button"
+        onClick={() => {
+          onChange(option.value)
+          if (closeAfter) setOpen(false)
+        }}
+        className="w-full flex items-center gap-3 px-4 text-[14px]"
+        style={{
+          minHeight: useTouchSheet ? SHEET_OPTION_HEIGHT : SELECT_HEIGHT,
+          fontWeight: option.value === value ? 700 : 500,
+          color: option.value === value ? 'var(--color-primary)' : 'var(--color-text-primary)',
+          background: option.value === value && useTouchSheet ? 'var(--color-primary-pale)' : 'transparent',
+          border: 'none',
+          borderTop: showTopBorder ? '1px solid var(--color-border)' : 'none',
+          fontFamily: 'inherit',
+        }}
+      >
+        <span className="flex-1 text-left truncate">{option.label}</span>
+        {option.badge && (
+          <SelectBadge label={option.badge} tone={option.badgeTone} />
+        )}
+        {useTouchSheet && option.value === value && (
+          <Check size={16} color="var(--color-primary)" weight="bold" />
+        )}
+      </button>
+    )
+  }
+
+  function handleTriggerClick() {
+    if (!open) {
+      setUseNestedSheet(Boolean(ref.current?.closest('[data-vaul-drawer]')))
+    }
+
+    setOpen((current) => !current)
+  }
+
+  const SelectSheetComponent = useNestedSheet ? DrawerNested : Drawer
 
   return (
-    <div ref={ref} className={`relative ${className ?? ''}`} style={style}>
+    <div ref={ref} className={`relative ${className ?? ''}`} style={style} data-swipe-ignore data-no-admin-swipe>
       <button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={handleTriggerClick}
         className="w-full flex items-center gap-2.5 text-[13px] font-semibold active:scale-[0.98] transition-transform"
         style={{
           background: 'var(--color-surface)',
@@ -144,7 +222,7 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
         />
       </button>
 
-      {open && (
+      {!useTouchSheet && open && (
         <div
           className="absolute top-full mt-1 z-50 overflow-hidden"
           style={{
@@ -204,6 +282,75 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
             </button>
           ))}
         </div>
+      )}
+
+      {useTouchSheet && open && (
+        <SelectSheetComponent
+          open={open}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) {
+              setUseNestedSheet(false)
+            }
+            setOpen(nextOpen)
+          }}
+          dismissible
+        >
+          <DrawerContent
+            className="mx-auto w-full max-w-md rounded-t-[24px] px-0"
+            style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height)' }}
+            data-no-admin-swipe
+          >
+            <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
+              <div className="min-w-0">
+                <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>
+                  {placeholder ?? 'Kies een optie'}
+                </DrawerTitle>
+                <DrawerDescription style={{ color: 'var(--color-text-muted)' }}>
+                  {selected?.label ?? 'Selecteer een waarde uit de lijst hieronder.'}
+                </DrawerDescription>
+              </div>
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  aria-label="Sluiten"
+                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                  style={{ background: 'var(--color-surface-alt)' }}
+                >
+                  <X size={16} color="var(--color-text-secondary)" weight="bold" />
+                </button>
+              </DrawerClose>
+            </DrawerHeader>
+
+            <div className="flex-1 overflow-y-auto px-0 pb-4">
+              {hasEmpty && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange('')
+                    setOpen(false)
+                  }}
+                  className="w-full flex items-center gap-3 px-5 text-[14px]"
+                  style={{
+                    minHeight: SHEET_OPTION_HEIGHT,
+                    fontWeight: value === '' ? 700 : 500,
+                    color: value === '' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                    background: value === '' ? 'var(--color-primary-pale)' : 'transparent',
+                    border: 'none',
+                    borderTop: 'none',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <span className="flex-1 text-left truncate">{placeholder}</span>
+                  {value === '' && <Check size={16} color="var(--color-primary)" weight="bold" />}
+                </button>
+              )}
+
+              {options.map((option, index) =>
+                renderOption(option, true, hasEmpty || index > 0),
+              )}
+            </div>
+          </DrawerContent>
+        </SelectSheetComponent>
       )}
     </div>
   )

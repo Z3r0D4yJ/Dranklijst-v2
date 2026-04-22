@@ -9,7 +9,7 @@ export function BottomNav() {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex flex-col items-center gap-1 flex-1 py-2 transition-colors ${
+        `flex h-full flex-1 flex-col items-center justify-start gap-1 pt-3 pb-4 transition-colors ${
           isActive
             ? 'text-[var(--color-primary)]'
             : 'text-[var(--color-text-muted)]'
@@ -22,15 +22,15 @@ export function BottomNav() {
   )
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-center px-2 pb-safe h-[72px]">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-stretch px-2 h-[84px]">
       {navItem('/', true,           <House size={22} />,   'Home')}
       {navItem('/transactions', false, <Receipt size={22} />, 'Transacties')}
 
       {/* FAB — centre slot */}
-      <div className="flex flex-col items-center flex-1">
+      <div className="flex h-full flex-col items-center justify-start flex-1 pt-1">
         <button
           onClick={() => navigate('/')}
-          className="w-14 h-14 rounded-full bg-[var(--color-primary)] flex items-center justify-center active:scale-95 transition-transform -mt-[22px]"
+          className="w-14 h-14 rounded-full bg-[var(--color-primary)] flex items-center justify-center active:scale-95 transition-transform -mt-[25px]"
           style={{ boxShadow: 'var(--shadow-fab)' }}
           aria-label="Kopen"
         >
