@@ -124,9 +124,7 @@ export function GroupTransactions() {
         {(transactions ?? []).length > 0 && (
           <div className="rounded-card px-4 py-3.5 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
-                <Receipt size={16} color="var(--color-primary)" />
-              </div>
+              <IconChip tone="primary" icon={Receipt} size={32} />
               <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{transactions?.length} transacties</span>
             </div>
             <span className="text-[18px] font-extrabold tabular-nums tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>

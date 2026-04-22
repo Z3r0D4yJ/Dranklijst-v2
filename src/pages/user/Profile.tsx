@@ -627,7 +627,7 @@ export function Profile() {
           <IconActionButton
             onClick={() => setEditOpen(true)}
             variant="primary-soft"
-            className="shrink-0 !rounded-full"
+            className="shrink-0"
             aria-label="Profiel bewerken"
           >
             <PencilSimple size={16} color="currentColor" weight="bold" />

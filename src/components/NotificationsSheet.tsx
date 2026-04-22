@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom'
+import type { FC } from 'react'
+import type { IconProps } from '@phosphor-icons/react'
 import { X, Bell, CheckCircle, Users, CurrencyEur, Warning } from '@phosphor-icons/react'
+import { IconChip, type IconChipTone } from './IconChip'
 import { useNotifications, type AppNotification } from '../hooks/useNotifications'
 import { Spinner } from './ui/spinner'
 import { ActionPillButton, IconActionButton } from './ui/action-button'
@@ -17,27 +20,12 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' })
 }
 
-function NotifIcon({ title }: { title: string }) {
+function notifChipProps(title: string): { tone: IconChipTone; icon: FC<IconProps> } {
   const t = title.toLowerCase()
-  const size = 18
-  if (t.includes('aanvraag') || t.includes('toegevoegd')) {
-    return <Users size={size} color="var(--color-primary)" weight="bold" />
-  }
-  if (t.includes('betaling') || t.includes('periode')) {
-    return <CurrencyEur size={size} color="var(--color-success)" weight="bold" />
-  }
-  if (t.includes('afgekeurd')) {
-    return <Warning size={size} color="var(--color-danger)" weight="bold" />
-  }
-  return <Bell size={size} color="var(--color-text-muted)" weight="bold" />
-}
-
-function notifIconBg(title: string) {
-  const t = title.toLowerCase()
-  if (t.includes('aanvraag') || t.includes('toegevoegd')) return 'var(--color-primary-pale)'
-  if (t.includes('betaling') || t.includes('periode')) return 'var(--color-success-bg)'
-  if (t.includes('afgekeurd')) return 'var(--color-danger-bg)'
-  return 'var(--color-surface-alt)'
+  if (t.includes('aanvraag') || t.includes('toegevoegd')) return { tone: 'primary', icon: Users }
+  if (t.includes('betaling') || t.includes('periode')) return { tone: 'success', icon: CurrencyEur }
+  if (t.includes('afgekeurd')) return { tone: 'danger', icon: Warning }
+  return { tone: 'neutral', icon: Bell }
 }
 
 function NotifItem({ n, onTap }: { n: AppNotification; onTap: (n: AppNotification) => void }) {
@@ -50,12 +38,7 @@ function NotifItem({ n, onTap }: { n: AppNotification; onTap: (n: AppNotificatio
         background: n.is_read ? 'transparent' : 'var(--color-primary-pale)',
       }}
     >
-      <div
-        className="mt-0.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center"
-        style={{ background: notifIconBg(n.title) }}
-      >
-        <NotifIcon title={n.title} />
-      </div>
+      <IconChip {...notifChipProps(n.title)} size={36} />
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <p className="text-[13px] font-bold leading-snug" style={{ color: 'var(--color-text-primary)' }}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, Receipt, Trash } from '@phosphor-icons/react'
+import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
 import { Spinner } from '../../components/ui/spinner'
@@ -197,9 +198,7 @@ export function AllTransactions() {
       {allTx.length > 0 && (
         <div className="rounded-[14px] px-4 py-3 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <div className="flex items-center gap-2">
-            <div className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center" style={{ background: 'var(--color-primary-pale)' }}>
-              <Receipt size={14} color="var(--color-primary)" />
-            </div>
+            <IconChip tone="primary" icon={Receipt} size={32} />
             <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {allTx.length} transacties
             </span>

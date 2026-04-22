@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Users, CurrencyEur, Receipt, TrendUp, CalendarBlank } from '@phosphor-icons/react'
+import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
 import { Spinner } from '../../components/ui/spinner'
@@ -25,7 +26,7 @@ function StatCard({ label, value, icon, iconBg, valueColor }: {
     <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
       <div className="flex items-center justify-between mb-2">
         <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
-        <div className="w-7 h-7 rounded-[8px] flex items-center justify-center" style={{ background: iconBg }}>
+        <div className="w-7 h-7 rounded-[9px] flex items-center justify-center" style={{ background: iconBg }}>
           {icon}
         </div>
       </div>
@@ -137,14 +138,7 @@ export function Dashboard() {
             badge: p.is_active ? 'Actief' : undefined,
             badgeTone: 'success',
           }))}
-          icon={
-            <div
-              className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
-              style={{ background: currentPeriod?.is_active ? 'var(--color-success-bg)' : 'var(--color-surface-alt)' }}
-            >
-              <CalendarBlank size={13} color={currentPeriod?.is_active ? 'var(--color-success)' : 'var(--color-text-muted)'} />
-            </div>
-          }
+          icon={<IconChip tone={currentPeriod?.is_active ? 'success' : 'neutral'} icon={CalendarBlank} size={28} />}
         />
       )}
 

@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge, badgeVariants } from '../../components/ui/badge'
+import { IconChip } from '../../components/IconChip'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
@@ -230,15 +231,7 @@ export function Periods() {
               />
             )}
             <div className="flex items-start gap-3" style={{ paddingLeft: period.is_active ? 8 : 0 }}>
-              <div
-                className="w-[34px] h-[34px] rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: period.is_active ? 'var(--color-primary-pale)' : 'var(--color-surface-alt)' }}
-              >
-                <CalendarBlank
-                  size={16}
-                  color={period.is_active ? 'var(--color-primary)' : 'var(--color-text-muted)'}
-                />
-              </div>
+              <IconChip tone={period.is_active ? 'primary' : 'neutral'} icon={CalendarBlank} size={34} />
               <div className="flex-1">
                 <p className="text-[14px] font-bold m-0 mb-0.5" style={{ color: 'var(--color-text-primary)' }}>
                   {period.name}
@@ -275,16 +268,11 @@ export function Periods() {
               style={{ borderTop: '1px solid var(--color-border)', paddingLeft: period.is_active ? 8 : 0 }}
             >
               {[
-                { Icon: Users, value: `${user_count} leden` },
-                { Icon: CurrencyEur, value: `EUR ${total.toFixed(2)} totaal` },
-              ].map(({ Icon, value }, index) => (
+                { icon: Users, value: `${user_count} leden` },
+                { icon: CurrencyEur, value: `EUR ${total.toFixed(2)} totaal` },
+              ].map(({ icon, value }, index) => (
                 <div key={index} className="flex items-center gap-1.5">
-                  <div
-                    className="w-[22px] h-[22px] rounded-[6px] flex items-center justify-center"
-                    style={{ background: 'var(--color-primary-pale)' }}
-                  >
-                    <Icon size={11} color="var(--color-primary)" />
-                  </div>
+                  <IconChip tone="primary" icon={icon} size={24} />
                   <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
                     {value}
                   </span>

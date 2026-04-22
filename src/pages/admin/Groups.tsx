@@ -113,12 +113,7 @@ export function Groups() {
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'var(--color-primary-pale)' }}
-              >
-                <Users size={16} color="var(--color-primary)" />
-              </div>
+              <IconChip tone="primary" icon={Users} size={36} />
               <div className="min-w-0">
                 <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                   {group.name}

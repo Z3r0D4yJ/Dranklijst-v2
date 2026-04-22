@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, CheckCircle, Clock, CurrencyEur, Export, User } from '@phosphor-icons/react'
+import { IconChip } from '../../components/IconChip'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
@@ -319,9 +320,7 @@ export function Finance() {
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-primary-pale)' }}>
-                  <User size={15} color="var(--color-primary)" />
-                </div>
+                <IconChip tone="primary" icon={User} size={34} />
                 <div className="flex-1">
                   <p className="text-[13px] font-bold m-0" style={{ color: 'var(--color-text-primary)' }}>
                     {payment.full_name}
