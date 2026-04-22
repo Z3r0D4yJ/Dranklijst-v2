@@ -108,7 +108,7 @@ export function Groups() {
           key={group.id}
           type="button"
           onClick={() => setSelectedGroupId(group.id)}
-          className="w-full rounded-[14px] px-4 py-3.5 text-left active:scale-[0.99] transition-transform"
+          className="w-full rounded-card px-4 py-3.5 text-left active:scale-[0.99] transition-transform"
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
         >
           <div className="flex items-center justify-between gap-3">
@@ -128,7 +128,7 @@ export function Groups() {
               {group.total > 0 && (
                 <Badge variant="success" className="gap-1">
                   <CurrencyEur size={11} color="var(--color-success)" />
-                  {group.total.toFixed(2)}
+                  <span className="tabular-nums">{group.total.toFixed(2)}</span>
                 </Badge>
               )}
               <CaretRight size={14} color="var(--color-text-muted)" />
@@ -155,16 +155,16 @@ export function Groups() {
         {selectedGroup && (
           <>
             <div className="grid grid-cols-2 gap-2.5 px-5 pt-5 pb-4">
-              <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
                   Leden
                 </p>
                 <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
                   {selectedGroup.memberCount}
                 </p>
               </div>
-              <div className="rounded-[14px] p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.8px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+              <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
                   Actieve periode
                 </p>
                 <p className="text-[20px] font-extrabold m-0 tabular-nums" style={{ color: 'var(--color-success)' }}>

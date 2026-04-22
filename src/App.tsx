@@ -29,8 +29,8 @@ import { Groups } from './pages/admin/Groups'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0,
-      refetchOnMount: 'always',
+      staleTime: 60_000,
+      refetchOnMount: true,
     },
   },
 })

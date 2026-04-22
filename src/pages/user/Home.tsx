@@ -73,6 +73,7 @@ export function Home() {
     const name = selected!.name
     setSelected(null)
     queryClient.invalidateQueries({ queryKey: ['transactions'] })
+    queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
     toast.success(`${name} gekocht`)
   }, [selected, queryClient])
 

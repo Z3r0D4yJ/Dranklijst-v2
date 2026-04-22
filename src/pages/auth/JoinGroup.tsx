@@ -114,7 +114,7 @@ export function JoinGroup() {
           <button
             onClick={() => navigate('/', { replace: true })}
             className="flex w-full items-center justify-center gap-2 rounded-[14px] py-3.5 text-[14px] font-bold transition-transform active:scale-[0.98]"
-            style={{ background: 'var(--color-primary)', color: '#fff', boxShadow: 'var(--shadow-fab)' }}
+            style={{ background: 'var(--color-primary)', color: 'white' }}
           >
             Naar de app
             <ArrowRight size={18} />

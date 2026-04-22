@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 export function usePagination<T>(items: T[], pageSize: number) {
   const [page, setPage] = useState(1)
@@ -14,8 +14,7 @@ export function usePagination<T>(items: T[], pageSize: number) {
     setPage(Math.max(1, Math.min(p, totalPages)))
   }
 
-  // Reset to page 1 when items change significantly
-  useMemo(() => { setPage(1) }, [items.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setPage(1) }, [items.length])
 
   return { slice, page: safePage, totalPages, onPage }
 }

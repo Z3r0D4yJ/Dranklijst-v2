@@ -198,11 +198,10 @@ export function Register() {
             className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 mt-1"
             style={{
               background: 'var(--color-primary)',
-              color: '#fff',
+              color: 'white',
               padding: 14,
               borderRadius: 14,
               border: 'none',
-              boxShadow: 'var(--shadow-fab)',
               fontFamily: 'inherit',
             }}
           >

@@ -47,6 +47,29 @@ const THEME_OPTIONS: { value: ThemeMode; label: string; Icon: typeof Sun }[] = [
   { value: 'system', label: 'Auto',    Icon: Monitor },
 ]
 
+const PAYMENT_STATUS_UI: Record<'unpaid' | 'pending', {
+  label: string
+  badgeVariant: 'warning' | 'primary'
+  chipTone: 'warning' | 'primary'
+  icon: FC<IconProps>
+  note: string
+}> = {
+  unpaid: {
+    label: 'Openstaand',
+    badgeVariant: 'warning',
+    chipTone: 'warning',
+    icon: Warning,
+    note: 'Betaal eerst en markeer daarna hieronder dat het bedrag voldaan is.',
+  },
+  pending: {
+    label: 'In afwachting',
+    badgeVariant: 'primary',
+    chipTone: 'primary',
+    icon: Clock,
+    note: 'De kas controleert je betaling. Je krijgt bevestiging zodra alles nagekeken is.',
+  },
+}
+
 function AccountRow({ icon, tone, label, sub, trailing, first, onClick }: {
   icon: FC<IconProps>
   tone?: string
@@ -371,10 +394,10 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
             onClick={handleSave}
             disabled={saving}
             className="w-full py-3.5 rounded-[12px] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
-            style={{ background: 'var(--color-primary)', color: '#fff' }}
+            style={{ background: 'var(--color-primary)', color: 'white' }}
           >
             {saving
-              ? <Spinner className="size-[18px]" style={{ color: '#fff' }} />
+              ? <Spinner className="size-[18px]" style={{ color: 'white' }} />
               : <Lock size={18} weight="bold" />}
             {saving ? 'Opslaan...' : 'Opslaan'}
           </button>
@@ -383,148 +406,6 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
     </Drawer>
   )
 
-  return (
-    <>
-      <div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.4)' }} onClick={onClose} />
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[20px] pb-safe"
-        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height)', display: 'flex', flexDirection: 'column' }}
-      >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-9 h-1 rounded-full" style={{ background: 'var(--color-border-mid)' }} />
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-2 pb-4 shrink-0" style={{ borderBottom: '1px solid var(--color-border)' }}>
-          <h2 className="text-[17px] font-extrabold tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--color-surface-alt)' }}>
-            <X size={16} color="var(--color-text-secondary)" weight="bold" />
-          </button>
-        </div>
-
-        <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
-          {/* ── Avatar picker ── */}
-          <div className="flex flex-col items-center gap-3">
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="relative w-[88px] h-[88px] active:scale-95 transition-transform shrink-0"
-            >
-              <div
-                className="w-full h-full rounded-full overflow-hidden"
-                style={{ background: 'var(--color-accent-bg)', border: '2.5px solid var(--color-accent-border)' }}
-              >
-                {avatarPreview ? (
-                  <img src={avatarPreview ?? undefined} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User size={36} color="var(--color-accent)" weight="bold" />
-                  </div>
-                )}
-              </div>
-              <div
-                className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: 'var(--color-primary)', border: '2px solid var(--color-surface)' }}
-              >
-                <Camera size={13} color="#fff" weight="bold" />
-              </div>
-            </button>
-            <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Tik op de foto om te wijzigen</p>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-          </div>
-
-          {/* ── Name ── */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>Naam</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Jouw naam"
-              className="w-full px-4 py-3.5 rounded-[12px] text-[15px] font-semibold outline-none"
-              style={{
-                background: 'var(--color-surface-alt)',
-                border: '1px solid var(--color-border-mid)',
-                color: 'var(--color-text-primary)',
-              }}
-            />
-          </div>
-
-          {/* ── Password ── */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>Wachtwoord wijzigen</label>
-            <div className="space-y-2">
-              <div className="relative">
-                <input
-                  type={showCurrentPw ? 'text' : 'password'}
-                  value={currentPw}
-                  onChange={e => setCurrentPw(e.target.value)}
-                  placeholder="Huidig wachtwoord"
-                  className="w-full px-4 py-3.5 pr-12 rounded-[12px] text-[15px] font-semibold outline-none"
-                  style={{
-                    background: 'var(--color-surface-alt)',
-                    border: '1px solid var(--color-border-mid)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPw(v => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2"
-                >
-                  {showCurrentPw
-                    ? <EyeSlash size={18} color="var(--color-text-muted)" />
-                    : <Eye size={18} color="var(--color-text-muted)" />
-                  }
-                </button>
-              </div>
-              <div className="relative">
-                <input
-                  type={showNewPw ? 'text' : 'password'}
-                  value={newPw}
-                  onChange={e => setNewPw(e.target.value)}
-                  placeholder="Nieuw wachtwoord"
-                  className="w-full px-4 py-3.5 pr-12 rounded-[12px] text-[15px] font-semibold outline-none"
-                  style={{
-                    background: 'var(--color-surface-alt)',
-                    border: '1px solid var(--color-border-mid)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPw(v => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2"
-                >
-                  {showNewPw
-                    ? <EyeSlash size={18} color="var(--color-text-muted)" />
-                    : <Eye size={18} color="var(--color-text-muted)" />
-                  }
-                </button>
-              </div>
-              <p className="text-[11px] font-medium px-1" style={{ color: 'var(--color-text-muted)' }}>
-                Laat leeg als je het wachtwoord niet wilt wijzigen
-              </p>
-            </div>
-          </div>
-
-          {/* ── Save button ── */}
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-3.5 rounded-[12px] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
-            style={{ background: 'var(--color-primary)', color: '#fff' }}
-          >
-            {saving
-              ? <Spinner className="size-[18px]" style={{ color: '#fff' }} />
-              : <Lock size={18} weight="bold" />
-            }
-            {saving ? 'Opslaan…' : 'Opslaan'}
-          </button>
-        </div>
-      </div>
-    </>
-  )
 }
 
 export function Profile() {
@@ -635,42 +516,83 @@ export function Profile() {
         </div>
 
         {/* ─── Open payments ──────────────────────── */}
-        {(openPayments ?? []).length > 0 && (openPayments ?? []).map(payment => (
-          <div key={payment.id} className="rounded-card p-4" style={{ background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)' }}>
-            <div className="flex items-center gap-2.5 mb-3">
-              <IconChip tone="warning" icon={Warning} size={32} />
-              <h2 className="text-[14px] font-extrabold tracking-[-0.2px]" style={{ color: 'var(--color-text-primary)' }}>Nog te betalen</h2>
-            </div>
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{payment.period_name}</p>
-                <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                  {payment.status === 'pending' ? 'Wacht op bevestiging kas' : 'Nog te betalen'}
+        {(openPayments ?? []).length > 0 && (openPayments ?? []).map(payment => {
+          const isPending = payment.status === 'pending'
+          const statusUi = PAYMENT_STATUS_UI[isPending ? 'pending' : 'unpaid']
+          const isSubmitting = markingPaid === payment.id
+
+          return (
+            <div
+              key={payment.id}
+              className="rounded-card p-4"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+            >
+              <div className="flex items-start gap-3">
+                <IconChip tone={statusUi.chipTone} icon={statusUi.icon} size={36} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p
+                        className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+                        style={{ color: 'var(--color-text-muted)' }}
+                      >
+                        Openstaand bedrag
+                      </p>
+                      <p
+                        className="mt-1 truncate text-[15px] font-bold"
+                        style={{ color: 'var(--color-text-primary)' }}
+                      >
+                        {payment.period_name}
+                      </p>
+                    </div>
+                    <Badge variant={statusUi.badgeVariant}>
+                      {statusUi.label}
+                    </Badge>
+                  </div>
+
+                  <p
+                    className="mt-3 text-[28px] font-extrabold tracking-[-0.7px] tabular-nums"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
+                    € {payment.amount_due.toFixed(2).replace('.', ',')}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="mt-3 rounded-[12px] px-3.5 py-3"
+                style={{
+                  background: isPending ? 'var(--color-primary-pale)' : 'var(--color-warning-bg)',
+                  border: `1px solid ${isPending ? 'var(--color-primary-border)' : 'var(--color-warning-border)'}`,
+                }}
+              >
+                <p className="m-0 text-[12px] font-medium leading-[1.55]" style={{ color: 'var(--color-text-secondary)' }}>
+                  {statusUi.note}
                 </p>
               </div>
-              <p className="text-[22px] font-extrabold tracking-[-0.5px] tabular-nums" style={{ color: 'var(--color-warning)' }}>
-                € {payment.amount_due.toFixed(2).replace('.', ',')}
-              </p>
+
+              {payment.status === 'unpaid' && (
+                <div className="mt-3">
+                  <button
+                    onClick={() => markAsPaid(payment.id)}
+                    disabled={isSubmitting}
+                    className="flex w-full items-center justify-center gap-2 rounded-[12px] border py-3 text-[14px] font-bold transition-transform active:scale-[0.98] disabled:opacity-50"
+                    style={{
+                      background: 'var(--color-primary-pale)',
+                      borderColor: 'var(--color-primary-border)',
+                      color: 'var(--color-primary)',
+                    }}
+                  >
+                    {isSubmitting
+                      ? <Spinner className="size-[16px]" style={{ color: 'var(--color-primary)' }} />
+                      : <CheckCircle size={16} color="var(--color-primary)" weight="bold" />}
+                    {isSubmitting ? 'Bezig...' : 'Ik heb betaald'}
+                  </button>
+                </div>
+              )}
             </div>
-            {payment.status === 'unpaid' && (
-              <button
-                onClick={() => markAsPaid(payment.id)}
-                disabled={markingPaid === payment.id}
-                className="w-full py-3 rounded-[12px] text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-                style={{ background: 'var(--color-primary)', color: '#fff' }}
-              >
-                <CheckCircle size={16} weight="bold" />
-                {markingPaid === payment.id ? 'Bezig…' : 'Ik heb betaald'}
-              </button>
-            )}
-            {payment.status === 'pending' && (
-              <Badge variant="warning" size="sm" className="gap-1.5">
-                <Clock size={12} />
-                Wacht op bevestiging van de kas
-              </Badge>
-            )}
-          </div>
-        ))}
+          )
+        })}
 
 {/* ─── Theme ──────────────────────────────── */}
         <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Weergave</p>

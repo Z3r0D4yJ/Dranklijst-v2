@@ -28,7 +28,7 @@ export function Pagination({ page, totalPages, onPage }: Props) {
       className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[13px] font-bold transition-colors disabled:opacity-30"
       style={{
         background: active ? 'var(--color-primary)' : 'var(--color-surface-alt)',
-        color: active ? '#fff' : 'var(--color-text-secondary)',
+        color: active ? 'white' : 'var(--color-text-secondary)',
         border: 'none',
         fontFamily: 'inherit',
         flexShrink: 0,

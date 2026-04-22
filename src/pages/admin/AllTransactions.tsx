@@ -32,7 +32,7 @@ function TxDetailRow({ label, value }: { label: string; value: string }) {
       className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-3"
       style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
     >
-      <span className="text-[12px] font-bold uppercase tracking-[0.8px]" style={{ color: 'var(--color-text-muted)' }}>
+      <span className="text-[12px] font-bold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
         {label}
       </span>
       <span className="text-[13px] font-bold text-right" style={{ color: 'var(--color-text-primary)' }}>
@@ -204,7 +204,7 @@ export function AllTransactions() {
             </span>
           </div>
           <span className="text-[20px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-            EUR {total.toFixed(2).replace('.', ',')}
+            EUR {total.toFixed(2)}
           </span>
         </div>
       )}
@@ -333,7 +333,7 @@ export function AllTransactions() {
         {selectedTx && (
           <>
             <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.9px] m-0" style={{ color: 'var(--color-text-muted)' }}>
+              <p className="text-[11px] font-bold uppercase tracking-[1.2px] m-0" style={{ color: 'var(--color-text-muted)' }}>
                 Totaal
               </p>
               <p className="text-[24px] font-extrabold mt-1 mb-0 tabular-nums" style={{ color: 'var(--color-text-primary)' }}>

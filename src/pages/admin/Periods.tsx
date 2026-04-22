@@ -104,6 +104,8 @@ export function Periods() {
       queryClient.invalidateQueries({ queryKey: ['periods'] })
       queryClient.invalidateQueries({ queryKey: ['payments'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
+      queryClient.invalidateQueries({ queryKey: ['open-payments'] })
       notifyPeriodClosed(periodId, periodName)
       navigate('/admin/financieel')
     }
@@ -137,11 +139,10 @@ export function Periods() {
         className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
         style={{
           background: 'var(--color-primary)',
-          color: '#fff',
-          padding: 13,
-          borderRadius: 14,
+          color: 'white',
+          padding: '12px',
+          borderRadius: 12,
           border: 'none',
-          boxShadow: 'var(--shadow-fab)',
           fontFamily: 'inherit',
         }}
       >

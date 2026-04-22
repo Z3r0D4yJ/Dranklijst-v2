@@ -158,10 +158,9 @@ export function Consumptions() {
         style={{
           background: 'var(--color-primary)',
           color: 'white',
-          padding: 13,
-          borderRadius: 14,
+          padding: '12px',
+          borderRadius: 12,
           border: 'none',
-          boxShadow: 'var(--shadow-fab)',
           fontFamily: 'inherit',
         }}
       >
@@ -279,7 +278,7 @@ export function Consumptions() {
                   <p className="text-[13px] font-semibold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                     {consumption.name}
                   </p>
-                  <p className="text-[11px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="text-[11px] m-0 mt-0.5 tabular-nums" style={{ color: 'var(--color-text-muted)' }}>
                     EUR {consumption.price.toFixed(2)}
                   </p>
                 </div>
