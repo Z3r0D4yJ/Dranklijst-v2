@@ -291,8 +291,8 @@ export function JoinGroup() {
             <button
               onClick={handleJoinCode}
               disabled={code.trim().length < 6 || codeLoading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-[14px] font-semibold transition-transform active:scale-[0.98] disabled:opacity-40"
-              style={{ background: 'var(--color-primary)', color: '#fff' }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl px-4 text-[14px] font-semibold transition-transform active:scale-[0.98] disabled:opacity-40"
+              style={{ background: 'var(--color-primary)', color: '#fff', height: 'var(--control-height)' }}
             >
               {codeLoading ? 'Bezig...' : 'Deelnemen'}
               {!codeLoading && <ArrowRight size={18} />}
