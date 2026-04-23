@@ -136,7 +136,7 @@ export function Periods() {
   const closedStats = (stats ?? []).filter(({ period }) => !period.is_active)
 
   return (
-    <div className="px-4 space-y-3 pb-content-end-comfort">
+    <div className="px-5 space-y-3 pb-content-end-comfort">
       <ActionPillButton
         onClick={() => setShowNew(true)}
         variant="accent"

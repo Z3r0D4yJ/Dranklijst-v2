@@ -186,19 +186,26 @@ export function Home() {
 
       {/* ─── Skeleton ───────────────────────────── */}
       {isLoading && (
-        <div className="px-5 mt-6 space-y-4" style={{ '--skel-base': 'var(--color-surface-alt)', '--skel-hl': 'var(--color-border)' } as React.CSSProperties}>
-          <div className="dl-skel h-3 w-24 rounded" />
-          <div className="grid grid-cols-2 gap-[10px]">
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className="rounded-card p-3.5 space-y-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <div className="dl-skel w-[38px] h-[38px] rounded-chip" />
-                <div className="space-y-2">
-                  <div className="dl-skel h-3 w-3/5 rounded" />
-                  <div className="dl-skel h-4 w-2/5 rounded" />
-                </div>
+        <div className="px-5 pt-[22px] space-y-5" style={{ '--skel-base': 'var(--color-surface-alt)', '--skel-hl': 'var(--color-border)' } as React.CSSProperties}>
+          {[6, 2].map((count, sectionIndex) => (
+            <section key={sectionIndex}>
+              <div className="flex items-baseline justify-between mb-3 px-0.5">
+                <div className="dl-skel h-3 w-24 rounded" />
+                <div className="dl-skel h-3 w-12 rounded" />
               </div>
-            ))}
-          </div>
+              <div className="grid grid-cols-2 gap-[10px]">
+                {Array.from({ length: count }).map((_, i) => (
+                  <div key={i} className="rounded-card p-3.5 space-y-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                    <div className="dl-skel w-[38px] h-[38px] rounded-chip" />
+                    <div className="space-y-2">
+                      <div className="dl-skel h-3 w-3/5 rounded" />
+                      <div className="dl-skel h-4 w-2/5 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       )}
 

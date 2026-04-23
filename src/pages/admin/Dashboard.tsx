@@ -110,7 +110,7 @@ export function Dashboard() {
   const maxVisibleGroupTotal = Math.max(...visibleGroupStats.map((group) => group.total), 1)
 
   return (
-    <div className="px-4 space-y-3 pb-content-end-comfort">
+    <div className="px-5 space-y-3 pb-content-end-comfort">
       {periods.length > 0 && (
         <section className="space-y-2">
           <AdminSectionLabel>Periode</AdminSectionLabel>

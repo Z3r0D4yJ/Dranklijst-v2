@@ -151,7 +151,7 @@ export function Consumptions() {
   const hiddenCount = totalConsumptions - activeCount
 
   return (
-    <div className="px-4 space-y-4 pb-content-end-comfort">
+    <div className="px-5 space-y-4 pb-content-end-comfort">
       <section className="space-y-2">
         <AdminSectionLabel>Consumpties</AdminSectionLabel>
         <div className="grid grid-cols-2 gap-2.5">

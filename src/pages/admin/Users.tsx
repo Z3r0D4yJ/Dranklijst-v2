@@ -290,7 +290,7 @@ export function Users() {
   const saveDisabled = saving || !editingUser || !hasChanges || (roleNeedsGroup(draftRole) && !draftGroupId)
 
   return (
-    <div className="px-4 space-y-4 pb-content-end-comfort">
+    <div className="px-5 space-y-4 pb-content-end-comfort">
       <section className="space-y-2">
         <AdminSectionLabel>Gebruikers</AdminSectionLabel>
         <div className="grid grid-cols-2 gap-2.5">

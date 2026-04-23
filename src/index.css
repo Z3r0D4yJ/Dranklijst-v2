@@ -84,6 +84,9 @@
   --page-bottom-clearance: calc(24px + var(--safe-area-bottom));
   --content-end-comfort: 28px;
   --app-safe-screen-height: calc(
+    100dvh - var(--safe-area-top, env(safe-area-inset-top, 0px))
+  );
+  --app-full-screen-height: calc(
     100dvh - var(--safe-area-top, env(safe-area-inset-top, 0px)) + var(--safe-area-bottom)
   );
   --drawer-max-height: 92vh;
@@ -280,13 +283,14 @@ body {
 /* Page roots use min-h-screen / h-screen extensively.
    Because body already adds safe-area top padding in standalone PWA mode,
    raw 100vh/100dvh makes the document slightly taller than the viewport.
-   Normalizing these utilities keeps pages flush with the visible viewport. */
+   Safe-area bottom belongs to the fixed nav / explicit clearance utilities, not
+   the root viewport height; adding it here creates a tiny phantom scroll. */
 .min-h-screen {
   min-height: var(--app-safe-screen-height) !important;
 }
 
 .h-screen {
-  height: var(--app-safe-screen-height) !important;
+  height: var(--app-full-screen-height) !important;
 }
 
 .pb-safe {

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
@@ -56,9 +56,80 @@ function SonnerToaster() {
   )
 }
 
+function scrollWindowToTop() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return
+
+  const scrollRoot = document.scrollingElement ?? document.documentElement
+  scrollRoot.scrollTop = 0
+  document.documentElement.scrollTop = 0
+  document.body.scrollTop = 0
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+}
+
+function clampWindowScroll() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return
+
+  const scrollRoot = document.scrollingElement ?? document.documentElement
+  const maxScroll = Math.max(0, scrollRoot.scrollHeight - window.innerHeight)
+
+  if (maxScroll <= 1) {
+    scrollWindowToTop()
+    return
+  }
+
+  if (window.scrollY > maxScroll) {
+    window.scrollTo({ top: maxScroll, left: 0, behavior: 'auto' })
+  }
+}
+
+function scheduleScrollSync(mode: 'top' | 'clamp') {
+  const sync = mode === 'top' ? scrollWindowToTop : clampWindowScroll
+
+  sync()
+  requestAnimationFrame(sync)
+  window.setTimeout(sync, 80)
+  window.setTimeout(sync, 240)
+}
+
 function ScrollToTop() {
-  const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  const { pathname, search } = useLocation()
+
+  useEffect(() => {
+    if (!('scrollRestoration' in window.history)) return
+
+    const previous = window.history.scrollRestoration
+    window.history.scrollRestoration = 'manual'
+
+    return () => {
+      window.history.scrollRestoration = previous
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    scheduleScrollSync('top')
+  }, [pathname, search])
+
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) scheduleScrollSync('top')
+      else scheduleScrollSync('clamp')
+    }
+
+    const handleViewportChange = () => {
+      scheduleScrollSync('clamp')
+    }
+
+    window.addEventListener('pageshow', handlePageShow)
+    window.addEventListener('resize', handleViewportChange)
+    window.visualViewport?.addEventListener('resize', handleViewportChange)
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow)
+      window.removeEventListener('resize', handleViewportChange)
+      window.visualViewport?.removeEventListener('resize', handleViewportChange)
+    }
+  }, [])
+
   return null
 }
 

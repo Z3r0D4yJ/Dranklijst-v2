@@ -171,7 +171,7 @@ export function GroupTransactions() {
         )}
       </div>
 
-      <div className="px-4 pt-4 space-y-3 pb-content-end-comfort">
+      <div className="px-5 pt-4 space-y-3 pb-content-end-comfort">
         <section className="space-y-2">
           <AdminSectionLabel>Transactieoverzicht</AdminSectionLabel>
           <div className="grid grid-cols-2 gap-2.5">

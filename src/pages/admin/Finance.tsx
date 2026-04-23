@@ -219,7 +219,7 @@ export function Finance() {
   const { slice: pagePayments, page, totalPages, onPage } = usePagination(payments, 25)
 
   return (
-    <div className="px-4 space-y-3 pb-content-end-comfort">
+    <div className="px-5 space-y-3 pb-content-end-comfort">
       {currentPeriod && (
         <section className="space-y-2">
           <AdminSectionLabel>Financieel overzicht</AdminSectionLabel>
