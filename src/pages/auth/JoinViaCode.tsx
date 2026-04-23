@@ -4,10 +4,11 @@ import { CheckCircle, WarningCircle, Users, ArrowRight } from '@phosphor-icons/r
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Spinner } from '../../components/ui/spinner'
+import { notifyLeidingOfInviteJoinRequest } from '../../lib/notifications'
 
 export function JoinViaCode() {
   const { code } = useParams<{ code: string }>()
-  const { session, loading: authLoading } = useAuth()
+  const { session, profile, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -19,16 +20,19 @@ export function JoinViaCode() {
     if (!session) return
 
     setStatus('loading')
-    supabase.rpc('join_via_invite', { p_code: code.toUpperCase() }).then(({ data, error }) => {
+    supabase.rpc('join_via_invite', { p_code: code.toUpperCase() }).then(async ({ data, error }) => {
       if (error) {
         setErrorMsg(error.message)
         setStatus('error')
       } else {
         setGroupName(data as string)
+        if (profile?.full_name) {
+          await notifyLeidingOfInviteJoinRequest(code, profile.full_name)
+        }
         setStatus('success')
       }
     })
-  }, [authLoading, session, code])
+  }, [authLoading, session, profile?.full_name, code])
 
   // Not logged in
   if (!authLoading && !session) {
@@ -83,9 +87,9 @@ export function JoinViaCode() {
             <CheckCircle size={36} color="var(--color-success)" weight="fill" />
           </div>
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Welkom bij {groupName}!</h1>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Aanvraag verzonden</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-              Je bent toegevoegd aan de groep.
+              Je aanvraag voor {groupName} is doorgestuurd naar de leiding of kas.
             </p>
           </div>
           <button

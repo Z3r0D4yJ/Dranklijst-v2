@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext'
 import { Spinner } from '../../components/ui/spinner'
 import { ActionPillButton } from '../../components/ui/action-button'
 import { useMyGroups } from '../../hooks/useMyGroups'
-import { notifyLeidingOfJoinRequest } from '../../lib/notifications'
+import { notifyLeidingOfInviteJoinRequest, notifyLeidingOfJoinRequest } from '../../lib/notifications'
 import type { Group } from '../../lib/database.types'
 
 type Mode = 'browse' | 'code'
@@ -72,7 +72,7 @@ export function JoinGroup() {
       setSubmittedId(groupId)
 
       if (profile?.full_name) {
-        notifyLeidingOfJoinRequest(groupId, profile.full_name)
+        await notifyLeidingOfJoinRequest(groupId, profile.full_name)
       }
     }
 
@@ -91,6 +91,10 @@ export function JoinGroup() {
       setCodeError(error.message)
     } else {
       setJoinedGroupName(data as string)
+
+      if (profile?.full_name) {
+        await notifyLeidingOfInviteJoinRequest(code, profile.full_name)
+      }
     }
 
     setCodeLoading(false)
@@ -105,10 +109,10 @@ export function JoinGroup() {
           </div>
           <div>
             <h2 className="text-[20px] font-extrabold tracking-[-0.4px]" style={{ color: 'var(--color-text-primary)' }}>
-              Welkom bij {joinedGroupName}!
+              Aanvraag verzonden
             </h2>
             <p className="mt-1 text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-              Je bent toegevoegd aan de groep.
+              Je aanvraag voor {joinedGroupName} is doorgestuurd naar de leiding of kas.
             </p>
           </div>
           <button
