@@ -10,7 +10,7 @@ export function AdminLayout() {
   useThemeColor('--color-surface')
   const { profile } = useAuth()
   const role = profile?.role as string | undefined
-  const canManageAdminTabs = role === 'kas' || role === 'groepsleiding' || role === 'admin'
+  const canManageAdminTabs = role === 'kas'
 
   const navigate = useNavigate()
   const location = useLocation()

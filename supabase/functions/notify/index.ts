@@ -6,7 +6,7 @@ const CORS = {
 }
 
 type NotifyPayload =
-  | { type: 'join_request'; group_id: string; requester_name: string }
+  | { type: 'join_request'; group_id?: string; invite_code?: string; requester_name: string }
   | { type: 'join_resolved'; user_id: string; group_name: string; approved: boolean }
   | { type: 'period_closed'; period_id: string; period_name: string }
   | { type: 'payment_confirmed'; user_id: string; period_name: string }
@@ -35,16 +35,34 @@ Deno.serve(async (req) => {
 
     switch (payload.type) {
       case 'join_request': {
+        let groupId = payload.group_id
+        let inviteCreatorId: string | null = null
+
+        if (!groupId && payload.invite_code) {
+          const { data: invite } = await sb
+            .from('invite_codes')
+            .select('group_id, created_by')
+            .eq('code', payload.invite_code.trim().toUpperCase())
+            .maybeSingle()
+
+          groupId = invite?.group_id
+          inviteCreatorId = invite?.created_by ?? null
+        }
+
+        if (!groupId) break
+
         const { data: members } = await sb
           .from('group_members')
           .select('user_id, profiles(role)')
-          .eq('group_id', payload.group_id)
+          .eq('group_id', groupId)
 
-        const ids = (members as unknown as Array<{ user_id: string; profiles: { role: string } | null }>)
-          ?.filter(m => ['leiding', 'kas', 'groepsleiding', 'admin'].includes(m.profiles?.role ?? ''))
-          .map(m => m.user_id) ?? []
+        const ids = new Set((members as unknown as Array<{ user_id: string; profiles: { role: string } | null }>)
+          ?.filter(m => ['leiding', 'kas'].includes(m.profiles?.role ?? ''))
+          .map(m => m.user_id) ?? [])
 
-        await send(ids, 'Nieuwe aanvraag', `${payload.requester_name} wil lid worden van jouw groep.`, '/leiding/groep')
+        if (inviteCreatorId) ids.add(inviteCreatorId)
+
+        await send([...ids], 'Nieuwe aanvraag', `${payload.requester_name} wil lid worden van jouw groep.`, '/leiding/groep')
         break
       }
 

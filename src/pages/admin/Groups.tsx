@@ -33,13 +33,10 @@ const ROLE_LABELS: Record<string, string> = {
   lid: 'Lid',
   leiding: 'Leiding',
   kas: 'Kas',
-  admin: 'Kas',
-  groepsleiding: 'Groepsleiding',
 }
 
 function normalizeRole(role: string | null | undefined): Role {
-  if (role === 'lid' || role === 'leiding' || role === 'kas' || role === 'groepsleiding') return role
-  if (role === 'admin') return 'kas'
+  if (role === 'lid' || role === 'leiding' || role === 'kas') return role
   return 'lid'
 }
 
@@ -261,7 +258,7 @@ export function Groups() {
                           </p>
                           <div className="mt-1 flex flex-wrap gap-1.5">
                             <Badge variant={ROLE_BADGE_VARIANT[memberRole]} size="sm">
-                              {ROLE_LABELS[member.role] ?? ROLE_LABELS[memberRole] ?? 'Lid'}
+                              {ROLE_LABELS[memberRole] ?? 'Lid'}
                             </Badge>
                           </div>
                         </div>

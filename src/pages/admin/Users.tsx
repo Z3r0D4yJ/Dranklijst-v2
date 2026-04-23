@@ -36,18 +36,16 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'lid', label: 'Lid' },
   { value: 'leiding', label: 'Leiding' },
   { value: 'kas', label: 'Kas' },
-  { value: 'groepsleiding', label: 'Groepsleiding' },
 ]
 
 
 const FIELD_LABEL_CLASS = 'text-[11px] font-extrabold uppercase tracking-[1px]'
 
 function normalizeRole(role: string | null | undefined): Role {
-  if (role === 'lid' || role === 'leiding' || role === 'kas' || role === 'groepsleiding') {
+  if (role === 'lid' || role === 'leiding' || role === 'kas') {
     return role
   }
 
-  if (role === 'admin') return 'kas'
   return 'lid'
 }
 
@@ -60,7 +58,6 @@ function getRoleLabel(role: Role) {
 }
 
 function getScopeLabel(user: Pick<UserRow, 'role' | 'primaryGroupName'>) {
-  if (user.role === 'groepsleiding') return 'Alle groepen'
   return user.primaryGroupName ?? 'Geen groep'
 }
 
@@ -83,10 +80,6 @@ function getDrawerHint(role: Role, groupName: string | null) {
     return groupName
       ? `${groupName}: hoofdgroep, leidingrechten en kasrechten.`
       : 'Kies een hoofdgroep. Kas krijgt ook leidingrechten.'
-  }
-
-  if (role === 'groepsleiding') {
-    return 'Toegang tot alle groepen. Geen hoofdgroep nodig.'
   }
 
   return groupName
@@ -185,6 +178,39 @@ export function Users() {
     setDraftGroupId('')
   }
 
+  async function ensureRoleGroupMembership(userId: string, role: Role, groupId: string | null) {
+    const { error: deleteError } = await supabase
+      .from('group_members')
+      .delete()
+      .eq('user_id', userId)
+
+    if (deleteError) throw deleteError
+
+    if (!roleNeedsGroup(role) || !groupId) return
+
+    const memberships = [{ user_id: userId, group_id: groupId }]
+
+    if (role === 'leiding' || role === 'kas') {
+      const { data: leidingGroup, error: leidingError } = await supabase
+        .from('groups')
+        .select('id')
+        .eq('name', 'Leiding')
+        .maybeSingle()
+
+      if (leidingError) throw leidingError
+
+      if (leidingGroup?.id && leidingGroup.id !== groupId) {
+        memberships.push({ user_id: userId, group_id: leidingGroup.id })
+      }
+    }
+
+    const { error: insertError } = await supabase
+      .from('group_members')
+      .insert(memberships)
+
+    if (insertError) throw insertError
+  }
+
   async function saveUser() {
     if (!editingUser) return
 
@@ -205,6 +231,28 @@ export function Users() {
       setSaving(false)
       toast.error(error.message || 'Gebruiker kon niet worden bijgewerkt.')
       return
+    }
+
+    const shouldVerifyMembership =
+      editingUser.id !== profile?.id ||
+      draftRole === 'kas'
+
+    if (shouldVerifyMembership) {
+      try {
+        await ensureRoleGroupMembership(
+          editingUser.id,
+          draftRole,
+          roleNeedsGroup(draftRole) ? draftGroupId : null,
+        )
+      } catch (membershipError) {
+        setSaving(false)
+        toast.error(
+          membershipError instanceof Error
+            ? membershipError.message
+            : 'Rol opgeslagen, maar de groep kon niet correct gekoppeld worden.',
+        )
+        return
+      }
     }
 
     await Promise.all([

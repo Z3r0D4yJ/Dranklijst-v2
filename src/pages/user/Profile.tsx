@@ -38,7 +38,9 @@ interface OpenPayment {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  lid: 'Lid', leiding: 'Leiding', kas: 'Kas', groepsleiding: 'Groepsleiding', admin: 'Kas',
+  lid: 'Lid',
+  leiding: 'Leiding',
+  kas: 'Kas',
 }
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; Icon: typeof Sun }[] = [
@@ -473,8 +475,8 @@ export function Profile() {
   const userEmail = (profile as unknown as { email?: string })?.email ?? ''
   const myGroupName = myGroups[0]?.name ?? ''
   const canManageOwnGroup = role === 'leiding' || role === 'kas'
-  const canSeeManagement = role === 'leiding' || role === 'kas' || role === 'groepsleiding' || role === 'admin'
-  const canOpenAdminPanel = role === 'kas' || role === 'groepsleiding' || role === 'admin'
+  const canSeeManagement = role === 'leiding' || role === 'kas'
+  const canOpenAdminPanel = role === 'kas'
 
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }}>

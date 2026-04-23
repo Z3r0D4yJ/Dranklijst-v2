@@ -66,6 +66,18 @@ export function GroupTransactions() {
     queryKey: ['leiding-group', profile?.id],
     enabled: !!profile,
     queryFn: async () => {
+      const { data: managedGroupId } = await supabase.rpc('get_my_leiding_group')
+
+      if (typeof managedGroupId === 'string') {
+        const { data: managedGroup } = await supabase
+          .from('groups')
+          .select('id, name')
+          .eq('id', managedGroupId)
+          .maybeSingle()
+
+        if (managedGroup) return managedGroup
+      }
+
       const { data } = await supabase
         .from('group_members')
         .select('group_id, groups(name)')

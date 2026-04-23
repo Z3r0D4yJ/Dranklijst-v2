@@ -1,10 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { CheckCircle, WarningCircle, Users, ArrowRight } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Spinner } from '../../components/ui/spinner'
-import { notifyLeidingOfInviteJoinRequest } from '../../lib/notifications'
+import { notifyLeidingOfInviteJoinRequest, notifyLeidingOfJoinRequest } from '../../lib/notifications'
+
+function parseInviteRequestResult(data: unknown) {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    const result = data as { group_id?: unknown; group_name?: unknown }
+
+    return {
+      groupId: typeof result.group_id === 'string' ? result.group_id : undefined,
+      groupName: typeof result.group_name === 'string' ? result.group_name : 'de groep',
+    }
+  }
+
+  return {
+    groupId: undefined,
+    groupName: typeof data === 'string' ? data : 'de groep',
+  }
+}
 
 export function JoinViaCode() {
   const { code } = useParams<{ code: string }>()
@@ -14,20 +30,30 @@ export function JoinViaCode() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [groupName, setGroupName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const submittedRef = useRef(false)
 
   useEffect(() => {
     if (authLoading || !code) return
     if (!session) return
+    if (submittedRef.current) return
 
+    submittedRef.current = true
     setStatus('loading')
-    supabase.rpc('join_via_invite', { p_code: code.toUpperCase() }).then(async ({ data, error }) => {
+    const normalizedCode = code.toUpperCase()
+
+    supabase.rpc('submit_join_request_by_invite_code', { p_code: normalizedCode }).then(async ({ data, error }) => {
       if (error) {
         setErrorMsg(error.message)
         setStatus('error')
       } else {
-        setGroupName(data as string)
+        const result = parseInviteRequestResult(data)
+        setGroupName(result.groupName)
         if (profile?.full_name) {
-          await notifyLeidingOfInviteJoinRequest(code, profile.full_name)
+          if (result.groupId) {
+            await notifyLeidingOfJoinRequest(result.groupId, profile.full_name)
+          } else {
+            await notifyLeidingOfInviteJoinRequest(normalizedCode, profile.full_name)
+          }
         }
         setStatus('success')
       }

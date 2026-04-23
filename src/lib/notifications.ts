@@ -7,15 +7,9 @@ export async function notifyLeidingOfJoinRequest(groupId: string, requesterName:
 }
 
 export async function notifyLeidingOfInviteJoinRequest(code: string, requesterName: string) {
-  const { data } = await supabase
-    .from('invite_codes')
-    .select('group_id')
-    .eq('code', code.trim().toUpperCase())
-    .maybeSingle()
-
-  if (!data?.group_id) return
-
-  await notifyLeidingOfJoinRequest(data.group_id, requesterName)
+  await supabase.functions.invoke('notify', {
+    body: { type: 'join_request', invite_code: code.trim().toUpperCase(), requester_name: requesterName },
+  })
 }
 
 export async function notifyJoinRequestResolved(userId: string, groupName: string, approved: boolean) {

@@ -1,4 +1,4 @@
-export type Role = 'lid' | 'leiding' | 'kas' | 'groepsleiding'
+export type Role = 'lid' | 'leiding' | 'kas'
 export type JoinRequestStatus = 'pending' | 'approved' | 'rejected'
 export type PaymentStatus = 'unpaid' | 'pending' | 'paid'
 export type ConsumptionCategory = 'alcoholisch' | 'niet-alcoholisch'

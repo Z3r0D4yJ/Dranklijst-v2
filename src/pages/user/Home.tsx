@@ -21,7 +21,9 @@ import type { IconChipTone } from '../../components/IconChip'
 import { Badge } from '../../components/ui/badge'
 
 const ROLE_LABELS: Record<string, string> = {
-  lid: 'Lid', leiding: 'Leiding', kas: 'Kas', groepsleiding: 'Groepsleiding', admin: 'Admin',
+  lid: 'Lid',
+  leiding: 'Leiding',
+  kas: 'Kas',
 }
 
 const CATEGORY_ORDER = ['niet-alcoholisch', 'alcoholisch'] as const

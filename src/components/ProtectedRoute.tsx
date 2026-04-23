@@ -7,9 +7,6 @@ const ROLE_RANK: Record<string, number> = {
   lid: 1,
   leiding: 2,
   kas: 3,
-  groepsleiding: 4,
-  // Legacy fallback until all profiles are migrated away from "admin".
-  admin: 3,
 }
 
 interface Props {
@@ -29,8 +26,7 @@ export function ProtectedRoute({ minRole = 'lid' }: Props) {
 
   if (!session) return <Navigate to="/login" replace />
 
-  const currentRole = profile?.role as string | undefined
-  const currentRank = currentRole ? (ROLE_RANK[currentRole] ?? 0) : 0
+  const currentRank = profile?.role ? (ROLE_RANK[profile.role] ?? 0) : 0
   const requiredRank = ROLE_RANK[minRole]
 
   if (profile && currentRank < requiredRank) {

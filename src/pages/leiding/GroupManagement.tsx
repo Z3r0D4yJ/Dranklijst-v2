@@ -40,8 +40,6 @@ const ROLE_LABELS: Record<string, string> = {
   lid: 'Lid',
   leiding: 'Leiding',
   kas: 'Kas',
-  groepsleiding: 'Groepsleiding',
-  admin: 'Kas',
 }
 
 function SectionLabel({ children, count }: { children: React.ReactNode; count?: number }) {
@@ -63,8 +61,7 @@ function SectionLabel({ children, count }: { children: React.ReactNode; count?: 
 }
 
 function normalizeRole(role: string | null | undefined): Role {
-  if (role === 'lid' || role === 'leiding' || role === 'kas' || role === 'groepsleiding') return role
-  if (role === 'admin') return 'kas'
+  if (role === 'lid' || role === 'leiding' || role === 'kas') return role
   return 'lid'
 }
 
@@ -123,21 +120,45 @@ export function GroupManagement() {
   async function loadData() {
     if (!profile) return
 
-    const { data: memberships } = await supabase
-      .from('group_members')
-      .select('group_id, groups(name)')
-      .eq('user_id', profile.id)
+    let nextGroupId: string | null = null
+    let nextGroupName = ''
 
-    const ownGroup = (memberships as unknown as Array<{ group_id: string; groups: { name: string } | null }>)
-      ?.find((membership) => membership.groups?.name !== 'Leiding')
+    const { data: managedGroupId } = await supabase.rpc('get_my_leiding_group')
 
-    if (!ownGroup) {
+    if (typeof managedGroupId === 'string') {
+      const { data: managedGroup } = await supabase
+        .from('groups')
+        .select('id, name')
+        .eq('id', managedGroupId)
+        .maybeSingle()
+
+      if (managedGroup) {
+        nextGroupId = managedGroup.id
+        nextGroupName = managedGroup.name
+      }
+    }
+
+    if (!nextGroupId) {
+      const { data: memberships } = await supabase
+        .from('group_members')
+        .select('group_id, groups(name)')
+        .eq('user_id', profile.id)
+
+      const ownGroup = (memberships as unknown as Array<{ group_id: string; groups: { name: string } | null }>)
+        ?.find((membership) => membership.groups?.name !== 'Leiding')
+
+      if (ownGroup) {
+        nextGroupId = ownGroup.group_id
+        nextGroupName = ownGroup.groups?.name ?? ''
+      }
+    }
+
+    if (!nextGroupId) {
       setLoading(false)
       return
     }
 
-    const nextGroupId = ownGroup.group_id
-    setGroupName(ownGroup.groups?.name ?? '')
+    setGroupName(nextGroupName)
     setGroupId(nextGroupId)
 
     const [membersRes, inviteRes] = await Promise.all([

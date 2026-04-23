@@ -12,6 +12,22 @@ import type { Group } from '../../lib/database.types'
 
 type Mode = 'browse' | 'code'
 
+function parseInviteRequestResult(data: unknown) {
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    const result = data as { group_id?: unknown; group_name?: unknown }
+
+    return {
+      groupId: typeof result.group_id === 'string' ? result.group_id : undefined,
+      groupName: typeof result.group_name === 'string' ? result.group_name : 'de groep',
+    }
+  }
+
+  return {
+    groupId: undefined,
+    groupName: typeof data === 'string' ? data : 'de groep',
+  }
+}
+
 export function JoinGroup() {
   const { user, profile } = useAuth()
   const navigate = useNavigate()
@@ -84,16 +100,22 @@ export function JoinGroup() {
 
     setCodeError(null)
     setCodeLoading(true)
+    const normalizedCode = code.trim().toUpperCase()
 
-    const { data, error } = await supabase.rpc('join_via_invite', { p_code: code.trim().toUpperCase() })
+    const { data, error } = await supabase.rpc('submit_join_request_by_invite_code', { p_code: normalizedCode })
 
     if (error) {
       setCodeError(error.message)
     } else {
-      setJoinedGroupName(data as string)
+      const result = parseInviteRequestResult(data)
+      setJoinedGroupName(result.groupName)
 
       if (profile?.full_name) {
-        await notifyLeidingOfInviteJoinRequest(code, profile.full_name)
+        if (result.groupId) {
+          await notifyLeidingOfJoinRequest(result.groupId, profile.full_name)
+        } else {
+          await notifyLeidingOfInviteJoinRequest(normalizedCode, profile.full_name)
+        }
       }
     }
 
