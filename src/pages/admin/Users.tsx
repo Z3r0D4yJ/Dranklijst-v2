@@ -323,14 +323,10 @@ export function Users() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Zoek gebruiker..."
-            className="w-full outline-none text-[13px]"
+            className="dl-input dl-input-surface text-[13px]"
             style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border-mid)',
-              borderRadius: 12,
-              padding: '10px 14px 10px 40px',
-              color: 'var(--color-text-primary)',
-              fontFamily: 'inherit',
+              borderWidth: 1,
+              paddingLeft: 40,
             }}
           />
         </div>

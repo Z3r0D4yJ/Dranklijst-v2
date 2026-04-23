@@ -150,19 +150,6 @@ export function Consumptions() {
   const activeCount = (consumptions ?? []).filter((consumption) => consumption.is_active).length
   const hiddenCount = totalConsumptions - activeCount
 
-  const inputStyle = {
-    background: 'var(--color-surface-alt)',
-    border: '1.5px solid var(--color-border-mid)',
-    borderRadius: 12,
-    padding: '10px 14px',
-    color: 'var(--color-text-primary)',
-    fontSize: 13,
-    outline: 'none',
-    fontFamily: 'inherit',
-    width: '100%',
-    boxSizing: 'border-box' as const,
-  }
-
   return (
     <div className="px-4 space-y-4 pb-content-end-comfort">
       <section className="space-y-2">
@@ -235,7 +222,7 @@ export function Consumptions() {
             autoCorrect="off"
             autoCapitalize="words"
             spellCheck={false}
-            style={inputStyle}
+            className="dl-input text-[13px]"
           />
         </div>
 
@@ -254,7 +241,7 @@ export function Consumptions() {
               placeholder="Prijs (EUR)"
               step="0.10"
               min="0"
-              style={{ ...inputStyle, flex: 1, width: 'auto' }}
+              className="dl-input min-w-0 flex-1 text-[13px]"
             />
             <CustomSelect
               value={form.category}

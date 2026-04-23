@@ -326,11 +326,9 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Jouw naam"
-              className="w-full rounded-[12px] px-4 py-3.5 text-[15px] font-semibold outline-none"
+              className="dl-input text-[15px] font-semibold"
               style={{
-                background: 'var(--color-surface-alt)',
-                border: '1px solid var(--color-border-mid)',
-                color: 'var(--color-text-primary)',
+                borderWidth: 1,
               }}
             />
           </div>
@@ -346,11 +344,10 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
                   value={currentPw}
                   onChange={(event) => setCurrentPw(event.target.value)}
                   placeholder="Huidig wachtwoord"
-                  className="w-full rounded-[12px] px-4 py-3.5 pr-12 text-[15px] font-semibold outline-none"
+                  className="dl-input text-[15px] font-semibold"
                   style={{
-                    background: 'var(--color-surface-alt)',
-                    border: '1px solid var(--color-border-mid)',
-                    color: 'var(--color-text-primary)',
+                    borderWidth: 1,
+                    paddingRight: 48,
                   }}
                 />
                 <button
@@ -369,11 +366,10 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
                   value={newPw}
                   onChange={(event) => setNewPw(event.target.value)}
                   placeholder="Nieuw wachtwoord"
-                  className="w-full rounded-[12px] px-4 py-3.5 pr-12 text-[15px] font-semibold outline-none"
+                  className="dl-input text-[15px] font-semibold"
                   style={{
-                    background: 'var(--color-surface-alt)',
-                    border: '1px solid var(--color-border-mid)',
-                    color: 'var(--color-text-primary)',
+                    borderWidth: 1,
+                    paddingRight: 48,
                   }}
                 />
                 <button

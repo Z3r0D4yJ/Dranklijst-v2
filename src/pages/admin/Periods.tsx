@@ -132,17 +132,6 @@ export function Periods() {
     navigate(`/admin/transacties?${params.toString()}`)
   }
 
-  const inputStyle = {
-    background: 'var(--color-surface-alt)',
-    border: '1.5px solid var(--color-border-mid)',
-    borderRadius: 12,
-    padding: '10px 14px',
-    color: 'var(--color-text-primary)',
-    boxSizing: 'border-box' as const,
-    fontFamily: 'inherit',
-    width: '100%',
-    outline: 'none',
-  }
   const activeStats = (stats ?? []).filter(({ period }) => period.is_active)
   const closedStats = (stats ?? []).filter(({ period }) => !period.is_active)
 
@@ -196,7 +185,7 @@ export function Periods() {
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="words"
-          style={inputStyle}
+          className="dl-input text-[13px]"
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               void startPeriod()

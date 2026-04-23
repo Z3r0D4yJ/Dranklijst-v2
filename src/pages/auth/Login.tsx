@@ -99,15 +99,9 @@ export function Login() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="naam@voorbeeld.be"
                 required
-                className="w-full outline-none text-[15px] font-semibold"
+                className="dl-input text-[15px] font-semibold"
                 style={{
-                  background: 'var(--color-surface-alt)',
-                  border: '1.5px solid var(--color-border-mid)',
-                  borderRadius: 12,
-                  padding: '14px 14px 14px 42px',
-                  color: 'var(--color-text-primary)',
-                  boxSizing: 'border-box',
-                  fontFamily: 'inherit',
+                  paddingLeft: 42,
                 }}
               />
             </div>
@@ -127,15 +121,10 @@ export function Login() {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full outline-none text-[15px] font-semibold"
+                className="dl-input text-[15px] font-semibold"
                 style={{
-                  background: 'var(--color-surface-alt)',
-                  border: '1.5px solid var(--color-border-mid)',
-                  borderRadius: 12,
-                  padding: '14px 42px 14px 42px',
-                  color: 'var(--color-text-primary)',
-                  boxSizing: 'border-box',
-                  fontFamily: 'inherit',
+                  paddingLeft: 42,
+                  paddingRight: 42,
                 }}
               />
               <button
@@ -156,7 +145,8 @@ export function Login() {
             style={{
               background: 'var(--color-primary)',
               color: 'white',
-              padding: 14,
+              height: 'var(--control-height)',
+              padding: '0 14px',
               borderRadius: 14,
               border: 'none',
               fontFamily: 'inherit',
@@ -185,7 +175,8 @@ export function Login() {
             background: 'var(--color-surface)',
             border: '1.5px solid var(--color-border-mid)',
             borderRadius: 14,
-            padding: 12,
+            height: 'var(--control-height)',
+            padding: '0 12px',
             color: 'var(--color-text-primary)',
             fontFamily: 'inherit',
           }}

@@ -274,7 +274,7 @@ export function JoinGroup() {
                 onKeyDown={(event) => event.key === 'Enter' && handleJoinCode()}
                 placeholder="ABC123"
                 maxLength={6}
-                className="w-full bg-transparent py-2 text-center text-2xl font-bold tracking-[0.3em] outline-none"
+                className="dl-input-code w-full text-center text-2xl font-bold tracking-[0.3em] outline-none"
                 style={{ color: 'var(--color-text-primary)' }}
                 autoCapitalize="characters"
                 autoComplete="off"

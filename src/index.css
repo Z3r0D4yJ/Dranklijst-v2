@@ -88,6 +88,7 @@
   );
   --drawer-max-height: 92vh;
   --drawer-max-height-compact: 80vh;
+  --control-height: 44px;
 }
 
 @supports (height: 100svh) {
@@ -310,6 +311,38 @@ body {
 
 button {
   user-select: none;
+}
+
+.dl-input {
+  width: 100%;
+  height: var(--control-height);
+  box-sizing: border-box;
+  border: 1.5px solid var(--color-border-mid);
+  border-radius: 12px;
+  background: var(--color-surface-alt);
+  color: var(--color-text-primary);
+  padding: 0 14px;
+  font-family: inherit;
+  outline: none;
+}
+
+.dl-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.dl-input:focus {
+  border-color: var(--color-primary-border);
+}
+
+.dl-input-surface {
+  background: var(--color-surface);
+}
+
+.dl-input-code {
+  height: var(--control-height);
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
 }
 
 /* Native select in dark mode */
