@@ -28,6 +28,10 @@
   --color-header-avatar-bg: rgba(255, 255, 255, 0.10);
   --color-header-avatar-border: rgba(147, 197, 253, 0.34);
   --color-header-avatar-icon: rgba(255, 255, 255, 0.92);
+  --color-auth-google-bg: var(--color-surface-alt);
+  --color-auth-google-border: var(--color-border-mid);
+  --color-auth-google-icon-bg: #FFFFFF;
+  --color-auth-google-icon-border: rgba(15, 23, 42, 0.06);
 
   /* Accent — vos-oranje */
   --color-accent:         #EA580C;
@@ -125,6 +129,10 @@
   --color-header-avatar-bg: var(--color-surface);
   --color-header-avatar-border: var(--color-border-mid);
   --color-header-avatar-icon: var(--color-text-primary);
+  --color-auth-google-bg: var(--color-surface-alt);
+  --color-auth-google-border: var(--color-border-mid);
+  --color-auth-google-icon-bg: rgba(255, 255, 255, 0.96);
+  --color-auth-google-icon-border: rgba(255, 255, 255, 0.08);
 
   --color-accent:         oklch(0.75 0.19 55);
   --color-accent-bg:      oklch(0.32 0.08 55);

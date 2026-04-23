@@ -2,20 +2,10 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EnvelopeSimple, LockSimple, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Spinner } from '../../components/ui/spinner'
+import { AuthGoogleButton, AuthSplashHeader } from '../../components/AuthPagePrimitives'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { useThemeColor } from '../../hooks/useThemeColor'
-
-function GoogleLogo() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
-      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
-      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
-      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
-    </svg>
-  )
-}
 
 export function Login() {
   useThemeColor('--color-header')
@@ -47,25 +37,7 @@ export function Login() {
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: 'var(--color-header)' }}>
       {/* ─── Splash header ─────────────────────────── */}
-      <div
-        className="relative flex flex-col items-center justify-center overflow-hidden shrink-0"
-        style={{ height: 198 }}
-      >
-        <div style={{ position: 'absolute', right: -60, top: -60, width: 220, height: 220, borderRadius: 110, background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', left: -30, bottom: -40, width: 150, height: 150, borderRadius: 75, background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
-        <div
-          className="overflow-hidden shrink-0 relative z-10"
-          style={{
-            width: 64, height: 64, borderRadius: 32, marginBottom: 10,
-            background: 'var(--color-accent-bg)',
-            border: '2.5px solid var(--color-accent-border)',
-          }}
-        >
-          <img src="/fox.png" alt="" className="w-full h-full object-cover" style={{ objectPosition: 'center 22%' }} />
-        </div>
-        <h1 className="relative z-10 text-[22px] font-extrabold tracking-[-0.5px] m-0" style={{ color: 'var(--color-header-fg)' }}>Dranklijst</h1>
-        <p className="relative z-10 text-[12px] font-medium mt-1 m-0" style={{ color: 'rgba(255,255,255,0.55)' }}>Chiro Reinaert Lochristi</p>
-      </div>
+      <AuthSplashHeader />
 
       {/* ─── Form sheet ─────────────────────────────── */}
       <div
@@ -73,7 +45,7 @@ export function Login() {
         style={{
           background: 'var(--color-surface)',
           borderRadius: '24px 24px 0 0',
-          marginTop: -18,
+          marginTop: -12,
           padding: '24px 20px calc(28px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)))',
           position: 'relative',
           zIndex: 1,
@@ -167,23 +139,10 @@ export function Login() {
           <div className="flex-1 h-px" style={{ background: 'var(--color-border-mid)' }} />
         </div>
 
-        <button
-          type="button"
+        <AuthGoogleButton
           onClick={handleGoogle}
-          className="w-full flex items-center justify-center gap-2.5 text-[14px] font-semibold active:scale-[0.98] transition-transform"
-          style={{
-            background: 'var(--color-surface)',
-            border: '1.5px solid var(--color-border-mid)',
-            borderRadius: 14,
-            height: 'var(--control-height)',
-            padding: '0 12px',
-            color: 'var(--color-text-primary)',
-            fontFamily: 'inherit',
-          }}
-        >
-          <GoogleLogo />
-          Doorgaan met Google
-        </button>
+          label="Doorgaan met Google"
+        />
 
         <p className="text-center text-[13px] font-medium mt-[18px]" style={{ color: 'var(--color-text-muted)' }}>
           Nog geen account?{' '}
