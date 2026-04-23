@@ -214,8 +214,6 @@ export function Finance() {
   const unpaidTotal = payments.filter((payment) => payment.status === 'unpaid').reduce((sum, payment) => sum + Number(payment.amount_due), 0)
   const pendingTotal = payments.filter((payment) => payment.status === 'pending').reduce((sum, payment) => sum + Number(payment.amount_due), 0)
   const paidTotal = payments.filter((payment) => payment.status === 'paid').reduce((sum, payment) => sum + Number(payment.amount_paid), 0)
-  const totalAll = payments.reduce((sum, payment) => sum + Number(payment.amount_due), 0)
-  const paidPct = totalAll > 0 ? Math.round((paidTotal / totalAll) * 100) : 0
   const currentPeriod = (periods ?? []).find((period) => period.id === selectedPeriod)
   const selectedPayment = payments.find((payment) => payment.id === selectedPaymentId) ?? null
   const { slice: pagePayments, page, totalPages, onPage } = usePagination(payments, 25)
@@ -228,7 +226,6 @@ export function Finance() {
           tone="primary"
           eyebrow="Financieel overzicht"
           title={currentPeriod.name}
-          description="Volg hier de openstaande, gemarkeerde en bevestigde betalingen per periode."
           badge={<Badge variant={currentPeriod.is_active ? 'success' : 'secondary'}>{currentPeriod.is_active ? 'Actief' : 'Afgesloten'}</Badge>}
         >
           <div className="grid grid-cols-2 gap-2.5">
@@ -254,31 +251,6 @@ export function Finance() {
               valueTone="success"
               className="col-span-2"
             />
-          </div>
-
-          <div
-            className="mt-2.5 rounded-[12px] border px-3.5 py-3"
-            style={{ background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                Voortgang
-              </span>
-              <span className="text-[12px] font-extrabold" style={{ color: 'var(--color-success)' }}>
-                {paidPct}%
-              </span>
-            </div>
-            <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-surface)' }}>
-              <div
-                style={{
-                  width: `${paidPct}%`,
-                  height: '100%',
-                  background: 'var(--color-success)',
-                  borderRadius: 99,
-                  transition: 'width 600ms',
-                }}
-              />
-            </div>
           </div>
         </AdminOverviewCard>
       )}
@@ -417,10 +389,10 @@ export function Finance() {
           if (!open) setSelectedPaymentId(null)
         }}
         title={selectedPayment?.full_name ?? 'Betalingsdetail'}
-        description={currentPeriod ? `Periode: ${currentPeriod.name}` : 'Betalingsdetail'}
+        description={currentPeriod?.name}
         dismissible={confirming !== selectedPayment?.id}
         disableClose={confirming === selectedPayment?.id}
-        bodyClassName="space-y-4"
+        bodyClassName="space-y-3"
         footer={
           selectedPayment?.status === 'pending' ? (
             <ActionPillButton
@@ -444,13 +416,6 @@ export function Finance() {
               tone={getStatusTone(selectedPayment.status)}
               eyebrow="Te betalen"
               title={formatMoney(selectedPayment.amount_due)}
-              description={
-                selectedPayment.status === 'pending'
-                  ? 'Deze gebruiker gaf aan betaald te hebben. Controleer en bevestig hieronder.'
-                  : selectedPayment.status === 'paid'
-                    ? 'Deze betaling is al bevestigd in de kas.'
-                    : 'Deze gebruiker heeft nog geen betaling gemarkeerd.'
-              }
               badge={
                 <Badge
                   variant={

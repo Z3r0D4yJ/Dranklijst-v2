@@ -113,7 +113,6 @@ export function Groups() {
         tone="primary"
         eyebrow="Groepen"
         title={`${(groups ?? []).length} groepen`}
-        description="Bekijk per groep het aantal leden en de omzet van de actieve periode. Tik op een groep voor alle leden."
       >
         <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
@@ -161,15 +160,9 @@ export function Groups() {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {group.total > 0 ? (
-                <span className="text-[15px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                  {formatMoney(group.total)}
-                </span>
-              ) : (
-                <Badge variant="secondary" size="sm">
-                  Geen omzet
-                </Badge>
-              )}
+              <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                {formatMoney(group.total)}
+              </span>
               <CaretRight size={14} color="var(--color-text-muted)" />
             </div>
           </div>
@@ -182,11 +175,6 @@ export function Groups() {
           if (!open) setSelectedGroupId(null)
         }}
         title={selectedGroup?.name ?? 'Groep'}
-        description={
-          selectedGroup
-            ? `${selectedGroup.memberCount} ${selectedGroup.memberCount === 1 ? 'lid' : 'leden'}`
-            : 'Groepsleden'
-        }
         bodyClassName="px-0 py-0"
         contentClassName="max-w-md"
         maxHeight="var(--drawer-max-height-compact)"
@@ -199,7 +187,6 @@ export function Groups() {
                 tone="primary"
                 eyebrow="Groepsdetail"
                 title={selectedGroup.name}
-                description="Bekijk hieronder alle gekoppelde leden van deze groep."
               >
                 <div className="grid grid-cols-2 gap-2.5">
                   <AdminStatTile
@@ -245,9 +232,6 @@ export function Groups() {
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                         {member.full_name}
-                      </p>
-                      <p className="text-[12px] font-medium m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                        Gekoppeld aan {selectedGroup.name}
                       </p>
                     </div>
                     <Badge variant={ROLE_BADGE_VARIANT[member.role as keyof typeof ROLE_BADGE_VARIANT] ?? 'secondary'} size="sm">

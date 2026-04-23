@@ -75,23 +75,23 @@ function getExtraGroupCount(user: Pick<UserRow, 'role' | 'groups' | 'primaryGrou
 function getDrawerHint(role: Role, groupName: string | null) {
   if (role === 'leiding') {
     return groupName
-      ? `${groupName} wordt de hoofdgroep. Deze gebruiker wordt daarnaast automatisch ook aan Leiding gekoppeld.`
-      : 'Kies eerst een hoofdgroep. Daarna wordt Leiding automatisch extra gekoppeld.'
+      ? `${groupName}: hoofdgroep + automatisch Leiding.`
+      : 'Kies een hoofdgroep. Leiding wordt automatisch extra gekoppeld.'
   }
 
   if (role === 'kas') {
     return groupName
-      ? `${groupName} wordt de hoofdgroep. Deze gebruiker krijgt kasrechten en wordt daarnaast ook als leiding aan ${groupName} en Leiding gekoppeld.`
-      : 'Een kas-gebruiker heeft ook een hoofdgroep nodig en wordt daarnaast automatisch aan Leiding gekoppeld.'
+      ? `${groupName}: hoofdgroep, leidingrechten en kasrechten.`
+      : 'Kies een hoofdgroep. Kas krijgt ook leidingrechten.'
   }
 
   if (role === 'groepsleiding') {
-    return 'Groepsleiding krijgt toegang tot alle groepen en heeft geen vaste hoofdgroep nodig.'
+    return 'Toegang tot alle groepen. Geen hoofdgroep nodig.'
   }
 
   return groupName
-    ? `${groupName} wordt de enige hoofdgroep van deze gebruiker.`
-    : 'Een lid moet exact een hoofdgroep hebben.'
+    ? `${groupName}: enige hoofdgroep.`
+    : 'Een lid heeft exact een hoofdgroep nodig.'
 }
 
 export function Users() {
@@ -234,7 +234,6 @@ export function Users() {
   const totalUsers = (users ?? []).length
   const memberCount = (users ?? []).filter((user) => user.role === 'lid').length
   const leidingKasCount = (users ?? []).filter((user) => user.role === 'leiding' || user.role === 'kas').length
-  const groepsleidingCount = (users ?? []).filter((user) => user.role === 'groepsleiding').length
   const { slice: pageUsers, page, totalPages, onPage } = usePagination(filtered, 25)
   const selectedGroup = groupOptions.find((group) => group.id === draftGroupId) ?? null
   const hasChanges = editingUser != null && (
@@ -250,7 +249,6 @@ export function Users() {
         tone="primary"
         eyebrow="Gebruikers"
         title={`${totalUsers} accounts`}
-        description="Beheer hier rollen, hoofdgroepen en bijkomende rechten voor alle gebruikers."
       >
         <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
@@ -265,14 +263,6 @@ export function Users() {
             icon={Check}
             tone="primary"
             valueTone="primary"
-          />
-          <AdminStatTile
-            label="Groepsleiding"
-            value={String(groepsleidingCount)}
-            icon={Check}
-            tone="success"
-            valueTone="success"
-            className="col-span-2"
           />
         </div>
       </AdminOverviewCard>
@@ -404,7 +394,6 @@ export function Users() {
           if (!open) closeEditor()
         }}
         title={editingUser ? editingUser.full_name : 'Gebruiker bewerken'}
-        description="Pas rol en hoofdgroep aan vanuit dezelfde beheerflow."
         dismissible={!saving}
         disableClose={saving}
         bodyClassName="space-y-4"
@@ -482,9 +471,9 @@ export function Users() {
               style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
             >
               <p className="text-[11px] font-extrabold uppercase tracking-[1px] m-0 mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                Wat gebeurt er
+                Effect
               </p>
-              <p className="text-[13px] m-0 leading-[1.55]" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-[12px] m-0 leading-[1.45]" style={{ color: 'var(--color-text-secondary)' }}>
                 {getDrawerHint(draftRole, selectedGroup?.name ?? null)}
               </p>
             </div>

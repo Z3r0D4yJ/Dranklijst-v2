@@ -54,11 +54,11 @@ export function AdminOverviewCard({
 }: AdminOverviewCardProps) {
   return (
     <section
-      className={cn('rounded-card border p-4', className)}
+      className={cn('rounded-card border p-3.5', className)}
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
     >
       <div className="flex items-start gap-3">
-        <IconChip tone={tone} icon={icon} size={40} />
+        <IconChip tone={tone} icon={icon} size={34} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -69,7 +69,7 @@ export function AdminOverviewCard({
                 {eyebrow}
               </p>
               <div
-                className="mt-1 text-[17px] font-extrabold tracking-[-0.5px]"
+                className="mt-0.5 text-[16px] font-extrabold tracking-[-0.4px]"
                 style={{ color: 'var(--color-text-primary)' }}
               >
                 {title}
@@ -89,7 +89,7 @@ export function AdminOverviewCard({
       </div>
 
       {children && (
-        <div className="mt-3 border-t pt-3" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="mt-2.5 border-t pt-2.5" style={{ borderColor: 'var(--color-border)' }}>
           {children}
         </div>
       )}
@@ -110,37 +110,35 @@ export function AdminStatTile({
 }: AdminStatTileProps) {
   return (
     <div
-      className={cn('h-full min-w-0 rounded-[12px] border px-3.5 py-3', className)}
+      className={cn('h-full min-w-0 rounded-[12px] border px-3 py-2.5', className)}
       style={{ background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' }}
     >
-      <div className="flex items-start gap-2.5">
-        {icon && <IconChip tone={tone} icon={icon} size={28} />}
-        <div className="min-w-0 flex-1">
-          <p
-            className={cn(
-              'm-0 text-[10px] font-extrabold uppercase tracking-[1px] leading-[1.15]',
-              labelClassName,
-            )}
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            {label}
-          </p>
-          <p
-            className={cn(
-              'm-0 mt-1 truncate text-[17px] font-extrabold tracking-[-0.4px] tabular-nums whitespace-nowrap leading-none',
-              valueClassName,
-            )}
-            style={{ color: VALUE_TONE_STYLE[valueTone] }}
-          >
-            {value}
-          </p>
-          {hint && (
-            <p className="m-0 mt-1 text-[11px] leading-[1.5]" style={{ color: 'var(--color-text-muted)' }}>
-              {hint}
-            </p>
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <p
+          className={cn(
+            'm-0 min-w-0 text-[10px] font-extrabold uppercase tracking-[1px] leading-[1.2]',
+            labelClassName,
           )}
-        </div>
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          {label}
+        </p>
+        {icon && <IconChip tone={tone} icon={icon} size={24} />}
       </div>
+      <p
+        className={cn(
+          'm-0 truncate text-[18px] font-extrabold tracking-[-0.4px] tabular-nums whitespace-nowrap leading-none',
+          valueClassName,
+        )}
+        style={{ color: VALUE_TONE_STYLE[valueTone] }}
+      >
+        {value}
+      </p>
+      {hint && (
+        <p className="m-0 mt-1 text-[11px] leading-[1.5]" style={{ color: 'var(--color-text-muted)' }}>
+          {hint}
+        </p>
+      )}
     </div>
   )
 }

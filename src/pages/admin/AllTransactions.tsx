@@ -149,7 +149,6 @@ export function AllTransactions() {
   const selectedTx = allTx.find((tx) => tx.id === selectedTxId) ?? null
   const selectedPeriodName = periods?.find((period) => period.id === selectedTx?.period_id)?.name ?? 'Onbekende periode'
   const selectedPeriodInfo = periods?.find((period) => period.id === selectedPeriod) ?? null
-  const selectedGroupInfo = groups?.find((group) => group.id === selectedGroup) ?? null
   const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, PAGE_SIZE)
   const total = allTx.reduce((sum, tx) => sum + tx.total_price, 0)
 
@@ -206,11 +205,6 @@ export function AllTransactions() {
         tone="primary"
         eyebrow="Transactieoverzicht"
         title={selectedPeriodInfo?.name ?? 'Alle periodes'}
-        description={
-          selectedGroupInfo
-            ? `Gefilterd op ${selectedGroupInfo.name}. Tik op een rij om de aankoopdetails te bekijken of te verwijderen.`
-            : 'Bekijk hier alle aankopen per periode en groep in dezelfde beheerflow.'
-        }
         badge={selectedPeriodInfo?.is_active ? <Badge variant="success">Actief</Badge> : undefined}
       >
         <div className="grid grid-cols-2 gap-2.5">
@@ -343,10 +337,10 @@ export function AllTransactions() {
           }
         }}
         title={selectedTx?.full_name ?? 'Transactie'}
-        description={selectedTx ? `${selectedTx.group_name} - ${selectedPeriodName}` : 'Transactiedetail'}
+        description={selectedTx ? `${selectedTx.group_name} - ${selectedPeriodName}` : undefined}
         dismissible={deletingId !== selectedTx?.id}
         disableClose={deletingId === selectedTx?.id}
-        bodyClassName="space-y-4"
+        bodyClassName="space-y-3"
         footer={
           selectedTx ? (
             armedDelete ? (
@@ -395,7 +389,6 @@ export function AllTransactions() {
               tone="primary"
               eyebrow="Totaal"
               title={formatMoney(selectedTx.total_price)}
-              description="Bekijk hieronder de details van deze aankoop. Verwijderen blijft mogelijk vanuit deze drawer."
             />
 
             <div className="space-y-2">

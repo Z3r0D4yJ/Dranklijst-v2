@@ -171,7 +171,6 @@ export function Consumptions() {
         tone="primary"
         eyebrow="Consumpties"
         title={`${totalConsumptions} items in de globale lijst`}
-        description="Beheer hier de centrale consumpties en bepaal welke items zichtbaar blijven voor groepen."
       >
         <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
@@ -206,7 +205,6 @@ export function Consumptions() {
           if (!open) closeForm()
         }}
         title={editing ? 'Consumptie bewerken' : 'Nieuwe consumptie'}
-        description={editing ? 'Pas naam, prijs en categorie aan.' : 'Voeg een nieuwe consumptie toe aan de globale lijst.'}
         dismissible={!loading}
         disableClose={loading}
         scrollBody

@@ -108,6 +108,7 @@ export function Dashboard() {
 
   const currentPeriod = periods.find((period) => period.id === selectedPeriod)
   const visibleGroupStats = (data?.groupStats ?? []).filter((group) => group.total > 0)
+  const maxVisibleGroupTotal = Math.max(...visibleGroupStats.map((group) => group.total), 1)
 
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
@@ -154,7 +155,6 @@ export function Dashboard() {
                 tone="primary"
                 eyebrow="Dashboard"
                 title={currentPeriod?.name ?? 'Periode'}
-                description="Een compacte samenvatting van omzet, aankopen en leden voor deze periode."
                 badge={
                   currentPeriod ? (
                     <Badge variant={currentPeriod.is_active ? 'success' : 'secondary'}>
@@ -207,31 +207,37 @@ export function Dashboard() {
                   </p>
                   <div className="flex flex-col gap-2.5">
                     {visibleGroupStats.map((group) => {
-                      const max = Math.max(...visibleGroupStats.map((item) => item.total), 1)
-                      const pct = Math.round((group.total / max) * 100)
+                      const percentage = Math.max(6, Math.round((group.total / maxVisibleGroupTotal) * 100))
+
                       return (
-                        <div key={group.name} className="flex items-center gap-2.5">
-                          <span
-                            className="text-[12px] font-semibold text-right shrink-0 w-14 truncate"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                          >
-                            {group.name}
-                          </span>
+                        <div
+                          key={group.name}
+                          className="rounded-[12px] border px-3 py-2.5"
+                          style={{ background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' }}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span
+                              className="min-w-0 truncate text-[12px] font-semibold"
+                              style={{ color: 'var(--color-text-primary)' }}
+                            >
+                              {group.name}
+                            </span>
+                            <span
+                              className="shrink-0 text-right text-[12px] font-extrabold tabular-nums"
+                              style={{ color: 'var(--color-text-primary)' }}
+                            >
+                              {formatMoney(group.total)}
+                            </span>
+                          </div>
                           <div
-                            className="flex-1 h-6 rounded-[6px] overflow-hidden"
-                            style={{ background: 'var(--color-surface-alt)' }}
+                            className="mt-2 h-2 overflow-hidden rounded-full"
+                            style={{ background: 'var(--color-surface)' }}
                           >
                             <div
-                              className="h-full rounded-[6px]"
-                              style={{ width: `${pct}%`, background: 'var(--color-primary)' }}
+                              className="h-full rounded-full"
+                              style={{ width: `${percentage}%`, background: 'var(--color-primary)' }}
                             />
                           </div>
-                          <span
-                            className="w-20 shrink-0 text-right text-[12px] font-extrabold tabular-nums"
-                            style={{ color: 'var(--color-text-primary)' }}
-                          >
-                            {formatMoney(group.total)}
-                          </span>
                         </div>
                       )
                     })}

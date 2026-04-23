@@ -161,7 +161,6 @@ export function Periods() {
           if (!open) closeNewDrawer()
         }}
         title="Nieuwe periode"
-        description="Geef de nieuwe actieve periode een duidelijke naam."
         dismissible={!loading}
         disableClose={loading}
         scrollBody
@@ -237,12 +236,23 @@ export function Periods() {
                       >
                         {period.name}
                       </p>
-                      <p
-                        className="mt-1 text-[12px] font-medium"
-                        style={{ color: 'var(--color-text-muted)' }}
-                      >
-                        Gestart op {formatDate(period.started_at)}
-                      </p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <Badge variant="secondary" size="sm" className="gap-1.5">
+                          <CalendarBlank size={12} weight="bold" />
+                          {formatDate(period.started_at)}
+                        </Badge>
+                        <button
+                          type="button"
+                          onClick={() => goToTransactions(period.id)}
+                          className="inline-flex active:scale-[0.98] transition-transform"
+                          style={{ fontFamily: 'inherit' }}
+                        >
+                          <Badge variant="secondary" size="sm" className="gap-1.5">
+                            <Users size={12} weight="bold" />
+                            {formatMemberCount(user_count)}
+                          </Badge>
+                        </button>
+                      </div>
                     </div>
                     <Badge variant="primary">
                       Actief
@@ -251,11 +261,14 @@ export function Periods() {
                 </div>
               </div>
 
-              <div
-                className="mt-3 rounded-[12px] px-3.5 py-3.5"
+              <button
+                type="button"
+                onClick={() => goToTransactions(period.id)}
+                className="mt-3 w-full rounded-[12px] px-3.5 py-3 text-left active:scale-[0.99] transition-transform"
                 style={{
                   background: 'var(--color-primary-pale)',
                   border: '1px solid var(--color-primary-border)',
+                  fontFamily: 'inherit',
                 }}
               >
                 <p
@@ -265,51 +278,12 @@ export function Periods() {
                   Huidige omzet
                 </p>
                 <p
-                  className="mt-1 text-[28px] font-extrabold tracking-[-0.7px] tabular-nums"
+                  className="mt-1 text-[22px] font-extrabold tracking-[-0.5px] tabular-nums"
                   style={{ color: 'var(--color-primary)' }}
                 >
                   {formatMoney(total)}
                 </p>
-                <p
-                  className="mt-2 text-[12px] font-medium leading-[1.55]"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  Bij afsluiten worden de openstaande betalingen voor deze periode aangemaakt.
-                </p>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => goToTransactions(period.id)}
-                  className="inline-flex items-center gap-2 rounded-[12px] px-3 py-2.5 active:scale-[0.98] transition-transform"
-                  style={{
-                    background: 'var(--color-surface-alt)',
-                    border: '1px solid var(--color-border)',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  <IconChip tone="primary" icon={Users} size={24} />
-                  <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    {formatMemberCount(user_count)}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goToTransactions(period.id)}
-                  className="inline-flex items-center gap-2 rounded-[12px] px-3 py-2.5 active:scale-[0.98] transition-transform"
-                  style={{
-                    background: 'var(--color-surface-alt)',
-                    border: '1px solid var(--color-border)',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  <IconChip tone="primary" icon={CurrencyEur} size={24} />
-                  <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                    {formatMoney(total)} totaal
-                  </span>
-                </button>
-              </div>
+              </button>
 
               <div className="mt-3">
                 <ActionPillButton
