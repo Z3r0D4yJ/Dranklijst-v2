@@ -4,10 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import { CalendarBlank, Stop, Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
-import { Spinner } from '../../components/ui/spinner'
 import { ActionPillButton } from '../../components/ui/action-button'
 import { IconChip } from '../../components/IconChip'
-import { AdminSectionLabel, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminSectionLabel, AdminSurface, SkeletonList } from '../../components/AdminThemePrimitives'
 import { Badge } from '../../components/ui/badge'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
@@ -195,15 +194,16 @@ export function Periods() {
       </AdminFormDrawer>
 
       {isLoading && (
-        <div className="flex justify-center mt-8">
-          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
-        </div>
+        <section className="space-y-2">
+          <AdminSectionLabel>Periodes</AdminSectionLabel>
+          <SkeletonList rows={4} trailing="amount" />
+        </section>
       )}
 
       {activeStats.map(({ period, user_count, total }) => (
         <section key={period.id} className="space-y-2">
           <AdminSectionLabel>Actieve periode</AdminSectionLabel>
-          <AdminSurface padded className="space-y-3">
+          <AdminSurface padded className="space-y-3 dl-stagger-card" style={{ animationDelay: '40ms' }}>
             <div className="flex items-start gap-3">
               <IconChip tone="primary" icon={CalendarBlank} size={38} />
               <div className="min-w-0 flex-1">
@@ -214,7 +214,7 @@ export function Periods() {
                   >
                     {period.name}
                   </p>
-                  <Badge variant="success" dot>Lopend</Badge>
+                  <Badge variant="success" dot dotPulse>Lopend</Badge>
                 </div>
                 <p className="m-0 mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
                   Sinds {formatDate(period.started_at)} · {formatMemberCount(user_count)}
@@ -269,10 +269,11 @@ export function Periods() {
                 key={period.id}
                 type="button"
                 onClick={() => goToTransactions(period.id)}
-                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
                 style={{
                   borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                   fontFamily: 'inherit',
+                  animationDelay: `${120 + index * 45}ms`,
                 }}
               >
                 <div className="flex items-start gap-3">

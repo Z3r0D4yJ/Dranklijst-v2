@@ -83,7 +83,7 @@ export function AdminLayout() {
           )}
         </div>
       </div>
-      <div className="mt-5">
+      <div className="mt-5 dl-tab-content" key={location.pathname}>
         <Outlet />
       </div>
       <BottomNav />

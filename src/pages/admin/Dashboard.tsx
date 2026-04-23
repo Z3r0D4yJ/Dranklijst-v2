@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { CalendarBlank, CurrencyEur, Receipt, TrendUp } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, SkeletonStatTiles } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { CustomSelect } from '../../components/CustomSelect'
-import { Spinner } from '../../components/ui/spinner'
 import { supabase } from '../../lib/supabase'
 import { formatMoney } from '../../lib/formatters'
 
@@ -95,8 +94,11 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center mt-12">
-        <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
+      <div className="px-5 space-y-3 pb-content-end-comfort">
+        <section className="space-y-2">
+          <AdminSectionLabel>Dashboard</AdminSectionLabel>
+          <SkeletonStatTiles count={3} fullWidthLast />
+        </section>
       </div>
     )
   }
@@ -129,9 +131,10 @@ export function Dashboard() {
       {selectedPeriod && (
         <>
           {statsLoading ? (
-            <div className="flex justify-center py-6">
-              <Spinner className="size-6" style={{ color: 'var(--color-primary)' }} />
-            </div>
+            <section className="space-y-2">
+              <AdminSectionLabel>Dashboard</AdminSectionLabel>
+              <SkeletonStatTiles count={3} fullWidthLast />
+            </section>
           ) : (
             <>
               <section className="space-y-2">
@@ -144,12 +147,16 @@ export function Dashboard() {
                     icon={CurrencyEur}
                     tone="primary"
                     valueTone="primary"
+                    className="dl-stagger-tile"
+                    style={{ animationDelay: '0ms' }}
                   />
                   <AdminStatTile
                     label="Aankopen"
                     value={String(data?.totalTransactions ?? 0)}
                     icon={Receipt}
                     tone="primary"
+                    className="dl-stagger-tile"
+                    style={{ animationDelay: '65ms' }}
                   />
                   <AdminStatTile
                     label="Top groep"
@@ -158,7 +165,8 @@ export function Dashboard() {
                     tone="warning"
                     valueTone="warning"
                     valueClassName="text-[15px]"
-                    className="col-span-2"
+                    className="col-span-2 dl-stagger-tile"
+                    style={{ animationDelay: '130ms' }}
                   />
                 </div>
               </section>
@@ -168,14 +176,18 @@ export function Dashboard() {
                   <AdminSectionLabel>Omzet per groep</AdminSectionLabel>
                   <AdminSurface padded>
                   <div className="flex flex-col gap-2.5">
-                    {visibleGroupStats.map((group) => {
+                    {visibleGroupStats.map((group, i) => {
                       const percentage = Math.max(6, Math.round((group.total / maxVisibleGroupTotal) * 100))
 
                       return (
                         <div
                           key={group.name}
-                          className="rounded-[12px] border px-3 py-2.5"
-                          style={{ background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' }}
+                          className="rounded-[12px] border px-3 py-2.5 dl-stagger-card"
+                          style={{
+                            background: 'var(--color-surface-alt)',
+                            borderColor: 'var(--color-border)',
+                            animationDelay: `${200 + i * 45}ms`,
+                          }}
                         >
                           <div className="flex items-center justify-between gap-3">
                             <span
@@ -196,8 +208,12 @@ export function Dashboard() {
                             style={{ background: 'var(--color-surface)' }}
                           >
                             <div
-                              className="h-full rounded-full"
-                              style={{ width: `${percentage}%`, background: 'var(--color-primary)' }}
+                              className="h-full rounded-full dl-bar-grow"
+                              style={{
+                                width: `${percentage}%`,
+                                background: 'var(--color-primary)',
+                                animationDelay: `${350 + i * 60}ms`,
+                              }}
                             />
                           </div>
                         </div>

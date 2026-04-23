@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, MagnifyingGlass, PencilSimple, Users as UsersIcon } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { AdminEmptyState, AdminSectionLabel, AdminSurface } from '../../components/AdminThemePrimitives'
-import { Spinner } from '../../components/ui/spinner'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface, SkeletonList } from '../../components/AdminThemePrimitives'
 import { Badge } from '../../components/ui/badge'
 import { supabase } from '../../lib/supabase'
 import { UserAvatar } from '../../components/UserAvatar'
@@ -311,9 +310,10 @@ export function Users() {
       </section>
 
       {isLoading && (
-        <div className="flex justify-center mt-8">
-          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
-        </div>
+        <section className="space-y-2">
+          <AdminSectionLabel>Accounts</AdminSectionLabel>
+          <SkeletonList rows={6} leading="avatar" trailing="action" />
+        </section>
       )}
 
       {filtered.length > 0 && (
@@ -327,10 +327,11 @@ export function Users() {
           return (
             <div
               key={user.id}
-              className="px-3.5 py-3.5"
+              className="px-3.5 py-3.5 dl-stagger-row"
               style={{
                 background: isSelf ? 'var(--color-primary-pale)' : 'transparent',
                 borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
+                animationDelay: `${120 + index * 45}ms`,
               }}
             >
               <div className="flex items-center justify-between gap-3">

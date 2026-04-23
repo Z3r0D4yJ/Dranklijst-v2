@@ -185,7 +185,7 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
         <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
           {option.statusDot && (
             <span
-              className="h-2 w-2 shrink-0 rounded-full"
+              className={`h-2 w-2 shrink-0 rounded-full${option.statusDot === 'success' ? ' dl-pulse-dot' : ''}`}
               style={{ background: getStatusDotColor(option.statusDot) }}
             />
           )}
@@ -234,7 +234,7 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
         {icon && <span className="shrink-0">{icon}</span>}
         {selected?.statusDot && (
           <span
-            className="h-2 w-2 shrink-0 rounded-full"
+            className={`h-2 w-2 shrink-0 rounded-full${selected.statusDot === 'success' ? ' dl-pulse-dot' : ''}`}
             style={{ background: getStatusDotColor(selected.statusDot) }}
           />
         )}

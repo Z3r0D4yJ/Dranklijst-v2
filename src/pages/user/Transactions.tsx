@@ -189,8 +189,11 @@ export function Transactions() {
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center gap-3 px-3.5 py-3.5"
-                    style={{ borderTop: i === 0 ? 'none' : '1px solid var(--color-border)' }}
+                    className="flex items-center gap-3 px-3.5 py-3.5 dl-stagger-row"
+                    style={{
+                      borderTop: i === 0 ? 'none' : '1px solid var(--color-border)',
+                      animationDelay: `${120 + i * 45}ms`,
+                    }}
                   >
                     <IconChip tone={(t as { category?: ConsumptionCategory }).category ?? 'primary'} size={36} />
                     <div className="flex-1 min-w-0">

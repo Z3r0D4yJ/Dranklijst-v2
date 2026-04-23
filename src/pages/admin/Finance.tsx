@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, CheckCircle, Clock, CurrencyEur, Export, User } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, SkeletonList } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
-import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPaymentConfirmed } from '../../lib/notifications'
@@ -274,9 +273,10 @@ export function Finance() {
       )}
 
       {isLoading && (
-        <div className="flex justify-center mt-8">
-          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
-        </div>
+        <section className="space-y-2">
+          <AdminSectionLabel>Betalingen</AdminSectionLabel>
+          <SkeletonList rows={5} trailing="caret" />
+        </section>
       )}
 
       {!isLoading && payments.length === 0 && selectedPeriod && (
@@ -305,10 +305,11 @@ export function Finance() {
               key={payment.id}
               type="button"
               onClick={() => setSelectedPaymentId(payment.id)}
-              className="w-full p-3.5 text-left active:opacity-70 transition-opacity"
+              className="w-full p-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
               style={{
                 borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                 fontFamily: 'inherit',
+                animationDelay: `${120 + index * 45}ms`,
               }}
             >
               <div className="flex items-start gap-3">

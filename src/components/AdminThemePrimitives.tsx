@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FC, HTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, CSSProperties, FC, HTMLAttributes, ReactNode } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
 import { cn } from '../lib/utils'
 import { IconChip, type IconChipTone } from './IconChip'
@@ -32,6 +32,7 @@ interface AdminStatTileProps {
   className?: string
   labelClassName?: string
   valueClassName?: string
+  style?: CSSProperties
 }
 
 interface AdminEmptyStateProps {
@@ -46,6 +47,7 @@ interface AdminSurfaceProps {
   children: ReactNode
   className?: string
   padded?: boolean
+  style?: CSSProperties
 }
 
 export function AdminSectionLabel({ children, className }: { children: ReactNode; className?: string }) {
@@ -59,11 +61,11 @@ export function AdminSectionLabel({ children, className }: { children: ReactNode
   )
 }
 
-export function AdminSurface({ children, className, padded = false }: AdminSurfaceProps) {
+export function AdminSurface({ children, className, padded = false, style }: AdminSurfaceProps) {
   return (
     <div
       className={cn('rounded-card border overflow-hidden', padded && 'p-3.5', className)}
-      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', ...style }}
     >
       {children}
     </div>
@@ -135,11 +137,12 @@ export function AdminStatTile({
   className,
   labelClassName,
   valueClassName,
+  style,
 }: AdminStatTileProps) {
   return (
     <div
       className={cn('h-full min-w-0 rounded-[12px] border px-3 py-2.5', className)}
-      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', ...style }}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
         <p
@@ -308,6 +311,85 @@ export function DetailRow({ label, value, first = false }: DetailRowProps) {
       >
         {value}
       </span>
+    </div>
+  )
+}
+
+/* ───────────── Skeletons ─────────────
+   Consistent shimmer-placeholders die de echte content-shapes spiegelen.
+   Gebruik SkeletonList binnen een Surface, SkeletonStatTiles als grid. */
+interface SkeletonRowProps {
+  leading?: 'chip' | 'avatar' | 'none'
+  trailing?: 'amount' | 'action' | 'caret' | 'none'
+  hasSub?: boolean
+  first?: boolean
+}
+
+export function SkeletonRow({
+  leading = 'chip',
+  trailing = 'amount',
+  hasSub = true,
+  first = false,
+}: SkeletonRowProps) {
+  return (
+    <div
+      className="flex items-center gap-3 px-3.5 py-3.5"
+      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
+    >
+      {leading === 'chip' && <div className="dl-skel w-9 h-9 rounded-chip shrink-0" />}
+      {leading === 'avatar' && <div className="dl-skel w-9 h-9 rounded-full shrink-0" />}
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="dl-skel h-3 w-2/3 rounded" />
+        {hasSub && <div className="dl-skel h-2.5 w-1/3 rounded" />}
+      </div>
+      {trailing === 'amount' && <div className="dl-skel h-4 w-14 rounded shrink-0" />}
+      {trailing === 'action' && <div className="dl-skel h-10 w-10 rounded-[11px] shrink-0" />}
+      {trailing === 'caret' && <div className="dl-skel h-3 w-3 rounded shrink-0" />}
+    </div>
+  )
+}
+
+interface SkeletonListProps extends Omit<SkeletonRowProps, 'first'> {
+  rows?: number
+  className?: string
+}
+
+export function SkeletonList({ rows = 4, className, ...rowProps }: SkeletonListProps) {
+  return (
+    <AdminSurface className={className}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <SkeletonRow key={i} first={i === 0} {...rowProps} />
+      ))}
+    </AdminSurface>
+  )
+}
+
+interface SkeletonStatTilesProps {
+  count?: number
+  className?: string
+  fullWidthLast?: boolean
+}
+
+export function SkeletonStatTiles({ count = 2, className, fullWidthLast = false }: SkeletonStatTilesProps) {
+  return (
+    <div className={cn('grid grid-cols-2 gap-2.5', className)}>
+      {Array.from({ length: count }).map((_, i) => {
+        const isLast = i === count - 1
+        const spanFull = fullWidthLast && isLast && count % 2 === 1
+        return (
+          <div
+            key={i}
+            className={cn('h-full min-w-0 rounded-[12px] border px-3 py-2.5', spanFull && 'col-span-2')}
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <div className="dl-skel h-2.5 w-12 rounded" />
+              <div className="dl-skel h-6 w-6 rounded-[7px] shrink-0" />
+            </div>
+            <div className="dl-skel h-4 w-16 rounded" />
+          </div>
+        )
+      })}
     </div>
   )
 }

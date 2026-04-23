@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowsClockwise, CaretRight, Check, CheckCircle, Copy, CurrencyEur, Trash, Users, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { Spinner } from '../../components/ui/spinner'
 import { UserAvatar } from '../../components/UserAvatar'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -12,7 +11,7 @@ import { useJoinRequests } from '../../hooks/useJoinRequests'
 import { Badge } from '../../components/ui/badge'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
 import { CustomSelect } from '../../components/CustomSelect'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, PageHeader } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, PageHeader, SkeletonList } from '../../components/AdminThemePrimitives'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { IconChip } from '../../components/IconChip'
 import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
@@ -263,8 +262,14 @@ export function GroupManagement() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-        <Spinner className="size-8" style={{ color: 'var(--color-primary)' }} />
+      <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }}>
+        <PageHeader title="Groepsbeheer" />
+        <div className="flex flex-col gap-5 px-5 pt-4 pb-content-end-comfort">
+          <section>
+            <SectionLabel>Leden</SectionLabel>
+            <SkeletonList rows={4} leading="avatar" trailing="amount" />
+          </section>
+        </div>
       </div>
     )
   }

@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CaretRight, Receipt } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow, PageHeader } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow, PageHeader, SkeletonList } from '../../components/AdminThemePrimitives'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Badge } from '../../components/ui/badge'
 import { CustomSelect } from '../../components/CustomSelect'
 import { IconChip } from '../../components/IconChip'
 import { Pagination } from '../../components/Pagination'
-import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { usePagination } from '../../hooks/usePagination'
 import { useThemeColor } from '../../hooks/useThemeColor'
@@ -166,9 +165,10 @@ export function GroupTransactions() {
         </section>
 
         {isLoading && (
-          <div className="flex justify-center mt-8">
-            <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
-          </div>
+          <section className="space-y-2">
+            <AdminSectionLabel>Transacties</AdminSectionLabel>
+            <SkeletonList rows={6} trailing="caret" />
+          </section>
         )}
 
         {!isLoading && !groupInfo && (
@@ -201,10 +201,11 @@ export function GroupTransactions() {
                   key={tx.id}
                   type="button"
                   onClick={() => setSelectedTxId(tx.id)}
-                  className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                  className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
                   style={{
                     borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                     fontFamily: 'inherit',
+                    animationDelay: `${120 + index * 45}ms`,
                   }}
                 >
                   <div className="flex items-start gap-3">

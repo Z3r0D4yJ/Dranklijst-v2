@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, Receipt, Trash } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router-dom'
-import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow, SkeletonList } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
-import { Spinner } from '../../components/ui/spinner'
 import { Pagination } from '../../components/Pagination'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Badge } from '../../components/ui/badge'
@@ -208,9 +207,10 @@ export function AllTransactions() {
       </section>
 
       {isLoading && (
-        <div className="flex justify-center mt-8">
-          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
-        </div>
+        <section className="space-y-2">
+          <AdminSectionLabel>Transacties</AdminSectionLabel>
+          <SkeletonList rows={6} trailing="caret" />
+        </section>
       )}
 
       {!isLoading && allTx.length === 0 && (
@@ -235,10 +235,11 @@ export function AllTransactions() {
                 key={tx.id}
                 type="button"
                 onClick={() => setSelectedTxId(tx.id)}
-                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
                 style={{
                   borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                   fontFamily: 'inherit',
+                  animationDelay: `${120 + index * 45}ms`,
                 }}
               >
                 <div className="flex items-start gap-3">

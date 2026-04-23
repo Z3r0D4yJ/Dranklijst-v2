@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CaretRight, CurrencyEur, Users } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, SkeletonList, SkeletonStatTiles } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
-import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { IconChip } from '../../components/IconChip'
@@ -111,8 +110,15 @@ export function Groups() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center mt-8">
-        <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
+      <div className="px-5 space-y-3 pb-content-end-comfort">
+        <section className="space-y-2">
+          <AdminSectionLabel>Groepen</AdminSectionLabel>
+          <SkeletonStatTiles count={2} />
+        </section>
+        <section className="space-y-2">
+          <AdminSectionLabel>Alle groepen</AdminSectionLabel>
+          <SkeletonList rows={5} trailing="caret" />
+        </section>
       </div>
     )
   }
@@ -164,10 +170,11 @@ export function Groups() {
               key={group.id}
               type="button"
               onClick={() => setSelectedGroupId(group.id)}
-              className="w-full px-4 py-3.5 text-left active:opacity-70 transition-opacity"
+              className="w-full px-4 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
               style={{
                 borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                 fontFamily: 'inherit',
+                animationDelay: `${120 + index * 45}ms`,
               }}
             >
               <div className="flex items-center justify-between gap-3">

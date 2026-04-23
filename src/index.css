@@ -217,6 +217,31 @@
   animation: dl-drawer-up 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.dl-stagger-tile {
+  animation: dl-card-in 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.dl-stagger-card {
+  animation: dl-card-in 260ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+.dl-stagger-row {
+  animation: dl-fade-in 200ms both;
+}
+
+.dl-tab-content {
+  animation: dl-tab-in 180ms ease both;
+}
+
+.dl-bar-grow {
+  animation: dl-bar-grow 400ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  transform-origin: left center;
+}
+
+.dl-pulse-dot {
+  animation: dl-pulse-dot 2s ease-in-out infinite;
+}
+
 @keyframes dl-slide-from-right {
   0%   { opacity: 0; transform: translateX(32px); }
   100% { opacity: 1; transform: translateX(0); }
@@ -227,6 +252,33 @@
   100% { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes dl-card-in {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@keyframes dl-scale-bounce {
+  0%   { transform: scale(0.4); opacity: 0; }
+  55%  { transform: scale(1.14); opacity: 1; }
+  75%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+@keyframes dl-pulse-dot {
+  0%, 100% { opacity: 1;    transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.75); }
+}
+
+@keyframes dl-tab-in {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dl-bar-grow {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
 /* ─── Reduced motion ─────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -235,10 +287,18 @@
   [style*="dl-wiggle"],
   [style*="dl-bubble-up"],
   [style*="dl-check-draw"],
+  [style*="dl-card-in"],
+  [style*="dl-scale-bounce"],
+  [style*="dl-pulse-dot"],
+  [style*="dl-tab-in"],
+  [style*="dl-bar-grow"],
+  [style*="dl-fade-in"],
   .dl-drawer-overlay,
   .dl-drawer-panel,
   .dl-swipe-content {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
   * {
     transition-duration: 0.01ms !important;

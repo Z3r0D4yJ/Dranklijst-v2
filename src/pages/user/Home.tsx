@@ -132,7 +132,7 @@ export function Home() {
             {period && (
               <Badge variant="glass" className="gap-1.5 px-3">
                 {period.is_active && (
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'var(--color-success)' }} />
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 dl-pulse-dot" style={{ background: 'var(--color-success)' }} />
                 )}
                 {period.name}
               </Badge>

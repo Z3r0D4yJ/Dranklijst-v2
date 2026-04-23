@@ -467,7 +467,10 @@ export function Profile() {
 
       <div className="px-5 pt-4 space-y-3.5 pb-content-end-comfort">
         {/* ─── Identity card ──────────────────────── */}
-        <div className="rounded-card p-4 flex items-center gap-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div
+          className="rounded-card p-4 flex items-center gap-3.5 dl-stagger-card"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', animationDelay: '0ms' }}
+        >
           <div className="relative shrink-0">
             <div className="w-[62px] h-[62px] rounded-full overflow-hidden" style={{ background: 'var(--color-accent-bg)', border: '2px solid var(--color-accent-border)' }}>
               {profile?.avatar_url ? (
@@ -512,8 +515,8 @@ export function Profile() {
           return (
             <div
               key={payment.id}
-              className="rounded-card p-4"
-              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+              className="rounded-card p-4 dl-stagger-card"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', animationDelay: '60ms' }}
             >
               <div className="flex items-start gap-3">
                 <IconChip tone={statusUi.chipTone} icon={statusUi.icon} size={36} />
@@ -579,7 +582,10 @@ export function Profile() {
 
 {/* ─── Theme ──────────────────────────────── */}
         <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Weergave</p>
-        <div className="rounded-card p-3.5" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div
+          className="rounded-card p-3.5 dl-stagger-card"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', animationDelay: '120ms' }}
+        >
           <div className="relative grid grid-cols-3 gap-1.5 rounded-[12px] p-1" style={{ background: 'var(--color-surface-alt)' }}>
             
             {/* ─── De Glijdende Achtergrond (Slider) ─── */}
@@ -617,7 +623,10 @@ export function Profile() {
 
         {/* ─── Account rows ───────────────────────── */}
         <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Account</p>
-        <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div
+          className="rounded-card overflow-hidden dl-stagger-card"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', animationDelay: '180ms' }}
+        >
           <AccountRow
             first
             icon={push.subscribed ? Bell : BellSlash}
@@ -684,7 +693,10 @@ export function Profile() {
         {canSeeManagement && (
           <>
             <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Beheer</p>
-            <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+            <div
+              className="rounded-card overflow-hidden dl-stagger-card"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', animationDelay: '240ms' }}
+            >
               {canManageOwnGroup && (
                 <AccountRow
                   first

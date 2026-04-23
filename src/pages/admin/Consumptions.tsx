@@ -2,9 +2,8 @@ import { useState, type CSSProperties } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, PencilSimple, Eye, EyeSlash, Check, BeerBottle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { AdminEmptyState, AdminSectionLabel, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface, SkeletonList } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
-import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { CustomSelect } from '../../components/CustomSelect'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
@@ -233,9 +232,10 @@ export function Consumptions() {
       </AdminFormDrawer>
 
       {isLoading && (
-        <div className="flex justify-center mt-8">
-          <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
-        </div>
+        <section className="space-y-2">
+          <AdminSectionLabel>Consumpties</AdminSectionLabel>
+          <SkeletonList rows={5} leading="none" trailing="action" />
+        </section>
       )}
 
       {!isLoading && totalConsumptions === 0 && (
@@ -259,9 +259,10 @@ export function Consumptions() {
               {items.map((consumption, index) => (
                 <div
                   key={consumption.id}
-                  className="flex items-center gap-3 px-4 py-3.5"
+                  className="flex items-center gap-3 px-4 py-3.5 dl-stagger-row"
                   style={{
                     borderTop: index > 0 ? '1px solid var(--color-border)' : undefined,
+                    animationDelay: `${120 + index * 45}ms`,
                   }}
                 >
                   <div className="min-w-0 flex-1 pr-1">

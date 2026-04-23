@@ -41,12 +41,18 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {
   dot?: boolean
+  dotPulse?: boolean
 }
 
-export function Badge({ className, variant, size, uppercase, dot, children, ...props }: BadgeProps) {
+export function Badge({ className, variant, size, uppercase, dot, dotPulse, children, ...props }: BadgeProps) {
   return (
     <span className={cn(badgeVariants({ variant, size, uppercase }), className)} {...props}>
-      {dot && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: 'currentColor' }} />}
+      {dot && (
+        <span
+          className={cn('h-1.5 w-1.5 rounded-full shrink-0', dotPulse && 'dl-pulse-dot')}
+          style={{ background: 'currentColor' }}
+        />
+      )}
       {children}
     </span>
   )
