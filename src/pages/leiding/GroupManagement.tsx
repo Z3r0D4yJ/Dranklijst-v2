@@ -80,7 +80,7 @@ export function GroupManagement() {
   const [selectedPeriod, setSelectedPeriod] = useState('')
   const [membersDrawerOpen, setMembersDrawerOpen] = useState(false)
 
-  const { data: requests } = useJoinRequests(groupId)
+  const { data: requests, error: requestsError } = useJoinRequests(groupId)
 
   const { data: periods } = useQuery({
     queryKey: ['periods'],
@@ -179,7 +179,7 @@ export function GroupManagement() {
     setLoading(false)
   }
 
-  async function resolveRequest(requestId: string, userId: string, approve: boolean) {
+  async function resolveRequest(requestId: string, userId: string, approve: boolean, requestGroupName: string) {
     setActionLoading(requestId)
 
     const { error } = await supabase.rpc('resolve_join_request', {
@@ -188,7 +188,7 @@ export function GroupManagement() {
     })
 
     if (!error) {
-      await queryClient.invalidateQueries({ queryKey: ['join-requests', groupId] })
+      await queryClient.invalidateQueries({ queryKey: ['join-requests'] })
 
       if (approve) {
         const { data } = await supabase
@@ -200,7 +200,13 @@ export function GroupManagement() {
         if (data) setMembers(data as unknown as MemberWithProfile[])
       }
 
-      notifyJoinRequestResolved(userId, groupName, approve)
+      try {
+        await notifyJoinRequestResolved(userId, requestGroupName, approve)
+      } catch {
+        toast.warning('Aanvraag verwerkt, maar de melding kon niet verstuurd worden.')
+      }
+    } else {
+      toast.error(error.message)
     }
 
     setActionLoading(null)
@@ -345,7 +351,16 @@ export function GroupManagement() {
 
         <section>
           <SectionLabel count={(requests ?? []).length}>Aanvragen</SectionLabel>
-          {(requests ?? []).length === 0 ? (
+          {requestsError ? (
+            <div
+              className="rounded-[14px] px-4 py-[18px] text-center"
+              style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)' }}
+            >
+              <p className="m-0 text-[13px] font-semibold" style={{ color: 'var(--color-danger)' }}>
+                Aanvragen konden niet geladen worden
+              </p>
+            </div>
+          ) : (requests ?? []).length === 0 ? (
             <div className="rounded-[14px] px-4 py-[18px] text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
               <p className="m-0 text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
                 Geen openstaande aanvragen
@@ -371,6 +386,11 @@ export function GroupManagement() {
                       {request.profiles?.full_name ?? 'Onbekend'}
                     </p>
                     <div className="mt-1 flex flex-wrap gap-1.5">
+                      {request.groups?.name && (
+                        <Badge variant="secondary" size="sm">
+                          {request.groups.name}
+                        </Badge>
+                      )}
                       <Badge variant="muted" size="sm">
                         {new Date(request.created_at).toLocaleDateString('nl-BE')}
                       </Badge>
@@ -378,7 +398,7 @@ export function GroupManagement() {
                   </div>
                   <div className="flex gap-1.5">
                     <IconActionButton
-                      onClick={() => resolveRequest(request.id, request.user_id, false)}
+                      onClick={() => resolveRequest(request.id, request.user_id, false, request.groups?.name ?? groupName)}
                       disabled={actionLoading === request.id}
                       variant="danger-soft"
                       aria-label={`Weiger ${request.profiles?.full_name ?? 'aanvraag'}`}
@@ -386,7 +406,7 @@ export function GroupManagement() {
                       <X size={16} color="currentColor" weight="bold" />
                     </IconActionButton>
                     <IconActionButton
-                      onClick={() => resolveRequest(request.id, request.user_id, true)}
+                      onClick={() => resolveRequest(request.id, request.user_id, true, request.groups?.name ?? groupName)}
                       disabled={actionLoading === request.id}
                       variant="success-soft"
                       aria-label={`Keur ${request.profiles?.full_name ?? 'aanvraag'} goed`}

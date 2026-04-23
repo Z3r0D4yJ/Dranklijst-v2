@@ -49,10 +49,14 @@ export function JoinViaCode() {
         const result = parseInviteRequestResult(data)
         setGroupName(result.groupName)
         if (profile?.full_name) {
-          if (result.groupId) {
-            await notifyLeidingOfJoinRequest(result.groupId, profile.full_name)
-          } else {
-            await notifyLeidingOfInviteJoinRequest(normalizedCode, profile.full_name)
+          try {
+            if (result.groupId) {
+              await notifyLeidingOfJoinRequest(result.groupId, profile.full_name)
+            } else {
+              await notifyLeidingOfInviteJoinRequest(normalizedCode, profile.full_name)
+            }
+          } catch (notifyError) {
+            console.warn('Join request notification failed:', notifyError)
           }
         }
         setStatus('success')

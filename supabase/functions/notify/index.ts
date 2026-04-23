@@ -60,6 +60,15 @@ Deno.serve(async (req) => {
           ?.filter(m => ['leiding', 'kas'].includes(m.profiles?.role ?? ''))
           .map(m => m.user_id) ?? [])
 
+        const { data: kasProfiles } = await sb
+          .from('profiles')
+          .select('id')
+          .eq('role', 'kas')
+
+        for (const kas of (kasProfiles ?? []) as Array<{ id: string }>) {
+          ids.add(kas.id)
+        }
+
         if (inviteCreatorId) ids.add(inviteCreatorId)
 
         await send([...ids], 'Nieuwe aanvraag', `${payload.requester_name} wil lid worden van jouw groep.`, '/leiding/groep')
@@ -70,7 +79,12 @@ Deno.serve(async (req) => {
         const msg = payload.approved
           ? `Je bent toegevoegd aan ${payload.group_name}!`
           : `Je aanvraag voor ${payload.group_name} werd niet goedgekeurd.`
-        await send([payload.user_id], payload.approved ? 'Aanvraag goedgekeurd' : 'Aanvraag afgekeurd', msg)
+        await send(
+          [payload.user_id],
+          payload.approved ? 'Aanvraag goedgekeurd' : 'Aanvraag afgekeurd',
+          msg,
+          payload.approved ? '/' : '/profile',
+        )
         break
       }
 

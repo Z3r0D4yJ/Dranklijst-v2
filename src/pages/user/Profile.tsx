@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { SignOut, Users, Clock, CheckCircle, XCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
+import { SignOut, Users, Clock, CheckCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, XCircle, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../../components/ui/drawer'
 import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
@@ -427,7 +427,7 @@ export function Profile() {
   useEffect(() => {
     if (!profile) return
     Promise.all([
-      supabase.from('join_requests').select('*, groups(name)').eq('user_id', profile.id).order('created_at', { ascending: false }),
+      supabase.from('join_requests').select('*, groups(name)').eq('user_id', profile.id).in('status', ['pending', 'rejected']).order('created_at', { ascending: false }),
       supabase.from('group_members').select('groups(id, name)').eq('user_id', profile.id),
     ]).then(([reqRes, memberRes]) => {
       if (reqRes.data) setJoinRequests(reqRes.data as unknown as JoinRequestWithGroup[])
@@ -695,11 +695,13 @@ export function Profile() {
               sub={joinRequests.filter(r => r.status === 'pending').map(r => r.groups?.name).join(', ')}
             />
           )}
-          {joinRequests.filter(r => r.status === 'approved').length > 0 && (
-            <AccountRow icon={CheckCircle} tone="success" label="Aanvraag goedgekeurd" />
-          )}
           {joinRequests.filter(r => r.status === 'rejected').length > 0 && (
-            <AccountRow icon={XCircle} tone="danger" label="Aanvraag afgewezen" />
+            <AccountRow
+              icon={XCircle}
+              tone="danger"
+              label="Aanvraag afgewezen"
+              sub={joinRequests.filter(r => r.status === 'rejected').map(r => r.groups?.name).join(', ')}
+            />
           )}
         </div>
 

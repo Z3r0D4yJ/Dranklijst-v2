@@ -88,7 +88,11 @@ export function JoinGroup() {
       setSubmittedId(groupId)
 
       if (profile?.full_name) {
-        await notifyLeidingOfJoinRequest(groupId, profile.full_name)
+        try {
+          await notifyLeidingOfJoinRequest(groupId, profile.full_name)
+        } catch (notifyError) {
+          console.warn('Join request notification failed:', notifyError)
+        }
       }
     }
 
@@ -111,10 +115,14 @@ export function JoinGroup() {
       setJoinedGroupName(result.groupName)
 
       if (profile?.full_name) {
-        if (result.groupId) {
-          await notifyLeidingOfJoinRequest(result.groupId, profile.full_name)
-        } else {
-          await notifyLeidingOfInviteJoinRequest(normalizedCode, profile.full_name)
+        try {
+          if (result.groupId) {
+            await notifyLeidingOfJoinRequest(result.groupId, profile.full_name)
+          } else {
+            await notifyLeidingOfInviteJoinRequest(normalizedCode, profile.full_name)
+          }
+        } catch (notifyError) {
+          console.warn('Join request notification failed:', notifyError)
         }
       }
     }
