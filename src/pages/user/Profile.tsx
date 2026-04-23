@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { SignOut, Users, Clock, CheckCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, X, XCircle, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../../components/ui/drawer'
+import { SignOut, Users, Clock, CheckCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, XCircle, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
+import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -20,6 +20,7 @@ import { IconChip } from '../../components/IconChip'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { UserAvatar } from '../../components/UserAvatar'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
+import { PageHeader } from '../../components/AdminThemePrimitives'
 
 interface JoinRequestWithGroup {
   id: string
@@ -135,62 +136,41 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
   })
 
   return (
-    <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
-      <DrawerContent
-        className="rounded-t-[20px] px-0"
-        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height-compact)' }}
-      >
-        <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
-          <div>
-            <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>{groupName}</DrawerTitle>
-            {!isLoading && (
-              <DrawerDescription style={{ color: 'var(--color-text-muted)' }}>
-                {members?.length ?? 0} leden
-              </DrawerDescription>
-            )}
+    <AdminFormDrawer
+      open
+      onOpenChange={(open) => { if (!open) onClose() }}
+      title={groupName}
+      description={isLoading ? undefined : `${members?.length ?? 0} leden`}
+      maxHeight="var(--drawer-max-height-compact)"
+      bodyClassName="space-y-1"
+    >
+      {isLoading && [0, 1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center gap-3 py-2.5">
+          <div className="dl-skel w-9 h-9 rounded-full shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <div className="dl-skel h-3 w-1/2 rounded" />
+            <div className="dl-skel h-2.5 w-1/4 rounded" />
           </div>
-          <DrawerClose asChild>
-            <IconActionButton
-              size="sm"
-              variant="neutral"
-              className="!rounded-full"
-              aria-label="Sluiten"
-            >
-              <X size={16} color="currentColor" weight="bold" />
-            </IconActionButton>
-          </DrawerClose>
-        </DrawerHeader>
-
-        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-1">
-          {isLoading && [0, 1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3 py-2.5">
-              <div className="dl-skel w-9 h-9 rounded-full shrink-0" />
-              <div className="flex-1 space-y-1.5">
-                <div className="dl-skel h-3 w-1/2 rounded" />
-                <div className="dl-skel h-2.5 w-1/4 rounded" />
-              </div>
-            </div>
-          ))}
-          {!isLoading && (members ?? []).map((member) => (
-            <div
-              key={member.user_id}
-              className="flex items-center gap-3 py-2.5"
-              style={{ borderBottom: '1px solid var(--color-border)' }}
-            >
-              <UserAvatar avatarUrl={member.avatar_url} size={36} />
-              <div className="flex-1">
-                <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                  {member.full_name}
-                </p>
-                <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                  {ROLE_LABELS[member.role] ?? member.role}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
-      </DrawerContent>
-    </Drawer>
+      ))}
+      {!isLoading && (members ?? []).map((member) => (
+        <div
+          key={member.user_id}
+          className="flex items-center gap-3 py-2.5"
+          style={{ borderBottom: '1px solid var(--color-border)' }}
+        >
+          <UserAvatar avatarUrl={member.avatar_url} size={36} />
+          <div className="flex-1">
+            <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+              {member.full_name}
+            </p>
+            <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+              {ROLE_LABELS[member.role] ?? member.role}
+            </p>
+          </div>
+        </div>
+      ))}
+    </AdminFormDrawer>
   )
 }
 
@@ -262,31 +242,31 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Drawer
+    <AdminFormDrawer
       open
-      onOpenChange={(open: boolean) => { if (!open) onClose() }}
+      onOpenChange={(open) => { if (!open) onClose() }}
+      title="Profiel bewerken"
+      dismissible={!saving}
+      disableClose={saving}
       repositionInputs={false}
+      bodyClassName="space-y-5"
+      footer={
+        <ActionPillButton
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          variant="accent"
+          size="md"
+          className="w-full"
+        >
+          {saving
+            ? <Spinner className="size-[18px]" style={{ color: 'white' }} />
+            : <Lock size={18} weight="bold" />}
+          {saving ? 'Opslaan...' : 'Opslaan'}
+        </ActionPillButton>
+      }
     >
-      <DrawerContent
-        className="rounded-t-[20px] px-0"
-        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height)' }}
-      >
-        <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
-          <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>Profiel bewerken</DrawerTitle>
-          <DrawerClose asChild>
-            <IconActionButton
-              size="sm"
-              variant="neutral"
-              className="!rounded-full"
-              aria-label="Sluiten"
-            >
-              <X size={16} color="currentColor" weight="bold" />
-            </IconActionButton>
-          </DrawerClose>
-        </DrawerHeader>
-
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-          <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-3">
             <button
               onClick={() => fileRef.current?.click()}
               className="relative h-[88px] w-[88px] shrink-0 active:scale-95 transition-transform"
@@ -387,21 +367,7 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
               </p>
             </div>
           </div>
-
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-3.5 rounded-[12px] text-[15px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
-            style={{ background: 'var(--color-primary)', color: 'white' }}
-          >
-            {saving
-              ? <Spinner className="size-[18px]" style={{ color: 'white' }} />
-              : <Lock size={18} weight="bold" />}
-            {saving ? 'Opslaan...' : 'Opslaan'}
-          </button>
-        </div>
-      </DrawerContent>
-    </Drawer>
+    </AdminFormDrawer>
   )
 
 }
@@ -476,10 +442,7 @@ export function Profile() {
 
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }}>
-      {/* ─── Header ──────────────────────────────── */}
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
-        <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Profiel</h1>
-      </div>
+      <PageHeader title="Profiel" />
 
       <div className="px-5 pt-4 space-y-3.5 pb-content-end-comfort">
         {/* ─── Identity card ──────────────────────── */}
@@ -576,23 +539,18 @@ export function Profile() {
               </div>
 
               {payment.status === 'unpaid' && (
-                <div className="mt-3">
-                  <button
-                    onClick={() => markAsPaid(payment.id)}
-                    disabled={isSubmitting}
-                    className="flex w-full items-center justify-center gap-2 rounded-[12px] border py-3 text-[14px] font-bold transition-transform active:scale-[0.98] disabled:opacity-50"
-                    style={{
-                      background: 'var(--color-primary-pale)',
-                      borderColor: 'var(--color-primary-border)',
-                      color: 'var(--color-primary)',
-                    }}
-                  >
-                    {isSubmitting
-                      ? <Spinner className="size-[16px]" style={{ color: 'var(--color-primary)' }} />
-                      : <CheckCircle size={16} color="var(--color-primary)" weight="bold" />}
-                    {isSubmitting ? 'Bezig...' : 'Ik heb betaald'}
-                  </button>
-                </div>
+                <ActionPillButton
+                  onClick={() => markAsPaid(payment.id)}
+                  disabled={isSubmitting}
+                  variant="primary-soft"
+                  size="md"
+                  className="mt-3 w-full"
+                >
+                  {isSubmitting
+                    ? <Spinner className="size-[16px]" style={{ color: 'var(--color-primary)' }} />
+                    : <CheckCircle size={16} color="currentColor" weight="bold" />}
+                  {isSubmitting ? 'Bezig...' : 'Ik heb betaald'}
+                </ActionPillButton>
               )}
             </div>
           )
@@ -611,7 +569,7 @@ export function Profile() {
                 transform: `translateX(calc(${THEME_OPTIONS.findIndex(o => o.value === mode)} * 100% + ${THEME_OPTIONS.findIndex(o => o.value === mode)} * 6px))`,
                 left: '4px',
                 background: 'var(--color-surface)',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.06)'
+                border: '1px solid var(--color-border-mid)',
               }}
             />
 
@@ -740,14 +698,20 @@ export function Profile() {
         )}
 
         {/* ─── Sign out ───────────────────────────── */}
-        <button
+        <ActionPillButton
           onClick={signOut}
-          className="w-full py-3.5 px-4 rounded-[14px] text-[14px] font-bold flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform"
-          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-danger)' }}
+          variant="neutral"
+          size="md"
+          className="w-full"
+          style={{
+            background: 'var(--color-surface)',
+            borderColor: 'var(--color-border)',
+            color: 'var(--color-danger)',
+          }}
         >
-          <SignOut size={18} weight="bold" color="var(--color-danger)" />
+          <SignOut size={16} weight="bold" color="currentColor" />
           Uitloggen
-        </button>
+        </ActionPillButton>
       </div>
 
       {/* ─── Group members sheet ────────────────── */}

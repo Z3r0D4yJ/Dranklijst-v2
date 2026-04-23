@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { CaretRight, CurrencyEur, Receipt, Trash } from '@phosphor-icons/react'
+import { CaretRight, Receipt, Trash } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router-dom'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
@@ -29,22 +29,6 @@ interface TxRow {
   total_price: number
   created_at: string
   period_id: string
-}
-
-function TxDetailRow({ label, value, first = false }: { label: string; value: string; first?: boolean }) {
-  return (
-    <div
-      className="flex items-center justify-between gap-3 px-3.5 py-3"
-      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
-    >
-      <span className="text-[12px] font-bold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
-        {label}
-      </span>
-      <span className="text-[13px] font-bold text-right" style={{ color: 'var(--color-text-primary)' }}>
-        {value}
-      </span>
-    </div>
-  )
 }
 
 function formatTransactionMoment(iso: string) {
@@ -200,25 +184,6 @@ export function AllTransactions() {
   return (
     <div className="px-5 space-y-3 pb-content-end-comfort">
       <section className="space-y-2">
-        <AdminSectionLabel>Transactieoverzicht</AdminSectionLabel>
-        <div className="grid grid-cols-2 gap-2.5">
-          <AdminStatTile
-            label="Aantal"
-            value={String(allTx.length)}
-            icon={Receipt}
-            tone="primary"
-          />
-          <AdminStatTile
-            label="Omzet"
-            value={formatMoney(total)}
-            icon={CurrencyEur}
-            tone="primary"
-            valueTone="primary"
-          />
-        </div>
-      </section>
-
-      <section className="space-y-2">
         <AdminSectionLabel>Filters</AdminSectionLabel>
         <div className="flex flex-col gap-2.5">
           <CustomSelect
@@ -258,7 +223,12 @@ export function AllTransactions() {
 
       {allTx.length > 0 && (
         <section className="space-y-2">
-          <AdminSectionLabel>Transacties</AdminSectionLabel>
+          <div className="flex items-baseline justify-between gap-3">
+            <AdminSectionLabel>Transacties</AdminSectionLabel>
+            <span className="text-[12px] font-medium tabular-nums" style={{ color: 'var(--color-text-muted)' }}>
+              {allTx.length} {allTx.length === 1 ? 'transactie' : 'transacties'} · {formatMoney(total)}
+            </span>
+          </div>
           <AdminSurface>
             {pageTx.map((tx, index) => (
               <button
@@ -279,7 +249,7 @@ export function AllTransactions() {
                         <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                           {tx.full_name}
                         </p>
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                           <Badge variant="secondary" size="sm">
                             {tx.group_name}
                           </Badge>
@@ -290,10 +260,10 @@ export function AllTransactions() {
                           >
                             {tx.consumption_name} x{tx.quantity}
                           </Badge>
-                          <Badge variant="muted" size="sm">
-                            {formatTransactionMoment(tx.created_at)}
-                          </Badge>
                         </div>
+                        <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                          {formatTransactionMoment(tx.created_at)}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
@@ -367,23 +337,14 @@ export function AllTransactions() {
         }
       >
         {selectedTx && (
-          <>
-            <section className="space-y-2">
-              <AdminSectionLabel>Totaal</AdminSectionLabel>
-              <AdminSurface padded>
-                <p className="m-0 text-[24px] font-extrabold tracking-[-0.6px] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                  {formatMoney(selectedTx.total_price)}
-                </p>
-              </AdminSurface>
-            </section>
-
-            <section className="space-y-2">
-              <AdminSectionLabel>Details</AdminSectionLabel>
-              <AdminSurface>
-              <TxDetailRow first label="Consumptie" value={selectedTx.consumption_name} />
-              <TxDetailRow label="Aantal" value={String(selectedTx.quantity)} />
-              <TxDetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
-              <TxDetailRow
+          <section className="space-y-2">
+            <AdminSectionLabel>Details</AdminSectionLabel>
+            <AdminSurface>
+              <DetailRow first label="Consumptie" value={selectedTx.consumption_name} />
+              <DetailRow label="Aantal" value={String(selectedTx.quantity)} />
+              <DetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
+              <DetailRow label="Totaal" value={formatMoney(selectedTx.total_price)} />
+              <DetailRow
                 label="Moment"
                 value={new Date(selectedTx.created_at).toLocaleDateString('nl-BE', {
                   day: 'numeric',
@@ -393,9 +354,8 @@ export function AllTransactions() {
                   minute: '2-digit',
                 })}
               />
-              </AdminSurface>
-            </section>
-          </>
+            </AdminSurface>
+          </section>
         )}
       </AdminFormDrawer>
     </div>

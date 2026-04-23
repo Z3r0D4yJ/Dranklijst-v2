@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { useSwipe } from '../../hooks/useSwipe'
 import { IconChip } from '../../components/IconChip'
+import { EmptyState, PageHeader } from '../../components/AdminThemePrimitives'
 import { Pagination } from '../../components/Pagination'
 import { usePagination } from '../../hooks/usePagination'
 import type { Period, ConsumptionCategory } from '../../lib/database.types'
@@ -97,13 +98,7 @@ export function Transactions() {
 
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }} {...swipe}>
-      {/* ─── Header ──────────────────────────────── */}
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
-        <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Transacties</h1>
-        {selectedPeriod && (
-          <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{selectedPeriod.name}</p>
-        )}
-      </div>
+      <PageHeader title="Transacties" sub={selectedPeriod?.name} />
 
       {/* ─── Periode-tabs ─────────────────────────── */}
       {(periods ?? []).length > 1 && (
@@ -145,8 +140,6 @@ export function Transactions() {
       <div className="px-5 pt-4 space-y-4">
         {/* ─── Total card ──────────────────────────── */}
         <div className="rounded-card overflow-hidden relative" style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff' }}>
-          <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: 70, background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', right: 30, bottom: -20, width: 80, height: 80, borderRadius: 40, background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
           <img
             src="/fox.png"
             alt=""
@@ -182,13 +175,8 @@ export function Transactions() {
           </div>
         )}
 
-        {/* ─── Empty state ─────────────────────────── */}
         {!isLoading && allTx.length === 0 && (
-          <div className="rounded-card px-4 py-12 flex flex-col items-center text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-            <IconChip tone="primary" icon={Receipt} size={48} />
-            <p className="text-[14px] font-bold mt-3" style={{ color: 'var(--color-text-primary)' }}>Nog niets gekocht</p>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Je transacties verschijnen hier.</p>
-          </div>
+          <EmptyState icon={Receipt} title="Nog niets gekocht" description="Je transacties verschijnen hier." />
         )}
 
         {/* ─── Grouped list ─────────────────────────── */}

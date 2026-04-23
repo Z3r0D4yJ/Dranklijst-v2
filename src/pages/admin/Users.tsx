@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, MagnifyingGlass, PencilSimple, Users as UsersIcon } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface } from '../../components/AdminThemePrimitives'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { supabase } from '../../lib/supabase'
@@ -59,14 +59,6 @@ function getRoleLabel(role: Role) {
 
 function getScopeLabel(user: Pick<UserRow, 'role' | 'primaryGroupName'>) {
   return user.primaryGroupName ?? 'Geen groep'
-}
-
-function getExtraGroupCount(user: Pick<UserRow, 'role' | 'groups' | 'primaryGroupName'>) {
-  return user.groups.filter((groupName) => {
-    if (groupName === user.primaryGroupName) return false
-    if ((user.role === 'leiding' || user.role === 'kas') && groupName === 'Leiding') return false
-    return true
-  }).length
 }
 
 function getDrawerHint(role: Role, groupName: string | null) {
@@ -292,26 +284,6 @@ export function Users() {
   return (
     <div className="px-5 space-y-4 pb-content-end-comfort">
       <section className="space-y-2">
-        <AdminSectionLabel>Gebruikers</AdminSectionLabel>
-        <div className="grid grid-cols-2 gap-2.5">
-          <AdminStatTile
-            label="Leden"
-            value={String(memberCount)}
-            icon={UsersIcon}
-            tone="neutral"
-          />
-          <AdminStatTile
-            label="Leiding/Kas"
-            value={String(leidingKasCount)}
-            icon={Check}
-            tone="primary"
-            valueTone="primary"
-          />
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <AdminSectionLabel>Zoeken</AdminSectionLabel>
         <div className="relative">
           <MagnifyingGlass
             size={16}
@@ -330,6 +302,12 @@ export function Users() {
             }}
           />
         </div>
+        <p
+          className="m-0 ml-0.5 text-[12px] font-medium"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          {memberCount} {memberCount === 1 ? 'lid' : 'leden'} · {leidingKasCount} leiding &amp; kas
+        </p>
       </section>
 
       {isLoading && (
@@ -375,11 +353,6 @@ export function Users() {
                       <Badge variant="secondary" size="sm">
                         {getScopeLabel(user)}
                       </Badge>
-                      {getExtraGroupCount(user) > 0 && (
-                          <Badge variant="muted" size="sm">
-                            +{getExtraGroupCount(user)} extra
-                          </Badge>
-                      )}
                       {isSelf && (
                         <Badge variant="primary" size="sm">Jij</Badge>
                       )}

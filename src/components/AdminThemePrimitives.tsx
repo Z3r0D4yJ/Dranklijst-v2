@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, FC, HTMLAttributes, ReactNode } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
 import { cn } from '../lib/utils'
 import { IconChip, type IconChipTone } from './IconChip'
@@ -48,43 +48,6 @@ interface AdminSurfaceProps {
   padded?: boolean
 }
 
-interface AdminStatusPillProps {
-  label: ReactNode
-  tone?: 'primary' | 'success' | 'warning' | 'danger' | 'neutral'
-  className?: string
-}
-
-const STATUS_PILL_STYLE: Record<
-  NonNullable<AdminStatusPillProps['tone']>,
-  { bg: string; border: string; text: string }
-> = {
-  primary: {
-    bg: 'var(--color-primary-pale)',
-    border: 'var(--color-primary-border)',
-    text: 'var(--color-primary)',
-  },
-  success: {
-    bg: 'var(--color-success-bg)',
-    border: 'var(--color-success-border)',
-    text: 'var(--color-success)',
-  },
-  warning: {
-    bg: 'var(--color-warning-bg)',
-    border: 'var(--color-warning-border)',
-    text: 'var(--color-warning)',
-  },
-  danger: {
-    bg: 'var(--color-danger-bg)',
-    border: 'var(--color-danger-border)',
-    text: 'var(--color-danger)',
-  },
-  neutral: {
-    bg: 'var(--color-surface-alt)',
-    border: 'var(--color-border)',
-    text: 'var(--color-text-secondary)',
-  },
-}
-
 export function AdminSectionLabel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <p
@@ -104,30 +67,6 @@ export function AdminSurface({ children, className, padded = false }: AdminSurfa
     >
       {children}
     </div>
-  )
-}
-
-export function AdminStatusPill({ label, tone = 'neutral', className }: AdminStatusPillProps) {
-  const style = STATUS_PILL_STYLE[tone]
-
-  return (
-    <span
-      className={cn(
-        'inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-bold leading-none whitespace-nowrap',
-        className,
-      )}
-      style={{
-        background: style.bg,
-        borderColor: style.border,
-        color: style.text,
-      }}
-    >
-      <span
-        className="h-1.5 w-1.5 rounded-full shrink-0"
-        style={{ background: style.text }}
-      />
-      {label}
-    </span>
   )
 }
 
@@ -253,4 +192,133 @@ export function AdminEmptyState({
       </p>
     </div>
   )
+}
+
+/* ───────────── PageHeader ─────────────
+   Surface-variant: wit/oppervlakte bg + border-bottom. Gebruikt op user/leiding
+   pagina's met platte titel + optionele muted sub + optionele meta-slot. */
+interface PageHeaderProps {
+  title: ReactNode
+  sub?: ReactNode
+  meta?: ReactNode
+  className?: string
+}
+
+export function PageHeader({ title, sub, meta, className }: PageHeaderProps) {
+  return (
+    <div
+      className={cn('px-5 pt-[14px] pb-4', className)}
+      style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}
+    >
+      <h1
+        className="m-0 text-[22px] font-extrabold tracking-[-0.5px]"
+        style={{ color: 'var(--color-text-primary)' }}
+      >
+        {title}
+      </h1>
+      {sub && (
+        <p
+          className="m-0 mt-0.5 text-[12px] font-medium"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          {sub}
+        </p>
+      )}
+      {meta && <div className="mt-2 flex flex-wrap gap-1.5">{meta}</div>}
+    </div>
+  )
+}
+
+/* ───────────── ListRow ─────────────
+   Gestandaardiseerde container voor lijstitems binnen AdminSurface: vaste
+   padding, border-top tussen items, pressed-state. Tapbaar = button, anders
+   div. Content wordt door de caller bepaald. */
+type ListRowBaseProps = {
+  first?: boolean
+  className?: string
+  children: ReactNode
+}
+
+type ListRowButtonProps = ListRowBaseProps &
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className' | 'children'> & {
+    onClick: ButtonHTMLAttributes<HTMLButtonElement>['onClick']
+  }
+
+type ListRowDivProps = ListRowBaseProps &
+  Omit<HTMLAttributes<HTMLDivElement>, 'className' | 'children' | 'onClick'> & {
+    onClick?: undefined
+  }
+
+const LIST_ROW_BASE = 'block w-full px-3.5 py-3.5 text-left'
+const LIST_ROW_PRESS = 'active:opacity-70 transition-opacity'
+
+export function ListRow(props: ListRowButtonProps | ListRowDivProps) {
+  const { first, className, children, ...rest } = props
+  const style = {
+    borderTop: first ? 'none' : '1px solid var(--color-border)',
+    fontFamily: 'inherit',
+  } as const
+
+  if ('onClick' in props && props.onClick) {
+    const buttonProps = rest as ButtonHTMLAttributes<HTMLButtonElement>
+    return (
+      <button
+        type="button"
+        {...buttonProps}
+        className={cn(LIST_ROW_BASE, LIST_ROW_PRESS, className)}
+        style={style}
+      >
+        {children}
+      </button>
+    )
+  }
+
+  const divProps = rest as HTMLAttributes<HTMLDivElement>
+  return (
+    <div {...divProps} className={cn(LIST_ROW_BASE, className)} style={style}>
+      {children}
+    </div>
+  )
+}
+
+/* ───────────── DetailRow ─────────────
+   Key/value regel in detail-drawers. Vervangt PaymentDetailRow + TxDetailRow
+   duplicaten. */
+interface DetailRowProps {
+  label: ReactNode
+  value: ReactNode
+  first?: boolean
+}
+
+export function DetailRow({ label, value, first = false }: DetailRowProps) {
+  return (
+    <div
+      className="flex items-center justify-between gap-3 px-3.5 py-3"
+      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
+    >
+      <span
+        className="text-[11px] font-extrabold uppercase tracking-[1.2px]"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
+        {label}
+      </span>
+      <span
+        className="text-[13px] font-bold text-right"
+        style={{ color: 'var(--color-text-primary)' }}
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
+
+/* ───────────── Aliases ─────────────
+   Nieuwe namen voor bestaande primitives — zodat ze buiten admin-context
+   nette namen hebben. Oude exports blijven bestaan voor compat. */
+export {
+  AdminSectionLabel as SectionLabel,
+  AdminSurface as Surface,
+  AdminEmptyState as EmptyState,
+  AdminStatTile as StatTile,
+  AdminOverviewCard as OverviewCard,
 }

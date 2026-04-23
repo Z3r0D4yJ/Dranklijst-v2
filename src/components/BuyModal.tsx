@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { X, Minus, Plus, ShoppingCart } from '@phosphor-icons/react'
 import { Spinner } from './ui/spinner'
-import { IconActionButton } from './ui/action-button'
+import { ActionPillButton, IconActionButton } from './ui/action-button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerTitle } from './ui/drawer'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
@@ -135,16 +135,12 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
           </span>
         </div>
 
-        <button
+        <ActionPillButton
           onClick={handleBuy}
           disabled={loading}
-          className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60"
-          style={{
-            background: 'var(--color-primary)',
-            color: 'white',
-            padding: '14px 16px',
-            borderRadius: 14,
-          }}
+          variant="accent"
+          size="md"
+          className="w-full"
         >
           {loading ? (
             <Spinner className="size-4 shrink-0" style={{ color: 'white' }} />
@@ -152,7 +148,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
             <ShoppingCart size={18} weight="bold" />
           )}
           {loading ? 'Bezig...' : `Kopen voor € ${Number(total).toFixed(2).replace('.', ',')}`}
-        </button>
+        </ActionPillButton>
       </DrawerContent>
     </Drawer>
   )

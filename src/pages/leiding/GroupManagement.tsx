@@ -12,7 +12,7 @@ import { useJoinRequests } from '../../hooks/useJoinRequests'
 import { Badge } from '../../components/ui/badge'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
 import { CustomSelect } from '../../components/CustomSelect'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, PageHeader } from '../../components/AdminThemePrimitives'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { IconChip } from '../../components/IconChip'
 import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
@@ -271,17 +271,10 @@ export function GroupManagement() {
 
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }}>
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
-        <h1 className="m-0 mb-0.5 text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>
-          Groepsbeheer
-        </h1>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          <Badge variant="secondary" size="sm">{groupName}</Badge>
-          <Badge variant="muted" size="sm">
-            {members.length} {members.length === 1 ? 'lid' : 'leden'}
-          </Badge>
-        </div>
-      </div>
+      <PageHeader
+        title="Groepsbeheer"
+        sub={groupName ? `${groupName} · ${members.length} ${members.length === 1 ? 'lid' : 'leden'}` : undefined}
+      />
 
       <div className="flex flex-col gap-5 px-5 pt-4 pb-content-end-comfort">
         <section>
@@ -376,19 +369,12 @@ export function GroupManagement() {
                       ? 'Kon niet geladen worden'
                       : requestCount === 0
                         ? 'Geen aanvragen om te behandelen'
-                        : 'Tik om te behandelen'}
+                        : `${requestCount} ${requestCount === 1 ? 'aanvraag' : 'aanvragen'} · tik om te behandelen`}
                   </p>
                 </div>
               </div>
 
-              <div className="flex shrink-0 items-center gap-2">
-                {requestCount > 0 && (
-                  <Badge variant="secondary" size="sm">
-                    {requestCount} {requestCount === 1 ? 'aanvraag' : 'aanvragen'}
-                  </Badge>
-                )}
-                <CaretRight size={14} color="var(--color-text-muted)" />
-              </div>
+              <CaretRight size={14} color="var(--color-text-muted)" className="shrink-0" />
             </div>
           </button>
         </section>
@@ -419,9 +405,9 @@ export function GroupManagement() {
                     <p className="m-0 truncate text-[13px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
                       {groupName}
                     </p>
-                    <div className="mt-1 flex items-center gap-1.5">
-                      <Badge variant="secondary" size="sm">{members.length} {members.length === 1 ? 'lid' : 'leden'}</Badge>
-                    </div>
+                    <p className="m-0 mt-0.5 truncate text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                      {members.length} {members.length === 1 ? 'lid' : 'leden'}
+                    </p>
                   </div>
                 </div>
 
@@ -483,16 +469,9 @@ export function GroupManagement() {
                     <p className="m-0 truncate text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
                       {request.profiles?.full_name ?? 'Onbekend'}
                     </p>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {request.groups?.name && (
-                        <Badge variant="secondary" size="sm">
-                          {request.groups.name}
-                        </Badge>
-                      )}
-                      <Badge variant="muted" size="sm">
-                        {new Date(request.created_at).toLocaleDateString('nl-BE')}
-                      </Badge>
-                    </div>
+                    <p className="m-0 mt-0.5 truncate text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                      {new Date(request.created_at).toLocaleDateString('nl-BE')}
+                    </p>
                   </div>
                   <div className="flex shrink-0 gap-1.5">
                     <IconActionButton

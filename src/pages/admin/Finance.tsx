@@ -29,7 +29,7 @@ interface PaymentRow {
 }
 
 const STATUS_CONFIG = {
-  unpaid: { label: 'Te betalen', variant: 'secondary' },
+  unpaid: { label: 'Te betalen', variant: 'danger' },
   pending: { label: 'Te checken', variant: 'warning' },
   paid: { label: 'Bevestigd', variant: 'success' },
 } as const
@@ -50,22 +50,6 @@ function getStatusHint(status: string, paidAt: string | null) {
   }
 
   return null
-}
-
-function PaymentDetailRow({ label, value, first = false }: { label: string; value: string; first?: boolean }) {
-  return (
-    <div
-      className="flex items-center justify-between gap-3 px-3.5 py-3"
-      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
-    >
-      <span className="text-[11px] font-extrabold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
-        {label}
-      </span>
-      <span className="text-[13px] font-bold text-right" style={{ color: 'var(--color-text-primary)' }}>
-        {value}
-      </span>
-    </div>
-  )
 }
 
 export function Finance() {
@@ -336,11 +320,9 @@ export function Finance() {
                         {payment.full_name}
                       </p>
                       {statusHint && (
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          <Badge variant="muted" size="sm" className="max-w-full whitespace-normal text-left leading-[1.25]">
-                            {statusHint}
-                          </Badge>
-                        </div>
+                        <p className="m-0 mt-1 text-[11px] font-medium leading-[1.3]" style={{ color: 'var(--color-text-muted)' }}>
+                          {statusHint}
+                        </p>
                       )}
                     </div>
                     <div className="flex shrink-0 items-start gap-2">
@@ -393,48 +375,30 @@ export function Finance() {
         }
       >
         {selectedPayment && (
-          <>
-            <section className="space-y-2">
-              <div className="flex items-center justify-between gap-3">
-                <AdminSectionLabel>Betaling</AdminSectionLabel>
-                <Badge
-                  variant={
-                    STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.variant ??
-                    STATUS_CONFIG.unpaid.variant
-                  }
-                >
-                  {STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                <AdminStatTile
-                  label="Verschuldigd"
-                  value={formatMoney(selectedPayment.amount_due)}
-                  icon={Clock}
-                  tone="danger"
-                  valueTone={selectedPayment.status === 'unpaid' ? 'danger' : 'default'}
-                />
-                <AdminStatTile
-                  label="Ontvangen"
-                  value={formatMoney(selectedPayment.amount_paid)}
-                  icon={CheckCircle}
-                  tone="success"
-                  valueTone="success"
-                />
-              </div>
-            </section>
-
-            <section className="space-y-2">
-              <AdminSectionLabel>Details</AdminSectionLabel>
-              <AdminSurface>
-              <PaymentDetailRow
-                first
-                label="Bevestigd op"
-                value={selectedPayment.paid_at ? new Date(selectedPayment.paid_at).toLocaleDateString('nl-BE') : 'Nog niet bevestigd'}
+          <section className="space-y-2">
+            <AdminSectionLabel>Betaling</AdminSectionLabel>
+            <div className="grid grid-cols-2 gap-2.5">
+              <AdminStatTile
+                label="Verschuldigd"
+                value={formatMoney(selectedPayment.amount_due)}
+                icon={Clock}
+                tone="danger"
+                valueTone={selectedPayment.status === 'unpaid' ? 'danger' : 'default'}
               />
-              </AdminSurface>
-            </section>
-          </>
+              <AdminStatTile
+                label="Ontvangen"
+                value={formatMoney(selectedPayment.amount_paid)}
+                icon={CheckCircle}
+                tone="success"
+                valueTone="success"
+              />
+            </div>
+            {selectedPayment.paid_at && (
+              <p className="m-0 ml-0.5 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                Bevestigd op {new Date(selectedPayment.paid_at).toLocaleDateString('nl-BE')}
+              </p>
+            )}
+          </section>
         )}
       </AdminFormDrawer>
     </div>

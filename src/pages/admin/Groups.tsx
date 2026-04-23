@@ -177,9 +177,9 @@ export function Groups() {
                     <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {group.name}
                     </p>
-                    <div className="mt-1 flex items-center gap-1.5">
-                      <Badge variant="secondary" size="sm">{group.memberCount} leden</Badge>
-                    </div>
+                    <p className="m-0 mt-0.5 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                      {group.memberCount} {group.memberCount === 1 ? 'lid' : 'leden'}
+                    </p>
                   </div>
                 </div>
 
@@ -207,25 +207,6 @@ export function Groups() {
       >
         {selectedGroup && (
           <>
-            <section className="space-y-2">
-              <AdminSectionLabel>Overzicht</AdminSectionLabel>
-              <div className="grid grid-cols-2 gap-2.5">
-                <AdminStatTile
-                  label="Leden"
-                  value={String(selectedGroup.memberCount)}
-                  icon={Users}
-                  tone="primary"
-                />
-                <AdminStatTile
-                  label="Omzet"
-                  value={formatMoney(selectedGroup.total)}
-                  icon={CurrencyEur}
-                  tone="primary"
-                  valueTone="primary"
-                />
-              </div>
-            </section>
-
             {selectedGroup.members.length === 0 ? (
               <AdminEmptyState
                 icon={Users}
@@ -234,7 +215,12 @@ export function Groups() {
               />
             ) : (
               <section className="space-y-2">
-                <AdminSectionLabel>Leden</AdminSectionLabel>
+                <div className="flex items-baseline justify-between gap-3">
+                  <AdminSectionLabel>Leden</AdminSectionLabel>
+                  <span className="text-[12px] font-medium tabular-nums" style={{ color: 'var(--color-text-muted)' }}>
+                    {selectedGroup.memberCount} {selectedGroup.memberCount === 1 ? 'lid' : 'leden'} · {formatMoney(selectedGroup.total)}
+                  </span>
+                </div>
                 <AdminSurface>
                   {selectedGroup.members.map((member, index) => {
                     const memberRole = normalizeRole(member.role)

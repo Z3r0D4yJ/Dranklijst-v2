@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { CalendarBlank, Stop, Plus, CheckCircle, Users } from '@phosphor-icons/react'
+import { CalendarBlank, Stop, Plus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
-import { Badge } from '../../components/ui/badge'
 import { ActionPillButton } from '../../components/ui/action-button'
 import { IconChip } from '../../components/IconChip'
-import { AdminSectionLabel, AdminStatusPill, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminSectionLabel, AdminSurface } from '../../components/AdminThemePrimitives'
+import { Badge } from '../../components/ui/badge'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
@@ -214,25 +214,11 @@ export function Periods() {
                   >
                     {period.name}
                   </p>
-                  <AdminStatusPill tone="success" label="Lopend" />
+                  <Badge variant="success" dot>Lopend</Badge>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <Badge variant="secondary" size="sm" className="gap-1.5">
-                    <CalendarBlank size={12} weight="bold" />
-                    {formatDate(period.started_at)}
-                  </Badge>
-                  <button
-                    type="button"
-                    onClick={() => goToTransactions(period.id)}
-                    className="inline-flex active:scale-[0.98] transition-transform"
-                    style={{ fontFamily: 'inherit' }}
-                  >
-                    <Badge variant="secondary" size="sm" className="gap-1.5">
-                      <Users size={12} weight="bold" />
-                      {formatMemberCount(user_count)}
-                    </Badge>
-                  </button>
-                </div>
+                <p className="m-0 mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                  Sinds {formatDate(period.started_at)} · {formatMemberCount(user_count)}
+                </p>
               </div>
             </div>
 
@@ -297,20 +283,9 @@ export function Periods() {
                         <p className="m-0 truncate text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
                           {period.name}
                         </p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          <Badge variant="secondary" size="sm" className="gap-1.5">
-                            <CalendarBlank size={12} weight="bold" />
-                            {formatDate(period.started_at)}
-                          </Badge>
-                          <Badge variant="secondary" size="sm" className="gap-1.5">
-                            <CheckCircle size={12} weight="fill" />
-                            {formatDate(period.ended_at ?? period.started_at)}
-                          </Badge>
-                          <Badge variant="secondary" size="sm" className="gap-1.5">
-                            <Users size={12} weight="bold" />
-                            {formatMemberCount(user_count)}
-                          </Badge>
-                        </div>
+                        <p className="m-0 mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                          {formatDate(period.started_at)} – {formatDate(period.ended_at ?? period.started_at)} · {formatMemberCount(user_count)}
+                        </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>

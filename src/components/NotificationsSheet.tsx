@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { X, Bell, CheckCircle, Users, CurrencyEur, Warning } from '@phosphor-icons/react'
+import { Bell, CheckCircle, Users, CurrencyEur, Warning } from '@phosphor-icons/react'
 import { IconChip, type IconChipTone } from './IconChip'
 import { useNotifications, type AppNotification } from '../hooks/useNotifications'
 import { Spinner } from './ui/spinner'
-import { ActionPillButton, IconActionButton } from './ui/action-button'
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from './ui/drawer'
+import { ActionPillButton } from './ui/action-button'
+import { AdminFormDrawer } from './AdminFormDrawer'
+import { EmptyState } from './AdminThemePrimitives'
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -44,7 +45,7 @@ function NotifItem({ n, onTap }: { n: AppNotification; onTap: (n: AppNotificatio
           <p className="text-[13px] font-bold leading-snug" style={{ color: 'var(--color-text-primary)' }}>
             {n.title}
           </p>
-          <span className="mt-0.5 shrink-0 text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+          <span className="mt-0.5 shrink-0 text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
             {timeAgo(n.created_at)}
           </span>
         </div>
@@ -75,68 +76,50 @@ export function NotificationsSheet({ onClose }: Props) {
     }
   }
 
+  const hasNotifications = (notifications ?? []).length > 0
+
   return (
-    <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
-      <DrawerContent
-        className="rounded-t-[24px] px-0"
-        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height-compact)' }}
-      >
-        <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)] pb-3.5">
-          <div>
-            <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>Meldingen</DrawerTitle>
-            {unreadCount > 0 && (
-              <DrawerDescription style={{ color: 'var(--color-text-muted)' }}>
-                {unreadCount} ongelezen
-              </DrawerDescription>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
-              <ActionPillButton
-                onClick={markAllRead}
-                variant="primary-soft"
-              >
-                <CheckCircle size={13} color="currentColor" weight="fill" />
-                Alles gelezen
-              </ActionPillButton>
-            )}
-            <DrawerClose asChild>
-              <IconActionButton size="sm">
-                <X size={16} color="currentColor" weight="bold" />
-              </IconActionButton>
-            </DrawerClose>
-          </div>
-        </DrawerHeader>
-
-        <div className="flex-1 overflow-y-auto">
-          {isLoading && (
-            <div className="flex justify-center py-10">
-              <Spinner className="size-6" style={{ color: 'var(--color-primary)' }} />
-            </div>
-          )}
-
-          {!isLoading && (notifications ?? []).length === 0 && (
-            <div className="flex flex-col items-center justify-center px-8 py-14 text-center">
-              <div
-                className="mb-3 h-14 w-14 rounded-full flex items-center justify-center"
-                style={{ background: 'var(--color-surface-alt)' }}
-              >
-                <Bell size={24} color="var(--color-text-muted)" />
-              </div>
-              <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                Geen meldingen
-              </p>
-              <p className="mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                Je hebt nog geen meldingen ontvangen.
-              </p>
-            </div>
-          )}
-
-          {(notifications ?? []).map((notification) => (
-            <NotifItem key={notification.id} n={notification} onTap={handleTap} />
-          ))}
+    <AdminFormDrawer
+      open
+      onOpenChange={(open) => { if (!open) onClose() }}
+      title="Meldingen"
+      description={unreadCount > 0 ? `${unreadCount} ongelezen` : undefined}
+      maxHeight="var(--drawer-max-height-compact)"
+      bodyClassName="px-0 py-0"
+      footer={
+        unreadCount > 0 ? (
+          <ActionPillButton
+            onClick={markAllRead}
+            variant="primary-soft"
+            size="md"
+            className="w-full"
+          >
+            <CheckCircle size={14} color="currentColor" weight="fill" />
+            Alles gelezen
+          </ActionPillButton>
+        ) : undefined
+      }
+    >
+      {isLoading && (
+        <div className="flex justify-center py-10">
+          <Spinner className="size-6" style={{ color: 'var(--color-primary)' }} />
         </div>
-      </DrawerContent>
-    </Drawer>
+      )}
+
+      {!isLoading && !hasNotifications && (
+        <div className="px-5 py-5">
+          <EmptyState
+            icon={Bell}
+            tone="neutral"
+            title="Geen meldingen"
+            description="Je hebt nog geen meldingen ontvangen."
+          />
+        </div>
+      )}
+
+      {hasNotifications && (notifications ?? []).map((notification) => (
+        <NotifItem key={notification.id} n={notification} onTap={handleTap} />
+      ))}
+    </AdminFormDrawer>
   )
 }

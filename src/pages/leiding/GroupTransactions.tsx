@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CaretRight, CurrencyEur, Receipt } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { CaretRight, Receipt } from '@phosphor-icons/react'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow, PageHeader } from '../../components/AdminThemePrimitives'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Badge } from '../../components/ui/badge'
 import { CustomSelect } from '../../components/CustomSelect'
@@ -29,22 +29,6 @@ interface TxRow {
   total_price: number
   created_at: string
   period_id: string
-}
-
-function TxDetailRow({ label, value, first = false }: { label: string; value: string; first?: boolean }) {
-  return (
-    <div
-      className="flex items-center justify-between gap-3 px-3.5 py-3"
-      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
-    >
-      <span className="text-[12px] font-bold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
-        {label}
-      </span>
-      <span className="text-[13px] font-bold text-right" style={{ color: 'var(--color-text-primary)' }}>
-        {value}
-      </span>
-    </div>
-  )
 }
 
 function formatTransactionMoment(iso: string) {
@@ -160,37 +144,9 @@ export function GroupTransactions() {
 
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }}>
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
-        <h1 className="m-0 text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>
-          Groepstransacties
-        </h1>
-        {groupInfo && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge variant="secondary" size="sm">{groupInfo.name}</Badge>
-          </div>
-        )}
-      </div>
+      <PageHeader title="Groepstransacties" sub={groupInfo?.name} />
 
       <div className="px-5 pt-4 space-y-3 pb-content-end-comfort">
-        <section className="space-y-2">
-          <AdminSectionLabel>Transactieoverzicht</AdminSectionLabel>
-          <div className="grid grid-cols-2 gap-2.5">
-            <AdminStatTile
-              label="Aantal"
-              value={String(allTx.length)}
-              icon={Receipt}
-              tone="primary"
-            />
-            <AdminStatTile
-              label="Omzet"
-              value={formatMoney(total)}
-              icon={CurrencyEur}
-              tone="primary"
-              valueTone="primary"
-            />
-          </div>
-        </section>
-
         <section className="space-y-2">
           <AdminSectionLabel>Periode</AdminSectionLabel>
           <CustomSelect
@@ -233,7 +189,12 @@ export function GroupTransactions() {
 
         {allTx.length > 0 && (
           <section className="space-y-2">
-            <AdminSectionLabel>Transacties</AdminSectionLabel>
+            <div className="flex items-baseline justify-between gap-3">
+              <AdminSectionLabel>Transacties</AdminSectionLabel>
+              <span className="text-[12px] font-medium tabular-nums" style={{ color: 'var(--color-text-muted)' }}>
+                {allTx.length} {allTx.length === 1 ? 'transactie' : 'transacties'} · {formatMoney(total)}
+              </span>
+            </div>
             <AdminSurface>
               {pageTx.map((tx, index) => (
                 <button
@@ -254,7 +215,7 @@ export function GroupTransactions() {
                           <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                             {tx.full_name}
                           </p>
-                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                             <Badge
                               variant="secondary"
                               size="sm"
@@ -262,10 +223,10 @@ export function GroupTransactions() {
                             >
                               {tx.consumption_name} x{tx.quantity}
                             </Badge>
-                            <Badge variant="muted" size="sm">
-                              {formatTransactionMoment(tx.created_at)}
-                            </Badge>
                           </div>
+                          <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                            {formatTransactionMoment(tx.created_at)}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
@@ -295,35 +256,25 @@ export function GroupTransactions() {
         bodyClassName="space-y-3"
       >
         {selectedTx && (
-          <>
-            <section className="space-y-2">
-              <AdminSectionLabel>Totaal</AdminSectionLabel>
-              <AdminSurface padded>
-                <p className="m-0 text-[24px] font-extrabold tracking-[-0.6px] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                  {formatMoney(selectedTx.total_price)}
-                </p>
-              </AdminSurface>
-            </section>
-
-            <section className="space-y-2">
-              <AdminSectionLabel>Details</AdminSectionLabel>
-              <AdminSurface>
-                <TxDetailRow first label="Consumptie" value={selectedTx.consumption_name} />
-                <TxDetailRow label="Aantal" value={String(selectedTx.quantity)} />
-                <TxDetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
-                <TxDetailRow
-                  label="Moment"
-                  value={new Date(selectedTx.created_at).toLocaleDateString('nl-BE', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                />
-              </AdminSurface>
-            </section>
-          </>
+          <section className="space-y-2">
+            <AdminSectionLabel>Details</AdminSectionLabel>
+            <AdminSurface>
+              <DetailRow first label="Consumptie" value={selectedTx.consumption_name} />
+              <DetailRow label="Aantal" value={String(selectedTx.quantity)} />
+              <DetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
+              <DetailRow label="Totaal" value={formatMoney(selectedTx.total_price)} />
+              <DetailRow
+                label="Moment"
+                value={new Date(selectedTx.created_at).toLocaleDateString('nl-BE', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              />
+            </AdminSurface>
+          </section>
         )}
       </AdminFormDrawer>
     </div>

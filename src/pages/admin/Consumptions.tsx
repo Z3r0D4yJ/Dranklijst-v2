@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, PencilSimple, Eye, EyeSlash, Check, BeerBottle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminSurface } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
@@ -147,30 +147,9 @@ export function Consumptions() {
     return acc
   }, {})
   const totalConsumptions = (consumptions ?? []).length
-  const activeCount = (consumptions ?? []).filter((consumption) => consumption.is_active).length
-  const hiddenCount = totalConsumptions - activeCount
 
   return (
     <div className="px-5 space-y-4 pb-content-end-comfort">
-      <section className="space-y-2">
-        <AdminSectionLabel>Consumpties</AdminSectionLabel>
-        <div className="grid grid-cols-2 gap-2.5">
-          <AdminStatTile
-            label="Zichtbaar"
-            value={String(activeCount)}
-            icon={Eye}
-            tone="success"
-            valueTone="success"
-          />
-          <AdminStatTile
-            label="Verborgen"
-            value={String(hiddenCount)}
-            icon={EyeSlash}
-            tone="neutral"
-          />
-        </div>
-      </section>
-
       <ActionPillButton
         onClick={openNew}
         variant="accent"
@@ -282,7 +261,6 @@ export function Consumptions() {
                   key={consumption.id}
                   className="flex items-center gap-3 px-4 py-3.5"
                   style={{
-                    opacity: consumption.is_active ? 1 : 0.72,
                     borderTop: index > 0 ? '1px solid var(--color-border)' : undefined,
                   }}
                 >

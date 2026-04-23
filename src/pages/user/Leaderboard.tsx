@@ -7,18 +7,18 @@ import { useMyGroups } from '../../hooks/useMyGroups'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { useSwipe } from '../../hooks/useSwipe'
 import { badgeVariants } from '../../components/ui/badge'
+import { PageHeader } from '../../components/AdminThemePrimitives'
 
 function Pillar({ rank, name, total, height }: { rank: number; name: string; total: number; height: number }) {
   const tone = rank === 1 ? 'var(--color-accent)' : rank === 2 ? 'var(--color-silver)' : 'var(--color-bronze)'
   const toneSoft = `color-mix(in oklch, ${tone} 60%, transparent)`
-  const toneGlow = `color-mix(in oklch, ${tone} 35%, transparent)`
   const IconEl = rank === 1 ? Crown : Medal
 
   return (
     <div className="flex flex-col items-center gap-2" style={{ width: 86 }}>
       <div
         className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-        style={{ background: tone, boxShadow: rank === 1 ? `0 6px 14px ${toneGlow}` : 'none' }}
+        style={{ background: tone }}
       >
         <IconEl size={22} color="#fff" weight="bold" />
       </div>
@@ -148,12 +148,8 @@ export function Leaderboard() {
 
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }} {...swipe}>
-      {/* ─── Header ──────────────────────────────── */}
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px', position: 'relative', zIndex: 10 }}>
-        <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Leaderboard</h1>
-        {period && (
-          <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{period.name}</p>
-        )}
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <PageHeader title="Leaderboard" sub={period?.name} />
       </div>
 
       {/* ─── Group tabs (only when multiple groups) ── */}

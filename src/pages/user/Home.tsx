@@ -19,6 +19,7 @@ import { UserAvatar } from '../../components/UserAvatar'
 import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
 import { Badge } from '../../components/ui/badge'
+import { ActionPillButton } from '../../components/ui/action-button'
 
 const ROLE_LABELS: Record<string, string> = {
   lid: 'Lid',
@@ -167,14 +168,14 @@ export function Home() {
           <img src="/fox.png" alt="" className="w-16 h-16 object-cover rounded-full mx-auto mb-3 opacity-60" style={{ animation: 'dl-wiggle 2.6s ease-in-out infinite' }} />
           <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>Nog geen groep</p>
           <p className="text-[13px] mt-1 mb-5" style={{ color: 'var(--color-text-secondary)' }}>Dien een join-aanvraag in om consumpties te kopen.</p>
-          <button
+          <ActionPillButton
             onClick={() => navigate('/join-group')}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl text-[14px] font-bold active:scale-[0.98] transition-transform"
-            style={{ background: 'var(--color-primary)', color: '#fff' }}
+            variant="accent"
+            size="md"
           >
             <Users size={18} weight="bold" />
             Groep joinen
-          </button>
+          </ActionPillButton>
         </div>
       )}
 

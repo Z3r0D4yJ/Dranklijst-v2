@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { CalendarBlank, CurrencyEur, Receipt, TrendUp, Users } from '@phosphor-icons/react'
+import { CalendarBlank, CurrencyEur, Receipt, TrendUp } from '@phosphor-icons/react'
 import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { CustomSelect } from '../../components/CustomSelect'
@@ -12,7 +12,6 @@ interface PeriodOption { id: string; name: string; is_active: boolean; started_a
 interface DashboardData {
   totalRevenue: number
   totalTransactions: number
-  totalUsers: number
   topGroup: string
   groupStats: GroupStat[]
 }
@@ -47,14 +46,12 @@ export function Dashboard() {
     setStatsLoading(true)
 
     Promise.all([
-      supabase.from('profiles').select('id, role'),
       supabase.from('transactions').select('user_id, total_price').eq('period_id', selectedPeriod),
       supabase.from('groups').select('id, name').neq('name', 'Leiding'),
       supabase.from('group_members').select('user_id, groups(id, name)'),
-    ]).then(([profilesRes, txRes, groupsRes, membershipsRes]) => {
+    ]).then(([txRes, groupsRes, membershipsRes]) => {
       if (cancelled) return
 
-      const allProfiles = (profilesRes.data ?? []) as { id: string; role: string }[]
       const allTx = (txRes.data ?? []) as { user_id: string; total_price: number }[]
       const allGroups = (groupsRes.data ?? []) as { id: string; name: string }[]
       const allMemberships = (membershipsRes.data ?? []) as Array<{
@@ -64,7 +61,6 @@ export function Dashboard() {
 
       const totalRevenue = allTx.reduce((sum, transaction) => sum + Number(transaction.total_price), 0)
       const totalTransactions = allTx.length
-      const totalUsers = allProfiles.filter((profile) => profile.role === 'lid').length
 
       const dashboardGroupIds = new Set(allGroups.map((group) => group.id))
       const memberGroupMap: Record<string, string> = {}
@@ -88,7 +84,7 @@ export function Dashboard() {
 
       const topGroup = groupStats[0]?.total > 0 ? groupStats[0].name : 'Geen omzet'
 
-      setData({ totalRevenue, totalTransactions, totalUsers, topGroup, groupStats })
+      setData({ totalRevenue, totalTransactions, topGroup, groupStats })
       setStatsLoading(false)
     })
 
@@ -156,18 +152,13 @@ export function Dashboard() {
                     tone="primary"
                   />
                   <AdminStatTile
-                    label="Leden"
-                    value={String(data?.totalUsers ?? 0)}
-                    icon={Users}
-                    tone="neutral"
-                  />
-                  <AdminStatTile
                     label="Top groep"
                     value={data?.topGroup ?? 'Geen omzet'}
                     icon={TrendUp}
                     tone="warning"
                     valueTone="warning"
                     valueClassName="text-[15px]"
+                    className="col-span-2"
                   />
                 </div>
               </section>
