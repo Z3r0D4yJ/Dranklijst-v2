@@ -29,6 +29,14 @@ interface MemberWithProfile {
   profiles: { full_name: string; role: string; avatar_url: string | null } | null
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  lid: 'Lid',
+  leiding: 'Leiding',
+  kas: 'Kas',
+  groepsleiding: 'Groepsleiding',
+  admin: 'Kas',
+}
+
 function SectionLabel({ children, count }: { children: React.ReactNode; count?: number }) {
   return (
     <div className="mb-2 flex items-center gap-2">
@@ -329,7 +337,7 @@ export function GroupManagement() {
                         )}
                       </p>
                       <p className="m-0 mt-0.5 text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
-                        {member.profiles?.role === 'leiding' ? 'Leiding' : 'Lid'}
+                        {ROLE_LABELS[member.profiles?.role ?? 'lid'] ?? 'Lid'}
                       </p>
                     </div>
                     {!isSelf && (

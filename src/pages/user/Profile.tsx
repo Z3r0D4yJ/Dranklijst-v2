@@ -432,6 +432,11 @@ export function Profile() {
       if (memberRes.data) {
         const groups = (memberRes.data as unknown as Array<{ groups: { id: string; name: string } | null }>)
           .map(m => m.groups).filter((g): g is { id: string; name: string } => !!g)
+          .sort((a, b) => {
+            if (a.name === 'Leiding') return 1
+            if (b.name === 'Leiding') return -1
+            return a.name.localeCompare(b.name)
+          })
         setMyGroups(groups)
       }
     })
@@ -467,6 +472,7 @@ export function Profile() {
   const role = profile?.role as string | undefined
   const userEmail = (profile as unknown as { email?: string })?.email ?? ''
   const myGroupName = myGroups[0]?.name ?? ''
+  const canManageOwnGroup = role === 'leiding' || role === 'kas'
   const canSeeManagement = role === 'leiding' || role === 'kas' || role === 'groepsleiding' || role === 'admin'
   const canOpenAdminPanel = role === 'kas' || role === 'groepsleiding' || role === 'admin'
 
@@ -700,7 +706,7 @@ export function Profile() {
           <>
             <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] ml-0.5 mt-1" style={{ color: 'var(--color-text-muted)' }}>Beheer</p>
             <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              {(role === 'leiding') && (
+              {canManageOwnGroup && (
                 <AccountRow
                   first
                   icon={UsersThree}
@@ -710,7 +716,7 @@ export function Profile() {
                   onClick={() => navigate('/leiding/groep')}
                 />
               )}
-              {(role === 'leiding') && (
+              {canManageOwnGroup && (
                 <AccountRow
                   icon={Receipt}
                   tone="primary"
@@ -721,7 +727,7 @@ export function Profile() {
               )}
               {canOpenAdminPanel && (
                 <AccountRow
-                  first
+                  first={!canManageOwnGroup}
                   icon={Gear}
                   tone="primary"
                   label="Beheerpanel"

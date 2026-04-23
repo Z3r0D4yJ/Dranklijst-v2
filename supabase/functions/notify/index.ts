@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
           .eq('group_id', payload.group_id)
 
         const ids = (members as unknown as Array<{ user_id: string; profiles: { role: string } | null }>)
-          ?.filter(m => ['leiding', 'groepsleiding', 'admin'].includes(m.profiles?.role ?? ''))
+          ?.filter(m => ['leiding', 'kas', 'groepsleiding', 'admin'].includes(m.profiles?.role ?? ''))
           .map(m => m.user_id) ?? []
 
         await send(ids, 'Nieuwe aanvraag', `${payload.requester_name} wil lid worden van jouw groep.`, '/leiding/groep')
