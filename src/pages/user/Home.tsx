@@ -15,7 +15,7 @@ import { useNotifications } from '../../hooks/useNotifications'
 import { useNavigate } from 'react-router-dom'
 import { BuyModal } from '../../components/BuyModal'
 import { NotificationsSheet } from '../../components/NotificationsSheet'
-import { UserAvatar } from '../../components/UserAvatar'
+import { HEADER_USER_AVATAR_STYLE, UserAvatar } from '../../components/UserAvatar'
 import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
 import { Badge } from '../../components/ui/badge'
@@ -95,13 +95,18 @@ export function Home() {
       <div style={{ background: 'var(--color-header)', padding: '14px 20px 32px', color: 'var(--color-header-fg)' }}>
         <div className="flex justify-between items-center mb-[18px]">
           <div className="flex items-center gap-3.5">
-            <UserAvatar
-              avatarUrl={profile?.avatar_url}
-              size={54}
-              bg="rgba(255,255,255,0.15)"
-              border="2px solid rgba(255,255,255,0.25)"
-              iconColor="rgba(255,255,255,0.9)"
-            />
+            <button
+              type="button"
+              onClick={() => navigate('/profile')}
+              className="shrink-0 rounded-full active:scale-95 transition-transform"
+              aria-label="Ga naar profiel"
+            >
+              <UserAvatar
+                avatarUrl={profile?.avatar_url}
+                size={54}
+                {...HEADER_USER_AVATAR_STYLE}
+              />
+            </button>
             <div>
               <p className="text-[13px] font-medium opacity-70 leading-none">Hoi {firstName}</p>
               <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.4px] mt-0.5">Dorst?</h1>

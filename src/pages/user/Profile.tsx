@@ -19,7 +19,7 @@ import { usePWAInstall } from '../../hooks/usePWAInstall'
 import { useTheme, type ThemeMode } from '../../context/ThemeContext'
 import { IconChip } from '../../components/IconChip'
 import { useThemeColor } from '../../hooks/useThemeColor'
-import { UserAvatar } from '../../components/UserAvatar'
+import { SURFACE_USER_AVATAR_STYLE, UserAvatar } from '../../components/UserAvatar'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
 import { PageHeader } from '../../components/AdminThemePrimitives'
 
@@ -289,18 +289,19 @@ function EditProfileSheet({ onClose }: { onClose: () => void }) {
     >
       <div className="flex flex-col items-center gap-3">
             <button
+              type="button"
               onClick={() => fileRef.current?.click()}
               className="relative h-[88px] w-[88px] shrink-0 active:scale-95 transition-transform"
             >
               <div
                 className="h-full w-full rounded-full overflow-hidden"
-                style={{ background: 'var(--color-accent-bg)', border: '2.5px solid var(--color-accent-border)' }}
+                style={{ background: 'var(--color-surface-alt)', border: '2.5px solid var(--color-border)' }}
               >
                 {avatarPreview ? (
                   <img src={avatarPreview ?? undefined} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
-                    <User size={36} color="var(--color-accent)" weight="bold" />
+                    <User size={36} color="var(--color-text-secondary)" weight="bold" />
                   </div>
                 )}
               </div>
@@ -472,15 +473,11 @@ export function Profile() {
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', animationDelay: '0ms' }}
         >
           <div className="relative shrink-0">
-            <div className="w-[62px] h-[62px] rounded-full overflow-hidden" style={{ background: 'var(--color-accent-bg)', border: '2px solid var(--color-accent-border)' }}>
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <User size={28} color="var(--color-accent)" weight="bold" />
-                </div>
-              )}
-            </div>
+            <UserAvatar
+              avatarUrl={profile?.avatar_url}
+              size={54}
+              {...SURFACE_USER_AVATAR_STYLE}
+            />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[16px] font-extrabold tracking-[-0.3px] truncate" style={{ color: 'var(--color-text-primary)' }}>{profile?.full_name}</p>

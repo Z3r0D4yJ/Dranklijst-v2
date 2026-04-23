@@ -9,6 +9,18 @@ interface UserAvatarProps {
   iconColor?: string
 }
 
+export const SURFACE_USER_AVATAR_STYLE = {
+  bg: 'var(--color-surface-alt)',
+  border: '1.5px solid var(--color-border)',
+  iconColor: 'var(--color-text-secondary)',
+} as const
+
+export const HEADER_USER_AVATAR_STYLE = {
+  bg: 'var(--color-header-avatar-bg)',
+  border: '1.5px solid var(--color-header-avatar-border)',
+  iconColor: 'var(--color-header-avatar-icon)',
+} as const
+
 export function UserAvatar({ avatarUrl, size, bg, border, iconColor }: UserAvatarProps) {
   return (
     <Avatar

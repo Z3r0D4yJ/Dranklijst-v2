@@ -25,6 +25,9 @@
   /* Header */
   --color-header:         oklch(0.30 0.14 260);
   --color-header-fg:      #FFFFFF;
+  --color-header-avatar-bg: rgba(255, 255, 255, 0.10);
+  --color-header-avatar-border: rgba(147, 197, 253, 0.34);
+  --color-header-avatar-icon: rgba(255, 255, 255, 0.92);
 
   /* Accent — vos-oranje */
   --color-accent:         #EA580C;
@@ -119,6 +122,9 @@
 
   --color-header:         oklch(0.15 0.02 250);
   --color-header-fg:      oklch(0.96 0.005 250);
+  --color-header-avatar-bg: var(--color-surface);
+  --color-header-avatar-border: var(--color-border-mid);
+  --color-header-avatar-icon: var(--color-text-primary);
 
   --color-accent:         oklch(0.75 0.19 55);
   --color-accent-bg:      oklch(0.32 0.08 55);
