@@ -143,7 +143,7 @@ export function Transactions() {
           <img
             src="/fox.png"
             alt=""
-            style={{ position: 'absolute', right: -20, bottom: -28, width: 150, height: 150, opacity: 0.95, pointerEvents: 'none', transform: 'rotate(8deg)' }}
+            style={{ position: 'absolute', right: -10, bottom: -18, width: 142, height: 142, opacity: 0.95, pointerEvents: 'none', transform: 'rotate(6deg)', zIndex: 1 }}
           />
           <p className="text-[12px] font-semibold uppercase tracking-[0.6px] relative" style={{ opacity: 0.75 }}>Totaal verbruikt</p>
           {(!selectedPeriodId || isLoading) ? (

@@ -41,26 +41,21 @@ export function AuthSplashHeader({
       style={{ height: 224 }}
     >
       <div
+        aria-hidden="true"
+        className="absolute inset-0"
         style={{
-          position: 'absolute',
-          right: -60,
-          top: -60,
-          width: 220,
-          height: 220,
-          borderRadius: 110,
-          background: 'rgba(255,255,255,0.05)',
+          backgroundImage: 'var(--auth-header-pattern-image)',
+          backgroundRepeat: 'repeat',
+          backgroundSize: '100px 100px',
+          opacity: 'var(--auth-header-pattern-opacity)',
           pointerEvents: 'none',
         }}
       />
       <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 h-20"
         style={{
-          position: 'absolute',
-          left: -30,
-          bottom: -40,
-          width: 150,
-          height: 150,
-          borderRadius: 75,
-          background: 'rgba(255,255,255,0.04)',
+          background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(3,10,22,0.14) 100%)',
           pointerEvents: 'none',
         }}
       />
