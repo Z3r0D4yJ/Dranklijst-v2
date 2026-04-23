@@ -16,8 +16,8 @@ const iconActionButtonVariants = cva(
     variants: {
       variant: actionToneVariants,
       size: {
-        sm: 'h-8 w-8 rounded-[10px]',
-        md: 'h-9 w-9 rounded-[11px]',
+        sm: 'h-9 w-9 rounded-[10px]',
+        md: 'h-10 w-10 rounded-[11px]',
       },
     },
     defaultVariants: {
@@ -34,7 +34,7 @@ const actionPillButtonVariants = cva(
       variant: actionToneVariants,
       size: {
         sm: 'h-8 rounded-[10px] px-3 text-[12px]',
-        md: 'h-9 rounded-[11px] px-3.5 text-[12px]',
+        md: 'h-11 rounded-[12px] px-4 text-[13px]',
       },
     },
     defaultVariants: {

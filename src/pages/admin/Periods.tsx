@@ -11,6 +11,7 @@ import { IconChip } from '../../components/IconChip'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
+import { formatMoney } from '../../lib/formatters'
 import type { Period } from '../../lib/database.types'
 
 interface PeriodStats {
@@ -144,21 +145,15 @@ export function Periods() {
 
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
-      <button
+      <ActionPillButton
         onClick={() => setShowNew(true)}
-        className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-        style={{
-          background: 'var(--color-primary)',
-          color: 'white',
-          padding: '12px',
-          borderRadius: 12,
-          border: 'none',
-          fontFamily: 'inherit',
-        }}
+        variant="accent"
+        size="md"
+        className="w-full"
       >
         <Plus size={16} weight="bold" />
         Nieuwe periode starten
-      </button>
+      </ActionPillButton>
 
       <AdminFormDrawer
         open={showNew}
@@ -174,21 +169,15 @@ export function Periods() {
         repositionInputs={false}
         bodyClassName="space-y-1.5"
         footer={
-          <button
+          <ActionPillButton
             onClick={startPeriod}
             disabled={!newName.trim() || loading}
-            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-            style={{
-              background: 'var(--color-primary)',
-              color: 'white',
-              padding: '12px',
-              borderRadius: 12,
-              border: 'none',
-              fontFamily: 'inherit',
-            }}
+            variant="accent"
+            size="md"
+            className="w-full"
           >
             {loading ? 'Bezig...' : 'Starten'}
-          </button>
+          </ActionPillButton>
         }
       >
         <label
@@ -279,7 +268,7 @@ export function Periods() {
                   className="mt-1 text-[28px] font-extrabold tracking-[-0.7px] tabular-nums"
                   style={{ color: 'var(--color-primary)' }}
                 >
-                  EUR {total.toFixed(2)}
+                  {formatMoney(total)}
                 </p>
                 <p
                   className="mt-2 text-[12px] font-medium leading-[1.55]"
@@ -317,7 +306,7 @@ export function Periods() {
                 >
                   <IconChip tone="primary" icon={CurrencyEur} size={24} />
                   <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                    EUR {total.toFixed(2)} totaal
+                    {formatMoney(total)} totaal
                   </span>
                 </button>
               </div>
@@ -373,7 +362,7 @@ export function Periods() {
                       <CalendarBlank size={12} weight="bold" />
                       {formatDate(period.started_at)}
                     </Badge>
-                    <Badge variant="success" className="gap-1.5">
+                    <Badge variant="secondary" className="gap-1.5">
                       <CheckCircle size={12} weight="fill" />
                       {formatDate(period.ended_at ?? period.started_at)}
                     </Badge>
@@ -382,12 +371,12 @@ export function Periods() {
               </div>
 
               <div
-                className="flex gap-4 mt-3 pt-2.5"
+                className="flex flex-wrap gap-3 mt-3 pt-2.5"
                 style={{ borderTop: '1px solid var(--color-border)' }}
               >
                 {[
                   { icon: Users, value: formatMemberCount(user_count) },
-                  { icon: CurrencyEur, value: `EUR ${total.toFixed(2)} totaal` },
+                  { icon: CurrencyEur, value: `${formatMoney(total)} totaal` },
                 ].map(({ icon, value }, index) => (
                   <button
                     key={index}

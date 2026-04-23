@@ -14,6 +14,7 @@ import { Pagination } from '../../components/Pagination'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { ActionPillButton } from '../../components/ui/action-button'
 import { usePagination } from '../../hooks/usePagination'
+import { formatMoney } from '../../lib/formatters'
 import type { Period } from '../../lib/database.types'
 
 interface PaymentRow {
@@ -29,7 +30,7 @@ interface PaymentRow {
 
 const STATUS_CONFIG = {
   unpaid: { label: 'Te betalen', variant: 'secondary' },
-  pending: { label: 'Betaald (?)', variant: 'warning' },
+  pending: { label: 'Te checken', variant: 'warning' },
   paid: { label: 'Bevestigd', variant: 'success' },
 } as const
 
@@ -45,7 +46,7 @@ function getStatusHint(status: string, paidAt: string | null) {
   }
 
   if (status === 'pending') {
-    return 'Wacht op bevestiging door de kas'
+    return 'Gemarkeerd als betaald'
   }
 
   return null
@@ -196,7 +197,7 @@ export function Finance() {
         payment.full_name,
         payment.amount_due.toFixed(2),
         payment.amount_paid.toFixed(2),
-        payment.status === 'paid' ? 'Bevestigd' : payment.status === 'pending' ? 'Betaald (?)' : 'Te betalen',
+        payment.status === 'paid' ? 'Bevestigd' : payment.status === 'pending' ? 'Te checken' : 'Te betalen',
       ]),
     ]
 
@@ -210,7 +211,8 @@ export function Finance() {
     URL.revokeObjectURL(url)
   }
 
-  const unpaidTotal = payments.filter((payment) => payment.status !== 'paid').reduce((sum, payment) => sum + Number(payment.amount_due), 0)
+  const unpaidTotal = payments.filter((payment) => payment.status === 'unpaid').reduce((sum, payment) => sum + Number(payment.amount_due), 0)
+  const pendingTotal = payments.filter((payment) => payment.status === 'pending').reduce((sum, payment) => sum + Number(payment.amount_due), 0)
   const paidTotal = payments.filter((payment) => payment.status === 'paid').reduce((sum, payment) => sum + Number(payment.amount_paid), 0)
   const totalAll = payments.reduce((sum, payment) => sum + Number(payment.amount_due), 0)
   const paidPct = totalAll > 0 ? Math.round((paidTotal / totalAll) * 100) : 0
@@ -231,18 +233,26 @@ export function Finance() {
         >
           <div className="grid grid-cols-2 gap-2.5">
             <AdminStatTile
-              label="Openstaand"
-              value={`EUR ${unpaidTotal.toFixed(2)}`}
+              label="Te betalen"
+              value={formatMoney(unpaidTotal)}
               icon={Clock}
               tone="danger"
               valueTone="danger"
             />
             <AdminStatTile
+              label="Te checken"
+              value={formatMoney(pendingTotal)}
+              icon={Clock}
+              tone="warning"
+              valueTone="warning"
+            />
+            <AdminStatTile
               label="Ontvangen"
-              value={`EUR ${paidTotal.toFixed(2)}`}
+              value={formatMoney(paidTotal)}
               icon={CheckCircle}
               tone="success"
               valueTone="success"
+              className="col-span-2"
             />
           </div>
 
@@ -368,28 +378,26 @@ export function Finance() {
                 <IconChip tone={tone} icon={payment.status === 'paid' ? CheckCircle : payment.status === 'pending' ? Clock : User} size={34} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                         {payment.full_name}
                       </p>
                       {statusHint && (
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          <Badge variant="muted" size="sm">
+                          <Badge variant="muted" size="sm" className="max-w-full whitespace-normal text-left leading-[1.25]">
                             {statusHint}
                           </Badge>
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="text-right">
+                    <div className="flex shrink-0 items-start gap-2">
+                      <div className="flex flex-col items-end gap-1.5 text-right">
+                        <Badge variant={config.variant} size="sm" className="shrink-0">
+                          {config.label}
+                        </Badge>
                         <p className="m-0 text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                          EUR {Number(payment.amount_due).toFixed(2)}
+                          {formatMoney(payment.amount_due)}
                         </p>
-                        <div className="mt-1">
-                          <Badge variant={config.variant} size="sm" className="shrink-0">
-                            {config.label}
-                          </Badge>
-                        </div>
                       </div>
                       <CaretRight size={14} color="var(--color-text-muted)" />
                     </div>
@@ -413,26 +421,19 @@ export function Finance() {
         dismissible={confirming !== selectedPayment?.id}
         disableClose={confirming === selectedPayment?.id}
         bodyClassName="space-y-4"
-        scrollBody={false}
         footer={
           selectedPayment?.status === 'pending' ? (
-            <button
+            <ActionPillButton
               type="button"
               onClick={() => void confirmPayment(selectedPayment.id)}
               disabled={confirming === selectedPayment.id}
-              className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-              style={{
-                background: 'var(--color-success-bg)',
-                color: 'var(--color-success)',
-                padding: '12px',
-                borderRadius: 12,
-                border: '1px solid var(--color-success-border)',
-                fontFamily: 'inherit',
-              }}
+              variant="success-soft"
+              size="md"
+              className="w-full"
             >
-              <CheckCircle size={15} color="var(--color-success)" weight="bold" />
+              <CheckCircle size={15} color="currentColor" weight="bold" />
               {confirming === selectedPayment.id ? 'Bevestigen...' : 'Betaling bevestigen'}
-            </button>
+            </ActionPillButton>
           ) : undefined
         }
       >
@@ -441,8 +442,8 @@ export function Finance() {
             <AdminOverviewCard
               icon={selectedPayment.status === 'paid' ? CheckCircle : selectedPayment.status === 'pending' ? Clock : User}
               tone={getStatusTone(selectedPayment.status)}
-              eyebrow="Betalingsstatus"
-              title={STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
+              eyebrow="Te betalen"
+              title={formatMoney(selectedPayment.amount_due)}
               description={
                 selectedPayment.status === 'pending'
                   ? 'Deze gebruiker gaf aan betaald te hebben. Controleer en bevestig hieronder.'
@@ -465,13 +466,14 @@ export function Finance() {
             <div className="grid grid-cols-2 gap-2.5">
               <AdminStatTile
                 label="Verschuldigd"
-                value={`EUR ${Number(selectedPayment.amount_due).toFixed(2)}`}
+                value={formatMoney(selectedPayment.amount_due)}
                 icon={Clock}
                 tone="danger"
+                valueTone={selectedPayment.status === 'unpaid' ? 'danger' : 'default'}
               />
               <AdminStatTile
                 label="Ontvangen"
-                value={`EUR ${Number(selectedPayment.amount_paid).toFixed(2)}`}
+                value={formatMoney(selectedPayment.amount_paid)}
                 icon={CheckCircle}
                 tone="success"
                 valueTone="success"
@@ -479,8 +481,6 @@ export function Finance() {
             </div>
 
             <div className="space-y-2">
-              <PaymentDetailRow label="Naam" value={selectedPayment.full_name} />
-              <PaymentDetailRow label="Periode" value={currentPeriod?.name ?? 'Onbekend'} />
               <PaymentDetailRow
                 label="Bevestigd op"
                 value={selectedPayment.paid_at ? new Date(selectedPayment.paid_at).toLocaleDateString('nl-BE') : 'Nog niet bevestigd'}

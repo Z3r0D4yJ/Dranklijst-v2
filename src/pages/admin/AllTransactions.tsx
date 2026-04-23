@@ -10,7 +10,9 @@ import { Spinner } from '../../components/ui/spinner'
 import { Pagination } from '../../components/Pagination'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Badge } from '../../components/ui/badge'
+import { ActionPillButton } from '../../components/ui/action-button'
 import { usePagination } from '../../hooks/usePagination'
+import { formatMoney } from '../../lib/formatters'
 import type { Period } from '../../lib/database.types'
 
 const PAGE_SIZE = 50
@@ -220,7 +222,7 @@ export function AllTransactions() {
           />
           <AdminStatTile
             label="Omzet"
-            value={`EUR ${total.toFixed(2)}`}
+            value={formatMoney(total)}
             icon={CurrencyEur}
             tone="primary"
             valueTone="primary"
@@ -238,7 +240,7 @@ export function AllTransactions() {
         >
           Filters
         </p>
-        <div className="mt-2 flex gap-2.5">
+        <div className="mt-2 flex flex-col gap-2.5 sm:flex-row">
           <CustomSelect
             value={selectedPeriod}
             onChange={updatePeriodFilter}
@@ -249,14 +251,14 @@ export function AllTransactions() {
               badgeTone: 'success',
             }))}
             placeholder="Alle periodes"
-            style={{ flex: 1 }}
+            style={{ flex: 1, minWidth: 0 }}
           />
           <CustomSelect
             value={selectedGroup}
             onChange={setSelectedGroup}
             options={(groups ?? []).map((group) => ({ value: group.id, label: group.name }))}
             placeholder="Alle groepen"
-            style={{ flex: 1 }}
+            style={{ flex: 1, minWidth: 0 }}
           />
         </div>
       </div>
@@ -319,7 +321,7 @@ export function AllTransactions() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                      EUR {tx.total_price.toFixed(2)}
+                      {formatMoney(tx.total_price)}
                     </span>
                     <CaretRight size={14} color="var(--color-text-muted)" />
                   </div>
@@ -345,62 +347,43 @@ export function AllTransactions() {
         dismissible={deletingId !== selectedTx?.id}
         disableClose={deletingId === selectedTx?.id}
         bodyClassName="space-y-4"
-        scrollBody={false}
         footer={
           selectedTx ? (
             armedDelete ? (
               <div className="grid grid-cols-2 gap-2">
-                <button
+                <ActionPillButton
                   type="button"
                   onClick={() => setArmedDelete(false)}
                   disabled={deletingId === selectedTx.id}
-                  className="w-full text-[14px] font-bold active:scale-[0.98] transition-transform disabled:opacity-50"
-                  style={{
-                    background: 'var(--color-surface-alt)',
-                    color: 'var(--color-text-secondary)',
-                    padding: '12px',
-                    borderRadius: 12,
-                    border: '1px solid var(--color-border)',
-                    fontFamily: 'inherit',
-                  }}
+                  variant="neutral"
+                  size="md"
+                  className="w-full"
                 >
                   Annuleren
-                </button>
-                <button
+                </ActionPillButton>
+                <ActionPillButton
                   type="button"
                   onClick={() => void deleteTransaction(selectedTx.id)}
                   disabled={deletingId === selectedTx.id}
-                  className="w-full text-[14px] font-bold active:scale-[0.98] transition-transform disabled:opacity-50"
-                  style={{
-                    background: 'var(--color-danger-bg)',
-                    color: 'var(--color-danger)',
-                    padding: '12px',
-                    borderRadius: 12,
-                    border: '1px solid var(--color-danger-border)',
-                    fontFamily: 'inherit',
-                  }}
+                  variant="danger-soft"
+                  size="md"
+                  className="w-full"
                 >
                   {deletingId === selectedTx.id ? 'Verwijderen...' : 'Ja, verwijderen'}
-                </button>
+                </ActionPillButton>
               </div>
             ) : (
-              <button
+              <ActionPillButton
                 type="button"
                 onClick={() => setArmedDelete(true)}
                 disabled={deletingId === selectedTx.id}
-                className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-                style={{
-                  background: 'var(--color-danger-bg)',
-                  color: 'var(--color-danger)',
-                  padding: '12px',
-                  borderRadius: 12,
-                  border: '1px solid var(--color-danger-border)',
-                  fontFamily: 'inherit',
-                }}
+                variant="danger-soft"
+                size="md"
+                className="w-full"
               >
-                <Trash size={15} color="var(--color-danger)" weight="bold" />
+                <Trash size={15} color="currentColor" weight="bold" />
                 Transactie verwijderen
-              </button>
+              </ActionPillButton>
             )
           ) : undefined
         }
@@ -411,17 +394,14 @@ export function AllTransactions() {
               icon={Receipt}
               tone="primary"
               eyebrow="Totaal"
-              title={`EUR ${selectedTx.total_price.toFixed(2)}`}
+              title={formatMoney(selectedTx.total_price)}
               description="Bekijk hieronder de details van deze aankoop. Verwijderen blijft mogelijk vanuit deze drawer."
             />
 
             <div className="space-y-2">
               <TxDetailRow label="Consumptie" value={selectedTx.consumption_name} />
               <TxDetailRow label="Aantal" value={String(selectedTx.quantity)} />
-              <TxDetailRow label="Stukprijs" value={`EUR ${selectedTx.unit_price.toFixed(2)}`} />
-              <TxDetailRow label="Totaal" value={`EUR ${selectedTx.total_price.toFixed(2)}`} />
-              <TxDetailRow label="Groep" value={selectedTx.group_name} />
-              <TxDetailRow label="Periode" value={selectedPeriodName} />
+              <TxDetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
               <TxDetailRow
                 label="Moment"
                 value={new Date(selectedTx.created_at).toLocaleDateString('nl-BE', {

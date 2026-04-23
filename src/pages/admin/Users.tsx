@@ -10,7 +10,7 @@ import { UserAvatar } from '../../components/UserAvatar'
 import { Pagination } from '../../components/Pagination'
 import { CustomSelect } from '../../components/CustomSelect'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
-import { IconActionButton } from '../../components/ui/action-button'
+import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
 import { usePagination } from '../../hooks/usePagination'
 import { useAuth } from '../../context/AuthContext'
 import type { Role } from '../../lib/database.types'
@@ -59,12 +59,17 @@ function getRoleLabel(role: Role) {
   return ROLES.find((item) => item.value === role)?.label ?? role
 }
 
-function getRoleSubtitle(user: Pick<UserRow, 'role' | 'primaryGroupName'>) {
-  if (user.role === 'groepsleiding') {
-    return 'Alle groepen zichtbaar'
-  }
+function getScopeLabel(user: Pick<UserRow, 'role' | 'primaryGroupName'>) {
+  if (user.role === 'groepsleiding') return 'Alle groepen'
+  return user.primaryGroupName ?? 'Geen groep'
+}
 
-  return user.primaryGroupName ? `Hoofdgroep: ${user.primaryGroupName}` : 'Geen hoofdgroep'
+function getExtraGroupCount(user: Pick<UserRow, 'role' | 'groups' | 'primaryGroupName'>) {
+  return user.groups.filter((groupName) => {
+    if (groupName === user.primaryGroupName) return false
+    if ((user.role === 'leiding' || user.role === 'kas') && groupName === 'Leiding') return false
+    return true
+  }).length
 }
 
 function getDrawerHint(role: Role, groupName: string | null) {
@@ -348,28 +353,26 @@ export function Users() {
                     <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {user.full_name}
                     </p>
-                    <p className="text-[11px] m-0 mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
-                      {getRoleSubtitle(user)}
-                    </p>
-                    {(user.groups.length > 1 || isSelf) && (
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        {user.groups.length > 1 && (
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      <Badge variant={roleVariant} size="sm">
+                        {getRoleLabel(user.role)}
+                      </Badge>
+                      <Badge variant="secondary" size="sm">
+                        {getScopeLabel(user)}
+                      </Badge>
+                      {getExtraGroupCount(user) > 0 && (
                           <Badge variant="muted" size="sm">
-                            +{user.groups.length - 1} extra
+                            +{getExtraGroupCount(user)} extra
                           </Badge>
-                        )}
-                        {isSelf && (
-                          <Badge variant="primary" size="sm">Jij</Badge>
-                        )}
-                      </div>
-                    )}
+                      )}
+                      {isSelf && (
+                        <Badge variant="primary" size="sm">Jij</Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={roleVariant} size="sm">
-                    {getRoleLabel(user.role)}
-                  </Badge>
                   <IconActionButton
                     type="button"
                     onClick={() => openEditor(user)}
@@ -404,26 +407,19 @@ export function Users() {
         description="Pas rol en hoofdgroep aan vanuit dezelfde beheerflow."
         dismissible={!saving}
         disableClose={saving}
-        scrollBody={false}
         bodyClassName="space-y-4"
         footer={
-          <button
+          <ActionPillButton
             type="button"
             onClick={() => void saveUser()}
             disabled={saveDisabled}
-            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-            style={{
-              background: 'var(--color-primary)',
-              color: 'white',
-              padding: '12px',
-              borderRadius: 12,
-              border: 'none',
-              fontFamily: 'inherit',
-            }}
+            variant="accent"
+            size="md"
+            className="w-full"
           >
             <Check size={14} weight="bold" />
             {saving ? 'Opslaan...' : 'Opslaan'}
-          </button>
+          </ActionPillButton>
         }
       >
         {editingUser && (
@@ -441,16 +437,18 @@ export function Users() {
                   <p className="text-[14px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                     {editingUser.full_name}
                   </p>
-                  <p className="text-[12px] m-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                    {getRoleSubtitle({
-                      role: draftRole,
-                      primaryGroupName: selectedGroup?.name ?? editingUser.primaryGroupName,
-                    })}
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    <Badge variant={ROLE_BADGE_VARIANT[draftRole]} size="sm">
+                      {getRoleLabel(draftRole)}
+                    </Badge>
+                    <Badge variant="secondary" size="sm">
+                      {getScopeLabel({
+                        role: draftRole,
+                        primaryGroupName: selectedGroup?.name ?? editingUser.primaryGroupName,
+                      })}
+                    </Badge>
+                  </div>
                 </div>
-                <Badge variant={ROLE_BADGE_VARIANT[draftRole]}>
-                  {getRoleLabel(draftRole)}
-                </Badge>
               </div>
             </div>
 

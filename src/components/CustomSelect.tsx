@@ -193,6 +193,8 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
       <button
         type="button"
         onClick={handleTriggerClick}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         className="w-full flex items-center gap-2.5 text-[13px] font-semibold active:scale-[0.98] transition-transform"
         style={{
           background: 'var(--color-surface)',
@@ -230,7 +232,6 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border-mid)',
             borderRadius: 12,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
             left: menuLayout?.left ?? 0,
             width: menuLayout?.width ?? '100%',
             minWidth: '100%',

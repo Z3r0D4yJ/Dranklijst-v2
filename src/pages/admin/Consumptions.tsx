@@ -9,7 +9,8 @@ import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { CustomSelect } from '../../components/CustomSelect'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
-import { IconActionButton } from '../../components/ui/action-button'
+import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
+import { formatMoney } from '../../lib/formatters'
 import type { Consumption, ConsumptionCategory } from '../../lib/database.types'
 
 const CATEGORIES: { value: ConsumptionCategory; label: string }[] = [
@@ -172,13 +173,7 @@ export function Consumptions() {
         title={`${totalConsumptions} items in de globale lijst`}
         description="Beheer hier de centrale consumpties en bepaal welke items zichtbaar blijven voor groepen."
       >
-        <div className="grid grid-cols-3 gap-2.5">
-          <AdminStatTile
-            label="Totaal"
-            value={String(totalConsumptions)}
-            icon={BeerBottle}
-            tone="primary"
-          />
+        <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
             label="Actief"
             value={String(activeCount)}
@@ -195,21 +190,15 @@ export function Consumptions() {
         </div>
       </AdminOverviewCard>
 
-      <button
+      <ActionPillButton
         onClick={openNew}
-        className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-        style={{
-          background: 'var(--color-primary)',
-          color: 'white',
-          padding: '12px',
-          borderRadius: 12,
-          border: 'none',
-          fontFamily: 'inherit',
-        }}
+        variant="accent"
+        size="md"
+        className="w-full"
       >
         <Plus size={16} weight="bold" />
         Nieuwe consumptie
-      </button>
+      </ActionPillButton>
 
       <AdminFormDrawer
         open={showForm}
@@ -225,22 +214,16 @@ export function Consumptions() {
         repositionInputs={false}
         bodyClassName="space-y-4"
         footer={
-          <button
+          <ActionPillButton
             onClick={save}
             disabled={loading}
-            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
-            style={{
-              background: 'var(--color-primary)',
-              color: 'white',
-              padding: '12px',
-              borderRadius: 12,
-              border: 'none',
-              fontFamily: 'inherit',
-            }}
+            variant="accent"
+            size="md"
+            className="w-full"
           >
             <Check size={14} weight="bold" />
             {loading ? 'Opslaan...' : 'Opslaan'}
-          </button>
+          </ActionPillButton>
         }
       >
         <div className="space-y-1.5">
@@ -345,14 +328,14 @@ export function Consumptions() {
                     <p className="m-0 text-[13px] font-semibold leading-[1.3]" style={CLAMPED_NAME_STYLE}>
                       {consumption.name}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <span className="text-[12px] m-0 font-extrabold tabular-nums whitespace-nowrap" style={{ color: 'var(--color-text-primary)' }}>
+                        {formatMoney(consumption.price)}
+                      </span>
                       <Badge variant={consumption.is_active ? 'success' : 'secondary'} size="sm">
                         {consumption.is_active ? 'Actief' : 'Verborgen'}
                       </Badge>
                     </div>
-                    <p className="text-[12px] m-0 mt-1.5 font-extrabold tabular-nums whitespace-nowrap" style={{ color: 'var(--color-text-primary)' }}>
-                      EUR {consumption.price.toFixed(2)}
-                    </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2 self-center">
                     <IconActionButton

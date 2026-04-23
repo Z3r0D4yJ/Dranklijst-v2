@@ -9,6 +9,7 @@ import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { IconChip } from '../../components/IconChip'
 import { UserAvatar } from '../../components/UserAvatar'
 import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
+import { formatMoney } from '../../lib/formatters'
 
 interface GroupMemberRow {
   full_name: string
@@ -123,7 +124,7 @@ export function Groups() {
           />
           <AdminStatTile
             label="Omzet"
-            value={`EUR ${totalTurnover.toFixed(2)}`}
+            value={formatMoney(totalTurnover)}
             icon={CurrencyEur}
             tone="primary"
             valueTone="primary"
@@ -155,17 +156,20 @@ export function Groups() {
                 </p>
                 <div className="mt-1 flex items-center gap-1.5">
                   <Badge variant="secondary" size="sm">{group.memberCount} leden</Badge>
-                  <Badge variant={group.total > 0 ? 'primary' : 'secondary'} size="sm">
-                    {group.total > 0 ? 'Actieve omzet' : 'Nog geen omzet'}
-                  </Badge>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[15px] font-extrabold tabular-nums" style={{ color: group.total > 0 ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
-                EUR {group.total.toFixed(2)}
-              </span>
+              {group.total > 0 ? (
+                <span className="text-[15px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                  {formatMoney(group.total)}
+                </span>
+              ) : (
+                <Badge variant="secondary" size="sm">
+                  Geen omzet
+                </Badge>
+              )}
               <CaretRight size={14} color="var(--color-text-muted)" />
             </div>
           </div>
@@ -206,7 +210,7 @@ export function Groups() {
                   />
                   <AdminStatTile
                     label="Omzet"
-                    value={`EUR ${selectedGroup.total.toFixed(2)}`}
+                    value={formatMoney(selectedGroup.total)}
                     icon={CurrencyEur}
                     tone="primary"
                     valueTone="primary"

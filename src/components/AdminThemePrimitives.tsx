@@ -74,17 +74,17 @@ export function AdminOverviewCard({
               >
                 {title}
               </div>
-              {description && (
-                <p
-                  className="m-0 mt-1 text-[12px] leading-[1.55]"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  {description}
-                </p>
-              )}
             </div>
             {badge && <div className="shrink-0">{badge}</div>}
           </div>
+          {description && (
+            <p
+              className="m-0 mt-1 text-[12px] leading-[1.55]"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              {description}
+            </p>
+          )}
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export function AdminStatTile({
 }: AdminStatTileProps) {
   return (
     <div
-      className={cn('h-full rounded-[12px] border px-3.5 py-3', className)}
+      className={cn('h-full min-w-0 rounded-[12px] border px-3.5 py-3', className)}
       style={{ background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' }}
     >
       <div className="flex items-start gap-2.5">
@@ -127,7 +127,7 @@ export function AdminStatTile({
           </p>
           <p
             className={cn(
-              'm-0 mt-1 text-[18px] font-extrabold tracking-[-0.4px] tabular-nums whitespace-nowrap leading-none',
+              'm-0 mt-1 truncate text-[17px] font-extrabold tracking-[-0.4px] tabular-nums whitespace-nowrap leading-none',
               valueClassName,
             )}
             style={{ color: VALUE_TONE_STYLE[valueTone] }}
