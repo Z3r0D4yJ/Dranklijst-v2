@@ -141,6 +141,7 @@ const DrawerContent = React.forwardRef<
 >(({ className, children, hideHandle = false, style, ...props }, ref) => {
   const { direction } = React.useContext(DrawerContext)
   const resolvedDirection = direction ?? 'bottom'
+  const safeAreaBackground = 'var(--drawer-safe-area-bg, var(--drawer-content-bg, var(--color-surface)))'
 
   return (
     <DrawerPortal>
@@ -148,12 +149,12 @@ const DrawerContent = React.forwardRef<
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
-          'fixed z-50 flex flex-col overflow-hidden border border-[var(--color-border)] bg-[color:var(--color-surface)] shadow-none outline-none',
+          'fixed z-50 flex flex-col overflow-hidden border border-[var(--color-border)] shadow-none outline-none',
           DIRECTION_CLASSES[resolvedDirection],
           className,
         )}
         style={{
-          paddingBottom: resolvedDirection === 'bottom' ? 'env(safe-area-inset-bottom, 0px)' : undefined,
+          background: 'var(--drawer-content-bg, var(--color-surface))',
           paddingTop: resolvedDirection === 'top' ? 'env(safe-area-inset-top, 0px)' : undefined,
           ...style,
         }}
@@ -167,6 +168,16 @@ const DrawerContent = React.forwardRef<
           </div>
         )}
         {children}
+        {resolvedDirection === 'bottom' && (
+          <div
+            aria-hidden="true"
+            className="shrink-0"
+            style={{
+              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              background: safeAreaBackground,
+            }}
+          />
+        )}
       </DrawerPrimitive.Content>
     </DrawerPortal>
   )

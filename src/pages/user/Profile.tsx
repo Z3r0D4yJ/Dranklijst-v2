@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { SignOut, Users, Clock, CheckCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, XCircle, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash } from '@phosphor-icons/react'
+import { SignOut, Users, Clock, CheckCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, XCircle, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash, X } from '@phosphor-icons/react'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { Switch } from '../../components/ui/switch'
 import { Badge } from '../../components/ui/badge'
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../../components/ui/drawer'
 import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
 import type { Role } from '../../lib/database.types'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
@@ -20,7 +21,7 @@ import { IconChip } from '../../components/IconChip'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { UserAvatar } from '../../components/UserAvatar'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
-import { PageHeader, Surface } from '../../components/AdminThemePrimitives'
+import { PageHeader } from '../../components/AdminThemePrimitives'
 
 interface JoinRequestWithGroup {
   id: string
@@ -154,7 +155,6 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
             <IconActionButton
               size="sm"
               variant="neutral"
-              className="!rounded-full"
               aria-label="Sluiten"
             >
               <X size={16} color="currentColor" weight="bold" />

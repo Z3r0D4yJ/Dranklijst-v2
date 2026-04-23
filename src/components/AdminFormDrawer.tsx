@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { X } from '@phosphor-icons/react'
 import { cn } from '../lib/utils'
 import { IconActionButton } from './ui/action-button'
@@ -161,6 +161,11 @@ export function AdminFormDrawer({
 
   if (!open) return null
 
+  const contentStyle = {
+    maxHeight,
+    '--drawer-safe-area-bg': footer ? 'var(--color-surface)' : 'var(--color-bg)',
+  } as CSSProperties
+
   return (
     <Drawer
       open
@@ -171,7 +176,7 @@ export function AdminFormDrawer({
     >
     <DrawerContent
         className={cn('mx-auto w-full max-w-md rounded-t-[24px] px-0', contentClassName)}
-        style={{ maxHeight }}
+        style={contentStyle}
         onCloseAutoFocus={(event) => {
           event.preventDefault()
         }}
