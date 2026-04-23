@@ -20,7 +20,7 @@ import { IconChip } from '../../components/IconChip'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { UserAvatar } from '../../components/UserAvatar'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
-import { PageHeader } from '../../components/AdminThemePrimitives'
+import { PageHeader, Surface } from '../../components/AdminThemePrimitives'
 
 interface JoinRequestWithGroup {
   id: string
@@ -136,41 +136,62 @@ function GroupMembersSheet({ groupId, groupName, onClose }: { groupId: string; g
   })
 
   return (
-    <AdminFormDrawer
-      open
-      onOpenChange={(open) => { if (!open) onClose() }}
-      title={groupName}
-      description={isLoading ? undefined : `${members?.length ?? 0} leden`}
-      maxHeight="var(--drawer-max-height-compact)"
-      bodyClassName="space-y-1"
-    >
-      {isLoading && [0, 1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center gap-3 py-2.5">
-          <div className="dl-skel w-9 h-9 rounded-full shrink-0" />
-          <div className="flex-1 space-y-1.5">
-            <div className="dl-skel h-3 w-1/2 rounded" />
-            <div className="dl-skel h-2.5 w-1/4 rounded" />
+    <Drawer open onOpenChange={(open: boolean) => { if (!open) onClose() }}>
+      <DrawerContent
+        className="rounded-t-[20px] px-0"
+        style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height-compact)' }}
+      >
+        <DrawerHeader className="flex items-center justify-between border-b border-[var(--color-border)]">
+          <div>
+            <DrawerTitle style={{ color: 'var(--color-text-primary)' }}>{groupName}</DrawerTitle>
+            {!isLoading && (
+              <DrawerDescription style={{ color: 'var(--color-text-muted)' }}>
+                {members?.length ?? 0} leden
+              </DrawerDescription>
+            )}
           </div>
+          <DrawerClose asChild>
+            <IconActionButton
+              size="sm"
+              variant="neutral"
+              className="!rounded-full"
+              aria-label="Sluiten"
+            >
+              <X size={16} color="currentColor" weight="bold" />
+            </IconActionButton>
+          </DrawerClose>
+        </DrawerHeader>
+
+        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-1">
+          {isLoading && [0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 py-2.5">
+              <div className="dl-skel w-9 h-9 rounded-full shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <div className="dl-skel h-3 w-1/2 rounded" />
+                <div className="dl-skel h-2.5 w-1/4 rounded" />
+              </div>
+            </div>
+          ))}
+          {!isLoading && (members ?? []).map((member) => (
+            <div
+              key={member.user_id}
+              className="flex items-center gap-3 py-2.5"
+              style={{ borderBottom: '1px solid var(--color-border)' }}
+            >
+              <UserAvatar avatarUrl={member.avatar_url} size={36} />
+              <div className="flex-1">
+                <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {member.full_name}
+                </p>
+                <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                  {ROLE_LABELS[member.role] ?? member.role}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
-      {!isLoading && (members ?? []).map((member) => (
-        <div
-          key={member.user_id}
-          className="flex items-center gap-3 py-2.5"
-          style={{ borderBottom: '1px solid var(--color-border)' }}
-        >
-          <UserAvatar avatarUrl={member.avatar_url} size={36} />
-          <div className="flex-1">
-            <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              {member.full_name}
-            </p>
-            <p className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-              {ROLE_LABELS[member.role] ?? member.role}
-            </p>
-          </div>
-        </div>
-      ))}
-    </AdminFormDrawer>
+      </DrawerContent>
+    </Drawer>
   )
 }
 

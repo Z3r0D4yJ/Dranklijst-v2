@@ -7,7 +7,7 @@ import { useNotifications, type AppNotification } from '../hooks/useNotification
 import { Spinner } from './ui/spinner'
 import { ActionPillButton } from './ui/action-button'
 import { AdminFormDrawer } from './AdminFormDrawer'
-import { EmptyState } from './AdminThemePrimitives'
+import { EmptyState, Surface } from './AdminThemePrimitives'
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -29,13 +29,13 @@ function notifChipProps(title: string): { tone: IconChipTone; icon: FC<IconProps
   return { tone: 'neutral', icon: Bell }
 }
 
-function NotifItem({ n, onTap }: { n: AppNotification; onTap: (n: AppNotification) => void }) {
+function NotifItem({ n, onTap, first }: { n: AppNotification; onTap: (n: AppNotification) => void; first?: boolean }) {
   return (
     <button
       onClick={() => onTap(n)}
-      className="w-full flex items-start gap-3 px-5 py-3.5 text-left active:opacity-70 transition-opacity"
+      className="w-full flex items-start gap-3 px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
       style={{
-        borderBottom: '1px solid var(--color-border)',
+        borderTop: first ? 'none' : '1px solid var(--color-border)',
         background: n.is_read ? 'transparent' : 'var(--color-primary-pale)',
       }}
     >
@@ -85,7 +85,6 @@ export function NotificationsSheet({ onClose }: Props) {
       title="Meldingen"
       description={unreadCount > 0 ? `${unreadCount} ongelezen` : undefined}
       maxHeight="var(--drawer-max-height-compact)"
-      bodyClassName="px-0 py-0"
       footer={
         unreadCount > 0 ? (
           <ActionPillButton
@@ -107,19 +106,26 @@ export function NotificationsSheet({ onClose }: Props) {
       )}
 
       {!isLoading && !hasNotifications && (
-        <div className="px-5 py-5">
-          <EmptyState
-            icon={Bell}
-            tone="neutral"
-            title="Geen meldingen"
-            description="Je hebt nog geen meldingen ontvangen."
-          />
-        </div>
+        <EmptyState
+          icon={Bell}
+          tone="neutral"
+          title="Geen meldingen"
+          description="Je hebt nog geen meldingen ontvangen."
+        />
       )}
 
-      {hasNotifications && (notifications ?? []).map((notification) => (
-        <NotifItem key={notification.id} n={notification} onTap={handleTap} />
-      ))}
+      {hasNotifications && (
+        <Surface>
+          {(notifications ?? []).map((notification, index) => (
+            <NotifItem
+              key={notification.id}
+              n={notification}
+              onTap={handleTap}
+              first={index === 0}
+            />
+          ))}
+        </Surface>
+      )}
     </AdminFormDrawer>
   )
 }

@@ -171,7 +171,7 @@ export function AdminFormDrawer({
     >
     <DrawerContent
         className={cn('mx-auto w-full max-w-md rounded-t-[24px] px-0', contentClassName)}
-        style={{ background: 'var(--color-surface)', maxHeight }}
+        style={{ maxHeight }}
         onCloseAutoFocus={(event) => {
           event.preventDefault()
         }}
@@ -202,12 +202,15 @@ export function AdminFormDrawer({
             scrollBody ? 'flex-1 overflow-y-auto min-h-0' : 'shrink-0',
             bodyClassName,
           )}
+          style={{ background: 'var(--color-bg)' }}
         >
           {children}
         </div>
 
         {footer && (
-          <DrawerFooter className={cn('border-t border-[var(--color-border)]', footerClassName)}>
+          <DrawerFooter
+            className={cn('border-t border-[var(--color-border)]', footerClassName)}
+          >
             {footer}
           </DrawerFooter>
         )}
