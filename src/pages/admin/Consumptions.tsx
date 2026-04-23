@@ -2,8 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, PencilSimple, Eye, EyeSlash, Check, BeerBottle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
-import { IconChip } from '../../components/IconChip'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
@@ -166,15 +165,11 @@ export function Consumptions() {
 
   return (
     <div className="px-4 space-y-4 pb-content-end-comfort">
-      <AdminOverviewCard
-        icon={BeerBottle}
-        tone="primary"
-        eyebrow="Consumpties"
-        title={`${totalConsumptions} items in de globale lijst`}
-      >
+      <section className="space-y-2">
+        <AdminSectionLabel>Consumpties</AdminSectionLabel>
         <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
-            label="Actief"
+            label="Zichtbaar"
             value={String(activeCount)}
             icon={Eye}
             tone="success"
@@ -187,7 +182,7 @@ export function Consumptions() {
             tone="neutral"
           />
         </div>
-      </AdminOverviewCard>
+      </section>
 
       <ActionPillButton
         onClick={openNew}
@@ -287,32 +282,14 @@ export function Consumptions() {
 
       {Object.entries(grouped).map(([category, items]) => (
         <section key={category} className="space-y-2">
-          <div
-            className="rounded-card overflow-hidden"
-            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-          >
-            <div
-              className="flex items-center justify-between gap-3 px-4 py-3"
-              style={{ background: 'var(--color-surface-alt)', borderBottom: '1px solid var(--color-border)' }}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <IconChip tone={category as ConsumptionCategory} size={34} />
-                <div className="min-w-0">
-                  <p
-                    className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-                    style={{ color: 'var(--color-text-muted)' }}
-                  >
-                    Categorie
-                  </p>
-                  <p className="m-0 mt-0.5 text-[13px] font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
-                    {CAT_LABELS[category] ?? category}
-                  </p>
-                </div>
-              </div>
-              <Badge variant="secondary">{items.length} items</Badge>
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <AdminSectionLabel>{CAT_LABELS[category] ?? category}</AdminSectionLabel>
+            <span className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+              {items.length} items
+            </span>
+          </div>
 
-            <div>
+          <AdminSurface>
               {items.map((consumption, index) => (
                 <div
                   key={consumption.id}
@@ -331,7 +308,7 @@ export function Consumptions() {
                         {formatMoney(consumption.price)}
                       </span>
                       <Badge variant={consumption.is_active ? 'success' : 'secondary'} size="sm">
-                        {consumption.is_active ? 'Actief' : 'Verborgen'}
+                        {consumption.is_active ? 'Zichtbaar' : 'Verborgen'}
                       </Badge>
                     </div>
                   </div>
@@ -355,8 +332,7 @@ export function Consumptions() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
+          </AdminSurface>
         </section>
       ))}
     </div>

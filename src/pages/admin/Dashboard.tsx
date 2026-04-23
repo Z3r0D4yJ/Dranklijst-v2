@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CalendarBlank, CurrencyEur, Receipt, TrendUp, Users } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
-import { Badge } from '../../components/ui/badge'
 import { CustomSelect } from '../../components/CustomSelect'
 import { Spinner } from '../../components/ui/spinner'
 import { supabase } from '../../lib/supabase'
@@ -113,33 +112,22 @@ export function Dashboard() {
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
       {periods.length > 0 && (
-        <div
-          className="rounded-card border p-3.5"
-          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
-          <p
-            className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            Periode
-          </p>
-          <div className="mt-2">
-            <CustomSelect
-              value={selectedPeriod}
-              onChange={(value) => {
-                manuallySelected.current = true
-                setSelectedPeriod(value)
-              }}
-              options={periods.map((period) => ({
-                value: period.id,
-                label: period.name,
-                badge: period.is_active ? 'Actief' : undefined,
-                badgeTone: 'success',
-              }))}
-              icon={<IconChip tone={currentPeriod?.is_active ? 'success' : 'neutral'} icon={CalendarBlank} size={28} />}
-            />
-          </div>
-        </div>
+        <section className="space-y-2">
+          <AdminSectionLabel>Periode</AdminSectionLabel>
+          <CustomSelect
+            value={selectedPeriod}
+            onChange={(value) => {
+              manuallySelected.current = true
+              setSelectedPeriod(value)
+            }}
+            options={periods.map((period) => ({
+              value: period.id,
+              label: period.name,
+              statusDot: period.is_active ? 'success' : undefined,
+            }))}
+            icon={<IconChip tone={currentPeriod?.is_active ? 'success' : 'neutral'} icon={CalendarBlank} size={28} />}
+          />
+        </section>
       )}
 
       {selectedPeriod && (
@@ -150,19 +138,9 @@ export function Dashboard() {
             </div>
           ) : (
             <>
-              <AdminOverviewCard
-                icon={TrendUp}
-                tone="primary"
-                eyebrow="Dashboard"
-                title={currentPeriod?.name ?? 'Periode'}
-                badge={
-                  currentPeriod ? (
-                    <Badge variant={currentPeriod.is_active ? 'success' : 'secondary'}>
-                      {currentPeriod.is_active ? 'Actief' : 'Gesloten'}
-                    </Badge>
-                  ) : undefined
-                }
-              >
+              <section className="space-y-2">
+                <AdminSectionLabel>Dashboard</AdminSectionLabel>
+
                 <div className="grid grid-cols-2 gap-2.5">
                   <AdminStatTile
                     label="Omzet"
@@ -192,19 +170,12 @@ export function Dashboard() {
                     valueClassName="text-[15px]"
                   />
                 </div>
-              </AdminOverviewCard>
+              </section>
 
               {visibleGroupStats.length > 0 && (
-                <div
-                  className="rounded-card p-3.5"
-                  style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-                >
-                  <p
-                    className="text-[11px] font-extrabold uppercase tracking-[1.2px] m-0 mb-3"
-                    style={{ color: 'var(--color-text-muted)' }}
-                  >
-                    Omzet per groep
-                  </p>
+                <section className="space-y-2">
+                  <AdminSectionLabel>Omzet per groep</AdminSectionLabel>
+                  <AdminSurface padded>
                   <div className="flex flex-col gap-2.5">
                     {visibleGroupStats.map((group) => {
                       const percentage = Math.max(6, Math.round((group.total / maxVisibleGroupTotal) * 100))
@@ -242,7 +213,8 @@ export function Dashboard() {
                       )
                     })}
                   </div>
-                </div>
+                  </AdminSurface>
+                </section>
               )}
 
               {data?.totalTransactions === 0 && (

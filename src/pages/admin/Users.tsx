@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, MagnifyingGlass, PencilSimple, Users as UsersIcon } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { supabase } from '../../lib/supabase'
@@ -231,7 +231,6 @@ export function Users() {
   const filtered = (users ?? []).filter((user) =>
     user.full_name.toLowerCase().includes(search.toLowerCase()),
   )
-  const totalUsers = (users ?? []).length
   const memberCount = (users ?? []).filter((user) => user.role === 'lid').length
   const leidingKasCount = (users ?? []).filter((user) => user.role === 'leiding' || user.role === 'kas').length
   const { slice: pageUsers, page, totalPages, onPage } = usePagination(filtered, 25)
@@ -244,12 +243,8 @@ export function Users() {
 
   return (
     <div className="px-4 space-y-4 pb-content-end-comfort">
-      <AdminOverviewCard
-        icon={UsersIcon}
-        tone="primary"
-        eyebrow="Gebruikers"
-        title={`${totalUsers} accounts`}
-      >
+      <section className="space-y-2">
+        <AdminSectionLabel>Gebruikers</AdminSectionLabel>
         <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
             label="Leden"
@@ -265,19 +260,11 @@ export function Users() {
             valueTone="primary"
           />
         </div>
-      </AdminOverviewCard>
+      </section>
 
-      <div
-        className="rounded-card border p-3.5"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-      >
-        <p
-          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Zoeken
-        </p>
-        <div className="relative mt-2">
+      <section className="space-y-2">
+        <AdminSectionLabel>Zoeken</AdminSectionLabel>
+        <div className="relative">
           <MagnifyingGlass
             size={16}
             color="var(--color-text-muted)"
@@ -290,7 +277,7 @@ export function Users() {
             placeholder="Zoek gebruiker..."
             className="w-full outline-none text-[13px]"
             style={{
-              background: 'var(--color-surface-alt)',
+              background: 'var(--color-surface)',
               border: '1px solid var(--color-border-mid)',
               borderRadius: 12,
               padding: '10px 14px 10px 40px',
@@ -299,7 +286,7 @@ export function Users() {
             }}
           />
         </div>
-      </div>
+      </section>
 
       {isLoading && (
         <div className="flex justify-center mt-8">
@@ -308,26 +295,20 @@ export function Users() {
       )}
 
       {filtered.length > 0 && (
-        <p
-          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Gebruikers
-        </p>
-      )}
-
-      <div className="space-y-2">
-        {pageUsers.map((user) => {
+        <section className="space-y-2">
+          <AdminSectionLabel>Accounts</AdminSectionLabel>
+          <AdminSurface>
+        {pageUsers.map((user, index) => {
           const roleVariant = ROLE_BADGE_VARIANT[user.role] ?? ROLE_BADGE_VARIANT.lid
           const isSelf = user.id === profile?.id
 
           return (
             <div
               key={user.id}
-              className="rounded-card p-3.5"
+              className="px-3.5 py-3.5"
               style={{
-                background: 'var(--color-surface)',
-                border: `1px solid ${isSelf ? 'var(--color-primary-border)' : 'var(--color-border)'}`,
+                background: isSelf ? 'var(--color-primary-pale)' : 'transparent',
+                borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
               }}
             >
               <div className="flex items-center justify-between gap-3">
@@ -376,7 +357,9 @@ export function Users() {
             </div>
           )
         })}
-      </div>
+          </AdminSurface>
+        </section>
+      )}
 
       {!isLoading && filtered.length === 0 && (
         <AdminEmptyState

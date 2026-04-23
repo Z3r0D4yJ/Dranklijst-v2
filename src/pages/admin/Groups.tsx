@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CaretRight, CurrencyEur, Users } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
@@ -108,12 +108,8 @@ export function Groups() {
 
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
-      <AdminOverviewCard
-        icon={Users}
-        tone="primary"
-        eyebrow="Groepen"
-        title={`${(groups ?? []).length} groepen`}
-      >
+      <section className="space-y-2">
+        <AdminSectionLabel>Groepen</AdminSectionLabel>
         <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
             label="Leden"
@@ -129,45 +125,46 @@ export function Groups() {
             valueTone="primary"
           />
         </div>
-      </AdminOverviewCard>
+      </section>
 
-      <p
-        className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-        style={{ color: 'var(--color-text-muted)' }}
-      >
-        Alle groepen
-      </p>
+      <section className="space-y-2">
+        <AdminSectionLabel>Alle groepen</AdminSectionLabel>
+        <AdminSurface>
+          {(groups ?? []).map((group, index) => (
+            <button
+              key={group.id}
+              type="button"
+              onClick={() => setSelectedGroupId(group.id)}
+              className="w-full px-4 py-3.5 text-left active:opacity-70 transition-opacity"
+              style={{
+                borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
+                fontFamily: 'inherit',
+              }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <IconChip tone="primary" icon={Users} size={36} />
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      {group.name}
+                    </p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <Badge variant="secondary" size="sm">{group.memberCount} leden</Badge>
+                    </div>
+                  </div>
+                </div>
 
-      {(groups ?? []).map((group) => (
-        <button
-          key={group.id}
-          type="button"
-          onClick={() => setSelectedGroupId(group.id)}
-          className="w-full rounded-card px-4 py-3.5 text-left active:scale-[0.99] transition-transform"
-          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <IconChip tone="primary" icon={Users} size={36} />
-              <div className="min-w-0">
-                <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
-                  {group.name}
-                </p>
-                <div className="mt-1 flex items-center gap-1.5">
-                  <Badge variant="secondary" size="sm">{group.memberCount} leden</Badge>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                    {formatMoney(group.total)}
+                  </span>
+                  <CaretRight size={14} color="var(--color-text-muted)" />
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                {formatMoney(group.total)}
-              </span>
-              <CaretRight size={14} color="var(--color-text-muted)" />
-            </div>
-          </div>
-        </button>
-      ))}
+            </button>
+          ))}
+        </AdminSurface>
+      </section>
 
       <AdminFormDrawer
         open={!!selectedGroup}
@@ -175,19 +172,14 @@ export function Groups() {
           if (!open) setSelectedGroupId(null)
         }}
         title={selectedGroup?.name ?? 'Groep'}
-        bodyClassName="px-0 py-0"
+        bodyClassName="space-y-3"
         contentClassName="max-w-md"
         maxHeight="var(--drawer-max-height-compact)"
       >
         {selectedGroup && (
           <>
-            <div className="px-5 pt-5 pb-4">
-              <AdminOverviewCard
-                icon={Users}
-                tone="primary"
-                eyebrow="Groepsdetail"
-                title={selectedGroup.name}
-              >
+            <section className="space-y-2">
+              <AdminSectionLabel>Overzicht</AdminSectionLabel>
                 <div className="grid grid-cols-2 gap-2.5">
                   <AdminStatTile
                     label="Leden"
@@ -203,23 +195,22 @@ export function Groups() {
                     valueTone="primary"
                   />
                 </div>
-              </AdminOverviewCard>
-            </div>
+            </section>
 
             {selectedGroup.members.length === 0 ? (
-              <div className="px-5 pb-5">
-                <AdminEmptyState
-                  icon={Users}
-                  title="Nog geen leden"
-                  description="Leden van deze groep verschijnen hier zodra ze gekoppeld zijn."
-                />
-              </div>
+              <AdminEmptyState
+                icon={Users}
+                title="Nog geen leden"
+                description="Leden van deze groep verschijnen hier zodra ze gekoppeld zijn."
+              />
             ) : (
-              <div style={{ borderTop: '1px solid var(--color-border)' }}>
+              <section className="space-y-2">
+                <AdminSectionLabel>Leden</AdminSectionLabel>
+                <AdminSurface>
                 {selectedGroup.members.map((member, index) => (
                   <div
                     key={`${member.full_name}-${index}`}
-                    className="flex items-center gap-3 px-5 py-3.5"
+                    className="flex items-center gap-3 px-3.5 py-3.5"
                     style={{ borderTop: index > 0 ? '1px solid var(--color-border)' : undefined }}
                   >
                     <UserAvatar
@@ -239,7 +230,8 @@ export function Groups() {
                     </Badge>
                   </div>
                 ))}
-              </div>
+                </AdminSurface>
+              </section>
             )}
           </>
         )}

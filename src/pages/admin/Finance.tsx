@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, CheckCircle, Clock, CurrencyEur, Export, User } from '@phosphor-icons/react'
-import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
@@ -52,11 +52,11 @@ function getStatusHint(status: string, paidAt: string | null) {
   return null
 }
 
-function PaymentDetailRow({ label, value }: { label: string; value: string }) {
+function PaymentDetailRow({ label, value, first = false }: { label: string; value: string; first?: boolean }) {
   return (
     <div
-      className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-3"
-      style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+      className="flex items-center justify-between gap-3 px-3.5 py-3"
+      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
     >
       <span className="text-[11px] font-extrabold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
         {label}
@@ -221,13 +221,8 @@ export function Finance() {
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
       {currentPeriod && (
-        <AdminOverviewCard
-          icon={CurrencyEur}
-          tone="primary"
-          eyebrow="Financieel overzicht"
-          title={currentPeriod.name}
-          badge={<Badge variant={currentPeriod.is_active ? 'success' : 'secondary'}>{currentPeriod.is_active ? 'Actief' : 'Afgesloten'}</Badge>}
-        >
+        <section className="space-y-2">
+          <AdminSectionLabel>Financieel overzicht</AdminSectionLabel>
           <div className="grid grid-cols-2 gap-2.5">
             <AdminStatTile
               label="Te betalen"
@@ -252,44 +247,33 @@ export function Finance() {
               className="col-span-2"
             />
           </div>
-        </AdminOverviewCard>
+        </section>
       )}
 
       {(periods ?? []).length > 0 && (
-        <div
-          className="rounded-card border p-3.5"
-          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-        >
-          <p
-            className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            Periode
-          </p>
-          <div className="mt-2">
-            <CustomSelect
-              value={selectedPeriod}
-              onChange={(value) => {
-                manuallySelected.current = true
-                setSelectedPeriod(value)
-                setSelectedPaymentId(null)
-              }}
-              options={(periods ?? []).map((period) => ({
-                value: period.id,
-                label: period.name,
-                badge: period.is_active ? 'Actief' : undefined,
-                badgeTone: 'success',
-              }))}
-              icon={
-                <div
-                  className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
-                  style={{ background: 'var(--color-primary-pale)' }}
-                >
-                  <CurrencyEur size={13} color="var(--color-primary)" />
-                </div>
-              }
-            />
-          </div>
+        <section className="space-y-2">
+          <AdminSectionLabel>Periode</AdminSectionLabel>
+          <CustomSelect
+            value={selectedPeriod}
+            onChange={(value) => {
+              manuallySelected.current = true
+              setSelectedPeriod(value)
+              setSelectedPaymentId(null)
+            }}
+            options={(periods ?? []).map((period) => ({
+              value: period.id,
+              label: period.name,
+              statusDot: period.is_active ? 'success' : undefined,
+            }))}
+            icon={
+              <div
+                className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center shrink-0"
+                style={{ background: 'var(--color-primary-pale)', border: '1px solid var(--color-primary-border)' }}
+              >
+                <CurrencyEur size={13} color="var(--color-primary)" />
+              </div>
+            }
+          />
           {payments.length > 0 && (
             <ActionPillButton
               type="button"
@@ -302,7 +286,7 @@ export function Finance() {
               Exporteer CSV
             </ActionPillButton>
           )}
-        </div>
+        </section>
       )}
 
       {isLoading && (
@@ -324,16 +308,10 @@ export function Finance() {
       )}
 
       {payments.length > 0 && (
-        <p
-          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Betalingen
-        </p>
-      )}
-
-      <div className="flex flex-col gap-2">
-        {pagePayments.map((payment) => {
+        <section className="space-y-2">
+          <AdminSectionLabel>Betalingen</AdminSectionLabel>
+          <AdminSurface>
+        {pagePayments.map((payment, index) => {
           const config = STATUS_CONFIG[payment.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.unpaid
           const tone = getStatusTone(payment.status)
           const statusHint = getStatusHint(payment.status, payment.paid_at)
@@ -343,8 +321,11 @@ export function Finance() {
               key={payment.id}
               type="button"
               onClick={() => setSelectedPaymentId(payment.id)}
-              className="w-full rounded-card p-3.5 text-left active:scale-[0.99] transition-transform"
-              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
+              className="w-full p-3.5 text-left active:opacity-70 transition-opacity"
+              style={{
+                borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
+                fontFamily: 'inherit',
+              }}
             >
               <div className="flex items-start gap-3">
                 <IconChip tone={tone} icon={payment.status === 'paid' ? CheckCircle : payment.status === 'pending' ? Clock : User} size={34} />
@@ -379,7 +360,9 @@ export function Finance() {
             </button>
           )
         })}
-      </div>
+          </AdminSurface>
+        </section>
+      )}
 
       <Pagination page={page} totalPages={totalPages} onPage={onPage} />
 
@@ -411,12 +394,9 @@ export function Finance() {
       >
         {selectedPayment && (
           <>
-            <AdminOverviewCard
-              icon={selectedPayment.status === 'paid' ? CheckCircle : selectedPayment.status === 'pending' ? Clock : User}
-              tone={getStatusTone(selectedPayment.status)}
-              eyebrow="Te betalen"
-              title={formatMoney(selectedPayment.amount_due)}
-              badge={
+            <section className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <AdminSectionLabel>Betaling</AdminSectionLabel>
                 <Badge
                   variant={
                     STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.variant ??
@@ -425,32 +405,35 @@ export function Finance() {
                 >
                   {STATUS_CONFIG[selectedPayment.status as keyof typeof STATUS_CONFIG]?.label ?? 'Te betalen'}
                 </Badge>
-              }
-            />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <AdminStatTile
+                  label="Verschuldigd"
+                  value={formatMoney(selectedPayment.amount_due)}
+                  icon={Clock}
+                  tone="danger"
+                  valueTone={selectedPayment.status === 'unpaid' ? 'danger' : 'default'}
+                />
+                <AdminStatTile
+                  label="Ontvangen"
+                  value={formatMoney(selectedPayment.amount_paid)}
+                  icon={CheckCircle}
+                  tone="success"
+                  valueTone="success"
+                />
+              </div>
+            </section>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              <AdminStatTile
-                label="Verschuldigd"
-                value={formatMoney(selectedPayment.amount_due)}
-                icon={Clock}
-                tone="danger"
-                valueTone={selectedPayment.status === 'unpaid' ? 'danger' : 'default'}
-              />
-              <AdminStatTile
-                label="Ontvangen"
-                value={formatMoney(selectedPayment.amount_paid)}
-                icon={CheckCircle}
-                tone="success"
-                valueTone="success"
-              />
-            </div>
-
-            <div className="space-y-2">
+            <section className="space-y-2">
+              <AdminSectionLabel>Details</AdminSectionLabel>
+              <AdminSurface>
               <PaymentDetailRow
+                first
                 label="Bevestigd op"
                 value={selectedPayment.paid_at ? new Date(selectedPayment.paid_at).toLocaleDateString('nl-BE') : 'Nog niet bevestigd'}
               />
-            </div>
+              </AdminSurface>
+            </section>
           </>
         )}
       </AdminFormDrawer>

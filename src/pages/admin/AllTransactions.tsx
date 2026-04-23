@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, CurrencyEur, Receipt, Trash } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router-dom'
-import { AdminEmptyState, AdminOverviewCard, AdminStatTile } from '../../components/AdminThemePrimitives'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
 import { CustomSelect } from '../../components/CustomSelect'
@@ -31,11 +31,11 @@ interface TxRow {
   period_id: string
 }
 
-function TxDetailRow({ label, value }: { label: string; value: string }) {
+function TxDetailRow({ label, value, first = false }: { label: string; value: string; first?: boolean }) {
   return (
     <div
-      className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-3"
-      style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+      className="flex items-center justify-between gap-3 px-3.5 py-3"
+      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
     >
       <span className="text-[12px] font-bold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
         {label}
@@ -148,7 +148,6 @@ export function AllTransactions() {
   const allTx = transactions ?? []
   const selectedTx = allTx.find((tx) => tx.id === selectedTxId) ?? null
   const selectedPeriodName = periods?.find((period) => period.id === selectedTx?.period_id)?.name ?? 'Onbekende periode'
-  const selectedPeriodInfo = periods?.find((period) => period.id === selectedPeriod) ?? null
   const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, PAGE_SIZE)
   const total = allTx.reduce((sum, tx) => sum + tx.total_price, 0)
 
@@ -200,13 +199,8 @@ export function AllTransactions() {
 
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
-      <AdminOverviewCard
-        icon={Receipt}
-        tone="primary"
-        eyebrow="Transactieoverzicht"
-        title={selectedPeriodInfo?.name ?? 'Alle periodes'}
-        badge={selectedPeriodInfo?.is_active ? <Badge variant="success">Actief</Badge> : undefined}
-      >
+      <section className="space-y-2">
+        <AdminSectionLabel>Transactieoverzicht</AdminSectionLabel>
         <div className="grid grid-cols-2 gap-2.5">
           <AdminStatTile
             label="Aantal"
@@ -222,40 +216,31 @@ export function AllTransactions() {
             valueTone="primary"
           />
         </div>
-      </AdminOverviewCard>
+      </section>
 
-      <div
-        className="rounded-card border p-3.5"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-      >
-        <p
-          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Filters
-        </p>
-        <div className="mt-2 flex flex-col gap-2.5 sm:flex-row">
+      <section className="space-y-2">
+        <AdminSectionLabel>Filters</AdminSectionLabel>
+        <div className="flex flex-col gap-2.5">
           <CustomSelect
             value={selectedPeriod}
             onChange={updatePeriodFilter}
             options={(periods ?? []).map((period) => ({
               value: period.id,
               label: period.name,
-              badge: period.is_active ? 'Actief' : undefined,
-              badgeTone: 'success',
+              statusDot: period.is_active ? 'success' : undefined,
             }))}
             placeholder="Alle periodes"
-            style={{ flex: 1, minWidth: 0 }}
+            style={{ minWidth: 0 }}
           />
           <CustomSelect
             value={selectedGroup}
             onChange={setSelectedGroup}
             options={(groups ?? []).map((group) => ({ value: group.id, label: group.name }))}
             placeholder="Alle groepen"
-            style={{ flex: 1, minWidth: 0 }}
+            style={{ minWidth: 0 }}
           />
         </div>
-      </div>
+      </section>
 
       {isLoading && (
         <div className="flex justify-center mt-8">
@@ -272,59 +257,58 @@ export function AllTransactions() {
       )}
 
       {allTx.length > 0 && (
-        <p
-          className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Transacties
-        </p>
-      )}
-
-      <div className="flex flex-col gap-2">
-        {pageTx.map((tx) => (
-          <button
-            key={tx.id}
-            type="button"
-            onClick={() => setSelectedTxId(tx.id)}
-            className="w-full rounded-card px-3.5 py-3 text-left active:scale-[0.99] transition-transform"
-            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', fontFamily: 'inherit' }}
-          >
-            <div className="flex items-start gap-3">
-              <IconChip tone="primary" icon={Receipt} size={34} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
+        <section className="space-y-2">
+          <AdminSectionLabel>Transacties</AdminSectionLabel>
+          <AdminSurface>
+            {pageTx.map((tx, index) => (
+              <button
+                key={tx.id}
+                type="button"
+                onClick={() => setSelectedTxId(tx.id)}
+                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                style={{
+                  borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <IconChip tone="primary" icon={Receipt} size={34} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
-                      {tx.full_name}
-                    </p>
-                    <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      <Badge variant="secondary" size="sm">
-                        {tx.group_name}
-                      </Badge>
-                      <Badge
-                        variant="secondary"
-                        size="sm"
-                        className="max-w-full whitespace-normal break-words text-left leading-[1.25]"
-                      >
-                        {tx.consumption_name} x{tx.quantity}
-                      </Badge>
-                      <Badge variant="muted" size="sm">
-                        {formatTransactionMoment(tx.created_at)}
-                      </Badge>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                          {tx.full_name}
+                        </p>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          <Badge variant="secondary" size="sm">
+                            {tx.group_name}
+                          </Badge>
+                          <Badge
+                            variant="secondary"
+                            size="sm"
+                            className="max-w-full whitespace-normal break-words text-left leading-[1.25]"
+                          >
+                            {tx.consumption_name} x{tx.quantity}
+                          </Badge>
+                          <Badge variant="muted" size="sm">
+                            {formatTransactionMoment(tx.created_at)}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                          {formatMoney(tx.total_price)}
+                        </span>
+                        <CaretRight size={14} color="var(--color-text-muted)" />
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                      {formatMoney(tx.total_price)}
-                    </span>
-                    <CaretRight size={14} color="var(--color-text-muted)" />
-                  </div>
                 </div>
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
+              </button>
+            ))}
+          </AdminSurface>
+        </section>
+      )}
 
       <Pagination page={page} totalPages={totalPages} onPage={onPage} />
 
@@ -384,15 +368,19 @@ export function AllTransactions() {
       >
         {selectedTx && (
           <>
-            <AdminOverviewCard
-              icon={Receipt}
-              tone="primary"
-              eyebrow="Totaal"
-              title={formatMoney(selectedTx.total_price)}
-            />
+            <section className="space-y-2">
+              <AdminSectionLabel>Totaal</AdminSectionLabel>
+              <AdminSurface padded>
+                <p className="m-0 text-[24px] font-extrabold tracking-[-0.6px] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                  {formatMoney(selectedTx.total_price)}
+                </p>
+              </AdminSurface>
+            </section>
 
-            <div className="space-y-2">
-              <TxDetailRow label="Consumptie" value={selectedTx.consumption_name} />
+            <section className="space-y-2">
+              <AdminSectionLabel>Details</AdminSectionLabel>
+              <AdminSurface>
+              <TxDetailRow first label="Consumptie" value={selectedTx.consumption_name} />
               <TxDetailRow label="Aantal" value={String(selectedTx.quantity)} />
               <TxDetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
               <TxDetailRow
@@ -405,7 +393,8 @@ export function AllTransactions() {
                   minute: '2-digit',
                 })}
               />
-            </div>
+              </AdminSurface>
+            </section>
           </>
         )}
       </AdminFormDrawer>

@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { CalendarBlank, Stop, Plus, CheckCircle, Users, CurrencyEur } from '@phosphor-icons/react'
+import { CalendarBlank, Stop, Plus, CheckCircle, Users } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { Spinner } from '../../components/ui/spinner'
 import { Badge } from '../../components/ui/badge'
 import { ActionPillButton } from '../../components/ui/action-button'
 import { IconChip } from '../../components/IconChip'
+import { AdminSectionLabel, AdminStatusPill, AdminSurface } from '../../components/AdminThemePrimitives'
 import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
@@ -142,6 +143,8 @@ export function Periods() {
     width: '100%',
     outline: 'none',
   }
+  const activeStats = (stats ?? []).filter(({ period }) => period.is_active)
+  const closedStats = (stats ?? []).filter(({ period }) => !period.is_active)
 
   return (
     <div className="px-4 space-y-3 pb-content-end-comfort">
@@ -208,168 +211,131 @@ export function Periods() {
         </div>
       )}
 
-      <div className="flex flex-col gap-2.5">
-        {(stats ?? []).map(({ period, user_count, total }) =>
-          period.is_active ? (
-            <div
-              key={period.id}
-              className="rounded-card p-4"
+      {activeStats.map(({ period, user_count, total }) => (
+        <section key={period.id} className="space-y-2">
+          <AdminSectionLabel>Actieve periode</AdminSectionLabel>
+          <AdminSurface padded className="space-y-3">
+            <div className="flex items-start gap-3">
+              <IconChip tone="primary" icon={CalendarBlank} size={38} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <p
+                    className="m-0 truncate text-[16px] font-extrabold tracking-[-0.4px]"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    {period.name}
+                  </p>
+                  <AdminStatusPill tone="success" label="Lopend" />
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <Badge variant="secondary" size="sm" className="gap-1.5">
+                    <CalendarBlank size={12} weight="bold" />
+                    {formatDate(period.started_at)}
+                  </Badge>
+                  <button
+                    type="button"
+                    onClick={() => goToTransactions(period.id)}
+                    className="inline-flex active:scale-[0.98] transition-transform"
+                    style={{ fontFamily: 'inherit' }}
+                  >
+                    <Badge variant="secondary" size="sm" className="gap-1.5">
+                      <Users size={12} weight="bold" />
+                      {formatMemberCount(user_count)}
+                    </Badge>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => goToTransactions(period.id)}
+              className="w-full rounded-[12px] px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
               style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-primary-border)',
+                background: 'var(--color-surface-alt)',
+                border: '1px solid var(--color-border)',
+                fontFamily: 'inherit',
               }}
             >
-              <div className="flex items-start gap-3">
-                <IconChip tone="primary" icon={CalendarBlank} size={38} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p
-                        className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-                        style={{ color: 'var(--color-text-muted)' }}
-                      >
-                        Actieve periode
-                      </p>
-                      <p
-                        className="mt-1 truncate text-[16px] font-extrabold tracking-[-0.4px]"
-                        style={{ color: 'var(--color-text-primary)' }}
-                      >
-                        {period.name}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <Badge variant="secondary" size="sm" className="gap-1.5">
-                          <CalendarBlank size={12} weight="bold" />
-                          {formatDate(period.started_at)}
-                        </Badge>
-                        <button
-                          type="button"
-                          onClick={() => goToTransactions(period.id)}
-                          className="inline-flex active:scale-[0.98] transition-transform"
-                          style={{ fontFamily: 'inherit' }}
-                        >
+              <p
+                className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                Huidige omzet
+              </p>
+              <p
+                className="mt-1 text-[16px] font-extrabold tracking-[-0.35px] tabular-nums"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                {formatMoney(total)}
+              </p>
+            </button>
+
+            <ActionPillButton
+              onClick={() => closePeriod(period.id, period.name)}
+              disabled={closing === period.id}
+              variant="danger-soft"
+              size="md"
+              className="w-full"
+            >
+              <Stop size={13} weight="fill" />
+              {closing === period.id ? 'Periode wordt afgesloten...' : 'Periode afsluiten'}
+            </ActionPillButton>
+          </AdminSurface>
+        </section>
+      ))}
+
+      {closedStats.length > 0 && (
+        <section className="space-y-2">
+          <AdminSectionLabel>Afgesloten periodes</AdminSectionLabel>
+          <AdminSurface>
+            {closedStats.map(({ period, user_count, total }, index) => (
+              <button
+                key={period.id}
+                type="button"
+                onClick={() => goToTransactions(period.id)}
+                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                style={{
+                  borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <IconChip tone="neutral" icon={CalendarBlank} size={34} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="m-0 truncate text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                          {period.name}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          <Badge variant="secondary" size="sm" className="gap-1.5">
+                            <CalendarBlank size={12} weight="bold" />
+                            {formatDate(period.started_at)}
+                          </Badge>
+                          <Badge variant="secondary" size="sm" className="gap-1.5">
+                            <CheckCircle size={12} weight="fill" />
+                            {formatDate(period.ended_at ?? period.started_at)}
+                          </Badge>
                           <Badge variant="secondary" size="sm" className="gap-1.5">
                             <Users size={12} weight="bold" />
                             {formatMemberCount(user_count)}
                           </Badge>
-                        </button>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                          {formatMoney(total)}
+                        </span>
                       </div>
                     </div>
-                    <Badge variant="primary">
-                      Actief
-                    </Badge>
                   </div>
                 </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => goToTransactions(period.id)}
-                className="mt-3 w-full rounded-[12px] px-3.5 py-3 text-left active:scale-[0.99] transition-transform"
-                style={{
-                  background: 'var(--color-primary-pale)',
-                  border: '1px solid var(--color-primary-border)',
-                  fontFamily: 'inherit',
-                }}
-              >
-                <p
-                  className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-                  style={{ color: 'var(--color-text-muted)' }}
-                >
-                  Huidige omzet
-                </p>
-                <p
-                  className="mt-1 text-[22px] font-extrabold tracking-[-0.5px] tabular-nums"
-                  style={{ color: 'var(--color-primary)' }}
-                >
-                  {formatMoney(total)}
-                </p>
               </button>
-
-              <div className="mt-3">
-                <ActionPillButton
-                  onClick={() => closePeriod(period.id, period.name)}
-                  disabled={closing === period.id}
-                  variant="danger-soft"
-                  size="md"
-                  className="w-full"
-                >
-                  <Stop size={13} weight="fill" />
-                  {closing === period.id ? 'Periode wordt afgesloten...' : 'Periode afsluiten'}
-                </ActionPillButton>
-              </div>
-            </div>
-          ) : (
-            <div
-              key={period.id}
-              className="rounded-card p-3.5"
-              style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <IconChip tone="neutral" icon={CalendarBlank} size={34} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p
-                        className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-                        style={{ color: 'var(--color-text-muted)' }}
-                      >
-                        Afgesloten periode
-                      </p>
-                      <p
-                        className="mt-1 truncate text-[14px] font-bold"
-                        style={{ color: 'var(--color-text-primary)' }}
-                      >
-                        {period.name}
-                      </p>
-                    </div>
-                    <Badge variant="success" className="gap-1">
-                      <CheckCircle size={14} weight="fill" />
-                      Gesloten
-                    </Badge>
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="gap-1.5">
-                      <CalendarBlank size={12} weight="bold" />
-                      {formatDate(period.started_at)}
-                    </Badge>
-                    <Badge variant="secondary" className="gap-1.5">
-                      <CheckCircle size={12} weight="fill" />
-                      {formatDate(period.ended_at ?? period.started_at)}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className="flex flex-wrap gap-3 mt-3 pt-2.5"
-                style={{ borderTop: '1px solid var(--color-border)' }}
-              >
-                {[
-                  { icon: Users, value: formatMemberCount(user_count) },
-                  { icon: CurrencyEur, value: `${formatMoney(total)} totaal` },
-                ].map(({ icon, value }, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => goToTransactions(period.id)}
-                    className="flex items-center gap-1.5 rounded-[12px] active:scale-[0.98] transition-transform"
-                    style={{ fontFamily: 'inherit' }}
-                  >
-                    <IconChip tone="primary" icon={icon} size={24} />
-                    <span className="text-[12px] font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
-                      {value}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ),
-        )}
-      </div>
+            ))}
+          </AdminSurface>
+        </section>
+      )}
     </div>
   )
 }

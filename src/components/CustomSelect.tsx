@@ -17,6 +17,7 @@ interface Option {
   label: string
   badge?: string
   badgeTone?: 'success' | 'primary' | 'warning' | 'muted'
+  statusDot?: 'success' | 'primary' | 'warning' | 'muted'
 }
 
 interface Props {
@@ -62,6 +63,20 @@ function SelectBadge({ label, tone = 'success' }: { label: string; tone?: Option
       {label}
     </Badge>
   )
+}
+
+function getStatusDotColor(tone: Option['statusDot']) {
+  switch (tone) {
+    case 'primary':
+      return 'var(--color-primary)'
+    case 'warning':
+      return 'var(--color-warning)'
+    case 'muted':
+      return 'var(--color-text-muted)'
+    case 'success':
+    default:
+      return 'var(--color-success)'
+  }
 }
 
 function getMenuLayout(wrapper: HTMLDivElement) {
@@ -167,7 +182,15 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
           fontFamily: 'inherit',
         }}
       >
-        <span className="flex-1 text-left truncate">{option.label}</span>
+        <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
+          {option.statusDot && (
+            <span
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ background: getStatusDotColor(option.statusDot) }}
+            />
+          )}
+          <span className="truncate">{option.label}</span>
+        </span>
         {option.badge && (
           <SelectBadge label={option.badge} tone={option.badgeTone} />
         )}
@@ -209,6 +232,12 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
         }}
       >
         {icon && <span className="shrink-0">{icon}</span>}
+        {selected?.statusDot && (
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ background: getStatusDotColor(selected.statusDot) }}
+          />
+        )}
         <span className="flex-1 truncate">{displayLabel}</span>
         {selected?.badge && (
           <SelectBadge label={selected.badge} tone={selected.badgeTone} />
@@ -277,7 +306,15 @@ export function CustomSelect({ value, onChange, options, placeholder, icon, styl
                 fontFamily: 'inherit',
               }}
             >
-              <span className="flex-1 text-left truncate">{option.label}</span>
+              <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                {option.statusDot && (
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ background: getStatusDotColor(option.statusDot) }}
+                  />
+                )}
+                <span className="truncate">{option.label}</span>
+              </span>
               {option.badge && (
                 <SelectBadge label={option.badge} tone={option.badgeTone} />
               )}

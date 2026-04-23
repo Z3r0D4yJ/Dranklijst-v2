@@ -42,6 +42,95 @@ interface AdminEmptyStateProps {
   className?: string
 }
 
+interface AdminSurfaceProps {
+  children: ReactNode
+  className?: string
+  padded?: boolean
+}
+
+interface AdminStatusPillProps {
+  label: ReactNode
+  tone?: 'primary' | 'success' | 'warning' | 'danger' | 'neutral'
+  className?: string
+}
+
+const STATUS_PILL_STYLE: Record<
+  NonNullable<AdminStatusPillProps['tone']>,
+  { bg: string; border: string; text: string }
+> = {
+  primary: {
+    bg: 'var(--color-primary-pale)',
+    border: 'var(--color-primary-border)',
+    text: 'var(--color-primary)',
+  },
+  success: {
+    bg: 'var(--color-success-bg)',
+    border: 'var(--color-success-border)',
+    text: 'var(--color-success)',
+  },
+  warning: {
+    bg: 'var(--color-warning-bg)',
+    border: 'var(--color-warning-border)',
+    text: 'var(--color-warning)',
+  },
+  danger: {
+    bg: 'var(--color-danger-bg)',
+    border: 'var(--color-danger-border)',
+    text: 'var(--color-danger)',
+  },
+  neutral: {
+    bg: 'var(--color-surface-alt)',
+    border: 'var(--color-border)',
+    text: 'var(--color-text-secondary)',
+  },
+}
+
+export function AdminSectionLabel({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <p
+      className={cn('m-0 ml-0.5 text-[11px] font-extrabold uppercase tracking-[1.2px]', className)}
+      style={{ color: 'var(--color-text-muted)' }}
+    >
+      {children}
+    </p>
+  )
+}
+
+export function AdminSurface({ children, className, padded = false }: AdminSurfaceProps) {
+  return (
+    <div
+      className={cn('rounded-card border overflow-hidden', padded && 'p-3.5', className)}
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+    >
+      {children}
+    </div>
+  )
+}
+
+export function AdminStatusPill({ label, tone = 'neutral', className }: AdminStatusPillProps) {
+  const style = STATUS_PILL_STYLE[tone]
+
+  return (
+    <span
+      className={cn(
+        'inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-bold leading-none whitespace-nowrap',
+        className,
+      )}
+      style={{
+        background: style.bg,
+        borderColor: style.border,
+        color: style.text,
+      }}
+    >
+      <span
+        className="h-1.5 w-1.5 rounded-full shrink-0"
+        style={{ background: style.text }}
+      />
+      {label}
+    </span>
+  )
+}
+
 export function AdminOverviewCard({
   icon,
   tone = 'primary',
@@ -111,7 +200,7 @@ export function AdminStatTile({
   return (
     <div
       className={cn('h-full min-w-0 rounded-[12px] border px-3 py-2.5', className)}
-      style={{ background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' }}
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
         <p
