@@ -79,6 +79,7 @@ export function GroupManagement() {
   const [copied, setCopied] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState('')
   const [membersDrawerOpen, setMembersDrawerOpen] = useState(false)
+  const [requestsDrawerOpen, setRequestsDrawerOpen] = useState(false)
 
   const { data: requests, error: requestsError } = useJoinRequests(groupId)
 
@@ -258,6 +259,7 @@ export function GroupManagement() {
     .sort((a, b) => b.total - a.total || a.fullName.localeCompare(b.fullName))
 
   const totalTurnover = memberRows.reduce((sum, member) => sum + member.total, 0)
+  const requestCount = requests?.length ?? 0
 
   if (loading) {
     return (
@@ -350,78 +352,48 @@ export function GroupManagement() {
         </section>
 
         <section>
-          <SectionLabel count={(requests ?? []).length}>Aanvragen</SectionLabel>
-          {requestsError ? (
-            <div
-              className="rounded-[14px] px-4 py-[18px] text-center"
-              style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)' }}
-            >
-              <p className="m-0 text-[13px] font-semibold" style={{ color: 'var(--color-danger)' }}>
-                Aanvragen konden niet geladen worden
-              </p>
-            </div>
-          ) : (requests ?? []).length === 0 ? (
-            <div className="rounded-[14px] px-4 py-[18px] text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              <p className="m-0 text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
-                Geen openstaande aanvragen
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {requests!.map((request) => (
-                <div
-                  key={request.id}
-                  className="flex items-center gap-3 rounded-[14px] p-3.5"
-                  style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-                >
-                  <UserAvatar
-                    avatarUrl={request.profiles?.avatar_url}
-                    size={38}
-                    bg="var(--color-primary-pale)"
-                    border="1.5px solid var(--color-primary-border)"
-                    iconColor="var(--color-primary)"
-                  />
-                  <div className="flex-1">
-                    <p className="m-0 text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                      {request.profiles?.full_name ?? 'Onbekend'}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {request.groups?.name && (
-                        <Badge variant="secondary" size="sm">
-                          {request.groups.name}
-                        </Badge>
-                      )}
-                      <Badge variant="muted" size="sm">
-                        {new Date(request.created_at).toLocaleDateString('nl-BE')}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex gap-1.5">
-                    <IconActionButton
-                      onClick={() => resolveRequest(request.id, request.user_id, false, request.groups?.name ?? groupName)}
-                      disabled={actionLoading === request.id}
-                      variant="danger-soft"
-                      aria-label={`Weiger ${request.profiles?.full_name ?? 'aanvraag'}`}
-                    >
-                      <X size={16} color="currentColor" weight="bold" />
-                    </IconActionButton>
-                    <IconActionButton
-                      onClick={() => resolveRequest(request.id, request.user_id, true, request.groups?.name ?? groupName)}
-                      disabled={actionLoading === request.id}
-                      variant="success-soft"
-                      aria-label={`Keur ${request.profiles?.full_name ?? 'aanvraag'} goed`}
-                    >
-                      <Check size={16} color="currentColor" weight="bold" />
-                    </IconActionButton>
-                  </div>
+          <SectionLabel>Aanvragen</SectionLabel>
+          <button
+            type="button"
+            onClick={() => setRequestsDrawerOpen(true)}
+            className="w-full rounded-card px-4 py-3.5 text-left active:opacity-70 transition-opacity"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              fontFamily: 'inherit',
+            }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <IconChip tone={requestsError ? 'danger' : requestCount > 0 ? 'warning' : 'neutral'} icon={Users} size={36} />
+                <div className="min-w-0">
+                  <p className="m-0 truncate text-[13px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                    Openstaande aanvragen
+                  </p>
+                  <p className="m-0 mt-0.5 truncate text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                    {requestsError
+                      ? 'Kon niet geladen worden'
+                      : requestCount === 0
+                        ? 'Geen aanvragen om te behandelen'
+                        : 'Tik om te behandelen'}
+                  </p>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                {requestCount > 0 && (
+                  <Badge variant="secondary" size="sm">
+                    {requestCount} {requestCount === 1 ? 'aanvraag' : 'aanvragen'}
+                  </Badge>
+                )}
+                <CaretRight size={14} color="var(--color-text-muted)" />
+              </div>
             </div>
-          )}
+          </button>
         </section>
 
         <section>
-          <SectionLabel count={members.length}>Leden</SectionLabel>
+          <SectionLabel>Leden</SectionLabel>
           {members.length === 0 ? (
             <div className="rounded-card px-4 py-6 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
               <p className="m-0 text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
@@ -463,6 +435,88 @@ export function GroupManagement() {
           )}
         </section>
       </div>
+
+      <AdminFormDrawer
+        open={requestsDrawerOpen}
+        onOpenChange={setRequestsDrawerOpen}
+        title="Aanvragen"
+        description={groupName ? `Nieuwe leden voor ${groupName}` : undefined}
+        bodyClassName="space-y-3"
+        contentClassName="max-w-md"
+        maxHeight="var(--drawer-max-height-compact)"
+      >
+        {requestsError ? (
+          <div
+            className="rounded-card px-4 py-6 text-center"
+            style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)' }}
+          >
+            <p className="m-0 text-[13px] font-semibold" style={{ color: 'var(--color-danger)' }}>
+              Aanvragen konden niet geladen worden
+            </p>
+          </div>
+        ) : requestCount === 0 ? (
+          <AdminEmptyState
+            icon={Users}
+            title="Geen openstaande aanvragen"
+            description="Nieuwe aanvragen verschijnen hier zodra iemand je groep wil joinen."
+            tone="neutral"
+          />
+        ) : (
+          <section className="space-y-2">
+            <AdminSectionLabel>Te behandelen</AdminSectionLabel>
+            <AdminSurface>
+              {requests!.map((request, index) => (
+                <div
+                  key={request.id}
+                  className="flex items-center gap-3 px-3.5 py-3.5"
+                  style={{ borderTop: index > 0 ? '1px solid var(--color-border)' : undefined }}
+                >
+                  <UserAvatar
+                    avatarUrl={request.profiles?.avatar_url}
+                    size={38}
+                    bg="var(--color-primary-pale)"
+                    border="none"
+                    iconColor="var(--color-primary)"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="m-0 truncate text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                      {request.profiles?.full_name ?? 'Onbekend'}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {request.groups?.name && (
+                        <Badge variant="secondary" size="sm">
+                          {request.groups.name}
+                        </Badge>
+                      )}
+                      <Badge variant="muted" size="sm">
+                        {new Date(request.created_at).toLocaleDateString('nl-BE')}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 gap-1.5">
+                    <IconActionButton
+                      onClick={() => resolveRequest(request.id, request.user_id, false, request.groups?.name ?? groupName)}
+                      disabled={actionLoading === request.id}
+                      variant="danger-soft"
+                      aria-label={`Weiger ${request.profiles?.full_name ?? 'aanvraag'}`}
+                    >
+                      <X size={16} color="currentColor" weight="bold" />
+                    </IconActionButton>
+                    <IconActionButton
+                      onClick={() => resolveRequest(request.id, request.user_id, true, request.groups?.name ?? groupName)}
+                      disabled={actionLoading === request.id}
+                      variant="success-soft"
+                      aria-label={`Keur ${request.profiles?.full_name ?? 'aanvraag'} goed`}
+                    >
+                      <Check size={16} color="currentColor" weight="bold" />
+                    </IconActionButton>
+                  </div>
+                </div>
+              ))}
+            </AdminSurface>
+          </section>
+        )}
+      </AdminFormDrawer>
 
       <AdminFormDrawer
         open={membersDrawerOpen}
