@@ -1,48 +1,68 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../../lib/supabase'
-import { useAuth } from '../../context/AuthContext'
-import { useThemeColor } from '../../hooks/useThemeColor'
+import { CaretRight, CurrencyEur, Receipt } from '@phosphor-icons/react'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminFormDrawer } from '../../components/AdminFormDrawer'
+import { Badge } from '../../components/ui/badge'
+import { CustomSelect } from '../../components/CustomSelect'
 import { IconChip } from '../../components/IconChip'
-import { Receipt } from '@phosphor-icons/react'
 import { Pagination } from '../../components/Pagination'
+import { Spinner } from '../../components/ui/spinner'
+import { useAuth } from '../../context/AuthContext'
 import { usePagination } from '../../hooks/usePagination'
-import type { ConsumptionCategory } from '../../lib/database.types'
+import { useThemeColor } from '../../hooks/useThemeColor'
+import { formatMoney } from '../../lib/formatters'
+import { supabase } from '../../lib/supabase'
+import type { Period } from '../../lib/database.types'
+
+const PAGE_SIZE = 50
 
 interface TxRow {
   id: string
   user_id: string
   full_name: string
+  group_id: string
+  group_name: string
   consumption_name: string
-  category: ConsumptionCategory | null
   quantity: number
   unit_price: number
   total_price: number
   created_at: string
+  period_id: string
 }
 
-interface PeriodOption { id: string; name: string; is_active: boolean }
+function TxDetailRow({ label, value, first = false }: { label: string; value: string; first?: boolean }) {
+  return (
+    <div
+      className="flex items-center justify-between gap-3 px-3.5 py-3"
+      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
+    >
+      <span className="text-[12px] font-bold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
+        {label}
+      </span>
+      <span className="text-[13px] font-bold text-right" style={{ color: 'var(--color-text-primary)' }}>
+        {value}
+      </span>
+    </div>
+  )
+}
 
-function groupByDate<T extends { created_at: string }>(items: T[]) {
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
-  const groups: Record<string, T[]> = {}
-  for (const item of items) {
-    const d = new Date(item.created_at); d.setHours(0, 0, 0, 0)
-    let key: string
-    if (d.getTime() === today.getTime()) key = 'Vandaag'
-    else if (d.getTime() === yesterday.getTime()) key = 'Gisteren'
-    else key = new Date(item.created_at).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long' })
-    if (!groups[key]) groups[key] = []
-    groups[key].push(item)
-  }
-  return groups
+function formatTransactionMoment(iso: string) {
+  return new Date(iso).toLocaleDateString('nl-BE', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function GroupTransactions() {
   useThemeColor('--color-surface')
   const { profile } = useAuth()
+  const [selectedPeriod, setSelectedPeriod] = useState('')
+  const [selectedTxId, setSelectedTxId] = useState<string | null>(null)
 
-  const { data: groupInfo } = useQuery({
+  const { data: groupInfo, isLoading: isGroupLoading } = useQuery({
     queryKey: ['leiding-group', profile?.id],
     enabled: !!profile,
     queryFn: async () => {
@@ -50,8 +70,10 @@ export function GroupTransactions() {
         .from('group_members')
         .select('group_id, groups(name)')
         .eq('user_id', profile!.id)
+
       const memberships = (data ?? []) as unknown as Array<{ group_id: string; groups: { name: string } | null }>
-      const own = memberships.find(m => m.groups?.name !== 'Leiding')
+      const own = memberships.find((membership) => membership.groups?.name !== 'Leiding')
+
       return own ? { id: own.group_id, name: own.groups?.name ?? '' } : null
     },
   })
@@ -59,137 +81,239 @@ export function GroupTransactions() {
   const { data: periods } = useQuery({
     queryKey: ['periods'],
     queryFn: async () => {
-      const { data } = await supabase.from('periods').select('id, name, is_active').order('started_at', { ascending: false })
-      return (data ?? []) as PeriodOption[]
+      const { data } = await supabase.from('periods').select('*').order('started_at', { ascending: false })
+      return (data ?? []) as Period[]
     },
   })
 
-  const activePeriod = periods?.find(p => p.is_active) ?? periods?.[0]
-
-  const { data: transactions, isLoading } = useQuery({
-    queryKey: ['group-transactions', groupInfo?.id, activePeriod?.id],
-    enabled: !!groupInfo && !!activePeriod,
+  const { data: transactions, isLoading: isTransactionsLoading } = useQuery({
+    queryKey: ['group-transactions', groupInfo?.id, selectedPeriod],
+    enabled: !!groupInfo,
     queryFn: async () => {
       const { data: members } = await supabase
         .from('group_members')
         .select('user_id')
         .eq('group_id', groupInfo!.id)
 
-      const userIds = (members ?? []).map(m => m.user_id)
+      const userIds = (members ?? []).map((member) => member.user_id)
       if (!userIds.length) return []
 
-      const { data } = await supabase
+      let query = supabase
         .from('transactions')
-        .select('id, user_id, quantity, unit_price, total_price, created_at, profiles(full_name), consumptions(name, category)')
+        .select('id, user_id, quantity, unit_price, total_price, created_at, period_id, profiles(full_name), consumptions(name)')
         .in('user_id', userIds)
-        .eq('period_id', activePeriod!.id)
         .order('created_at', { ascending: false })
 
+      if (selectedPeriod) query = query.eq('period_id', selectedPeriod)
+
+      const { data } = await query
+
       return ((data ?? []) as unknown as Array<{
-        id: string; user_id: string; quantity: number; unit_price: number
-        total_price: number; created_at: string
-        profiles: { full_name: string } | null
-        consumptions: { name: string; category: string } | null
-      }>).map(r => ({
-        id: r.id,
-        user_id: r.user_id,
-        full_name: r.profiles?.full_name ?? 'Onbekend',
-        consumption_name: r.consumptions?.name ?? 'Onbekend',
-        category: (r.consumptions?.category ?? null) as ConsumptionCategory | null,
-        quantity: r.quantity,
-        unit_price: r.unit_price,
-        total_price: r.total_price,
-        created_at: r.created_at,
-      })) as TxRow[]
+        id: string
+        user_id: string
+        quantity: number
+        unit_price: number
+        total_price: number
+        created_at: string
+        period_id: string
+        profiles: { full_name: string }[] | { full_name: string } | null
+        consumptions: { name: string }[] | { name: string } | null
+      }>).map((row) => {
+        const profileRow = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
+        const consumption = Array.isArray(row.consumptions) ? row.consumptions[0] : row.consumptions
+
+        return {
+          id: row.id,
+          user_id: row.user_id,
+          full_name: profileRow?.full_name ?? 'Onbekend',
+          group_id: groupInfo!.id,
+          group_name: groupInfo!.name,
+          consumption_name: consumption?.name ?? 'Onbekend',
+          quantity: row.quantity,
+          unit_price: row.unit_price,
+          total_price: row.total_price,
+          created_at: row.created_at,
+          period_id: row.period_id,
+        } satisfies TxRow
+      })
     },
   })
 
   const allTx = transactions ?? []
-  const total = allTx.reduce((s, t) => s + t.total_price, 0)
-  const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, 30)
-  const grouped = groupByDate(pageTx)
+  const selectedTx = allTx.find((tx) => tx.id === selectedTxId) ?? null
+  const selectedTxPeriodName = periods?.find((period) => period.id === selectedTx?.period_id)?.name ?? 'Onbekende periode'
+  const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, PAGE_SIZE)
+  const total = allTx.reduce((sum, tx) => sum + tx.total_price, 0)
+  const isLoading = isGroupLoading || isTransactionsLoading
 
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }}>
-      {/* ─── Header ──────────────────────────────── */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 16px' }}>
-        <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Groepstransacties</h1>
-        {groupInfo && activePeriod && (
-          <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{groupInfo.name} · {activePeriod.name}</p>
+        <h1 className="m-0 text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>
+          Groepstransacties
+        </h1>
+        {groupInfo && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <Badge variant="secondary" size="sm">{groupInfo.name}</Badge>
+          </div>
         )}
       </div>
 
-      <div className="px-5 pt-4 space-y-4">
-        {/* ─── Total card ──────────────────────────── */}
-        {(transactions ?? []).length > 0 && (
-          <div className="rounded-card px-4 py-3.5 flex items-center justify-between" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-            <div className="flex items-center gap-2.5">
-              <IconChip tone="primary" icon={Receipt} size={32} />
-              <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{transactions?.length} transacties</span>
-            </div>
-            <span className="text-[18px] font-extrabold tabular-nums tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>
-              € {total.toFixed(2).replace('.', ',')}
-            </span>
+      <div className="px-4 pt-4 space-y-3 pb-content-end-comfort">
+        <section className="space-y-2">
+          <AdminSectionLabel>Transactieoverzicht</AdminSectionLabel>
+          <div className="grid grid-cols-2 gap-2.5">
+            <AdminStatTile
+              label="Aantal"
+              value={String(allTx.length)}
+              icon={Receipt}
+              tone="primary"
+            />
+            <AdminStatTile
+              label="Omzet"
+              value={formatMoney(total)}
+              icon={CurrencyEur}
+              tone="primary"
+              valueTone="primary"
+            />
           </div>
-        )}
+        </section>
 
-        {/* ─── Skeleton ─────────────────────────────── */}
+        <section className="space-y-2">
+          <AdminSectionLabel>Periode</AdminSectionLabel>
+          <CustomSelect
+            value={selectedPeriod}
+            onChange={(value) => {
+              setSelectedPeriod(value)
+              setSelectedTxId(null)
+            }}
+            options={(periods ?? []).map((period) => ({
+              value: period.id,
+              label: period.name,
+              statusDot: period.is_active ? 'success' : undefined,
+            }))}
+            placeholder="Alle periodes"
+            style={{ minWidth: 0 }}
+          />
+        </section>
+
         {isLoading && (
-          <div className="space-y-3" style={{ '--skel-base': 'var(--color-surface-alt)', '--skel-hl': 'var(--color-border)' } as React.CSSProperties}>
-            {[0, 1, 2].map(i => (
-              <div key={i} className="rounded-card p-3.5 flex items-center gap-3" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                <div className="dl-skel w-9 h-9 rounded-chip shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="dl-skel h-3 w-2/3 rounded" />
-                  <div className="dl-skel h-2.5 w-1/3 rounded" />
-                </div>
-                <div className="dl-skel h-4 w-12 rounded" />
-              </div>
-            ))}
+          <div className="flex justify-center mt-8">
+            <Spinner className="size-7" style={{ color: 'var(--color-primary)' }} />
           </div>
         )}
 
-        {/* ─── Empty state ─────────────────────────── */}
-        {!isLoading && allTx.length === 0 && (
-          <div className="rounded-card px-4 py-12 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-            <IconChip tone="primary" icon={Receipt} size={48} />
-            <p className="text-[14px] font-bold mt-3" style={{ color: 'var(--color-text-primary)' }}>Nog geen transacties</p>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Transacties van jouw groep verschijnen hier.</p>
-          </div>
+        {!isLoading && !groupInfo && (
+          <AdminEmptyState
+            icon={Receipt}
+            title="Geen groep gevonden"
+            description="Je account is nog niet gekoppeld aan een groep."
+          />
         )}
 
-        {/* ─── Grouped list ─────────────────────────── */}
-        {Object.entries(grouped).map(([date, items]) => (
-          <section key={date}>
-            <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] mb-2.5 ml-0.5" style={{ color: 'var(--color-text-muted)' }}>{date}</p>
-            <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              {items.map((t, i) => {
-                const time = new Date(t.created_at).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })
-                return (
-                  <div
-                    key={t.id}
-                    className="flex items-center gap-3 px-3.5 py-3.5"
-                    style={{ borderTop: i === 0 ? 'none' : '1px solid var(--color-border)' }}
-                  >
-                    <IconChip tone={t.category ?? 'primary'} size={36} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-bold leading-tight" style={{ color: 'var(--color-text-primary)' }}>{t.consumption_name}</p>
-                      <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                        {t.full_name} · {t.quantity}× · {time}
-                      </p>
+        {!isLoading && groupInfo && allTx.length === 0 && (
+          <AdminEmptyState
+            icon={Receipt}
+            title="Geen transacties gevonden"
+            description="Kies een andere periode of wacht tot er aankopen in jouw groep verschijnen."
+          />
+        )}
+
+        {allTx.length > 0 && (
+          <section className="space-y-2">
+            <AdminSectionLabel>Transacties</AdminSectionLabel>
+            <AdminSurface>
+              {pageTx.map((tx, index) => (
+                <button
+                  key={tx.id}
+                  type="button"
+                  onClick={() => setSelectedTxId(tx.id)}
+                  className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                  style={{
+                    borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <IconChip tone="primary" icon={Receipt} size={34} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                            {tx.full_name}
+                          </p>
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            <Badge
+                              variant="secondary"
+                              size="sm"
+                              className="max-w-full whitespace-normal break-words text-left leading-[1.25]"
+                            >
+                              {tx.consumption_name} x{tx.quantity}
+                            </Badge>
+                            <Badge variant="muted" size="sm">
+                              {formatTransactionMoment(tx.created_at)}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                            {formatMoney(tx.total_price)}
+                          </span>
+                          <CaretRight size={14} color="var(--color-text-muted)" />
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-[15px] font-extrabold tracking-[-0.2px] tabular-nums shrink-0" style={{ color: 'var(--color-text-primary)' }}>
-                      −€{t.total_price.toFixed(2).replace('.', ',')}
-                    </p>
                   </div>
-                )
-              })}
-            </div>
+                </button>
+              ))}
+            </AdminSurface>
           </section>
-        ))}
+        )}
 
         <Pagination page={page} totalPages={totalPages} onPage={onPage} />
       </div>
+
+      <AdminFormDrawer
+        open={!!selectedTx}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTxId(null)
+        }}
+        title={selectedTx?.full_name ?? 'Transactie'}
+        description={selectedTx ? `${selectedTx.group_name} - ${selectedTxPeriodName}` : undefined}
+        bodyClassName="space-y-3"
+      >
+        {selectedTx && (
+          <>
+            <section className="space-y-2">
+              <AdminSectionLabel>Totaal</AdminSectionLabel>
+              <AdminSurface padded>
+                <p className="m-0 text-[24px] font-extrabold tracking-[-0.6px] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                  {formatMoney(selectedTx.total_price)}
+                </p>
+              </AdminSurface>
+            </section>
+
+            <section className="space-y-2">
+              <AdminSectionLabel>Details</AdminSectionLabel>
+              <AdminSurface>
+                <TxDetailRow first label="Consumptie" value={selectedTx.consumption_name} />
+                <TxDetailRow label="Aantal" value={String(selectedTx.quantity)} />
+                <TxDetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
+                <TxDetailRow
+                  label="Moment"
+                  value={new Date(selectedTx.created_at).toLocaleDateString('nl-BE', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                />
+              </AdminSurface>
+            </section>
+          </>
+        )}
+      </AdminFormDrawer>
     </div>
   )
 }

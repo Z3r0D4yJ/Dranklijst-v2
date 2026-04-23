@@ -10,11 +10,15 @@ import { IconChip } from '../../components/IconChip'
 import { UserAvatar } from '../../components/UserAvatar'
 import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
 import { formatMoney } from '../../lib/formatters'
+import { CustomSelect } from '../../components/CustomSelect'
+import type { Period, Role } from '../../lib/database.types'
 
 interface GroupMemberRow {
+  user_id: string
   full_name: string
   role: string
   avatar_url: string | null
+  total: number
 }
 
 interface GroupRow {
@@ -33,16 +37,30 @@ const ROLE_LABELS: Record<string, string> = {
   groepsleiding: 'Groepsleiding',
 }
 
+function normalizeRole(role: string | null | undefined): Role {
+  if (role === 'lid' || role === 'leiding' || role === 'kas' || role === 'groepsleiding') return role
+  if (role === 'admin') return 'kas'
+  return 'lid'
+}
+
 export function Groups() {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
+  const [selectedPeriod, setSelectedPeriod] = useState('')
+
+  const { data: periods } = useQuery({
+    queryKey: ['periods'],
+    queryFn: async () => {
+      const { data } = await supabase.from('periods').select('*').order('started_at', { ascending: false })
+      return (data ?? []) as Period[]
+    },
+  })
 
   const { data: groups, isLoading } = useQuery({
-    queryKey: ['admin-groups'],
+    queryKey: ['admin-groups', selectedPeriod],
     queryFn: async () => {
-      const [{ data: groupsData }, { data: memberships }, { data: activePeriod }] = await Promise.all([
+      const [{ data: groupsData }, { data: memberships }] = await Promise.all([
         supabase.from('groups').select('id, name').order('name'),
         supabase.from('group_members').select('user_id, group_id, profiles(full_name, role, avatar_url)'),
-        supabase.from('periods').select('id').eq('is_active', true).maybeSingle(),
       ])
 
       const memberRows = (memberships ?? []) as unknown as Array<{
@@ -51,24 +69,17 @@ export function Groups() {
         profiles: { full_name: string; role: string; avatar_url: string | null }[] | { full_name: string; role: string; avatar_url: string | null } | null
       }>
 
-      const txMap: Record<string, number> = {}
-      if (activePeriod) {
-        const { data: txData } = await supabase
-          .from('transactions')
-          .select('user_id, total_price')
-          .eq('period_id', activePeriod.id)
+      let txQuery = supabase
+        .from('transactions')
+        .select('user_id, total_price')
 
-        const memberGroupMap: Record<string, string> = {}
-        for (const member of memberRows) {
-          memberGroupMap[member.user_id] = member.group_id
-        }
+      if (selectedPeriod) txQuery = txQuery.eq('period_id', selectedPeriod)
 
-        for (const tx of (txData ?? []) as Array<{ user_id: string; total_price: number }>) {
-          const groupId = memberGroupMap[tx.user_id]
-          if (groupId) {
-            txMap[groupId] = (txMap[groupId] ?? 0) + tx.total_price
-          }
-        }
+      const { data: txData } = await txQuery
+      const memberTotals: Record<string, number> = {}
+
+      for (const tx of (txData ?? []) as Array<{ user_id: string; total_price: number }>) {
+        memberTotals[tx.user_id] = (memberTotals[tx.user_id] ?? 0) + tx.total_price
       }
 
       return ((groupsData ?? []) as Array<{ id: string; name: string }>).map((group) => {
@@ -77,17 +88,20 @@ export function Groups() {
           .map((member) => {
             const profile = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles
             return {
+              user_id: member.user_id,
               full_name: profile?.full_name ?? 'Onbekend',
               role: profile?.role ?? 'lid',
               avatar_url: profile?.avatar_url ?? null,
+              total: memberTotals[member.user_id] ?? 0,
             }
           })
+          .sort((a, b) => b.total - a.total || a.full_name.localeCompare(b.full_name))
 
         return {
           id: group.id,
           name: group.name,
           memberCount: groupMembers.length,
-          total: txMap[group.id] ?? 0,
+          total: groupMembers.reduce((sum, member) => sum + member.total, 0),
           members: groupMembers,
         } satisfies GroupRow
       })
@@ -125,6 +139,24 @@ export function Groups() {
             valueTone="primary"
           />
         </div>
+      </section>
+
+      <section className="space-y-2">
+        <AdminSectionLabel>Periode</AdminSectionLabel>
+        <CustomSelect
+          value={selectedPeriod}
+          onChange={(value) => {
+            setSelectedPeriod(value)
+            setSelectedGroupId(null)
+          }}
+          options={(periods ?? []).map((period) => ({
+            value: period.id,
+            label: period.name,
+            statusDot: period.is_active ? 'success' : undefined,
+          }))}
+          placeholder="Alle periodes"
+          style={{ minWidth: 0 }}
+        />
       </section>
 
       <section className="space-y-2">
@@ -180,21 +212,21 @@ export function Groups() {
           <>
             <section className="space-y-2">
               <AdminSectionLabel>Overzicht</AdminSectionLabel>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <AdminStatTile
-                    label="Leden"
-                    value={String(selectedGroup.memberCount)}
-                    icon={Users}
-                    tone="primary"
-                  />
-                  <AdminStatTile
-                    label="Omzet"
-                    value={formatMoney(selectedGroup.total)}
-                    icon={CurrencyEur}
-                    tone="primary"
-                    valueTone="primary"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <AdminStatTile
+                  label="Leden"
+                  value={String(selectedGroup.memberCount)}
+                  icon={Users}
+                  tone="primary"
+                />
+                <AdminStatTile
+                  label="Omzet"
+                  value={formatMoney(selectedGroup.total)}
+                  icon={CurrencyEur}
+                  tone="primary"
+                  valueTone="primary"
+                />
+              </div>
             </section>
 
             {selectedGroup.members.length === 0 ? (
@@ -207,29 +239,38 @@ export function Groups() {
               <section className="space-y-2">
                 <AdminSectionLabel>Leden</AdminSectionLabel>
                 <AdminSurface>
-                {selectedGroup.members.map((member, index) => (
-                  <div
-                    key={`${member.full_name}-${index}`}
-                    className="flex items-center gap-3 px-3.5 py-3.5"
-                    style={{ borderTop: index > 0 ? '1px solid var(--color-border)' : undefined }}
-                  >
-                    <UserAvatar
-                      avatarUrl={member.avatar_url}
-                      size={36}
-                      bg="var(--color-primary-pale)"
-                      border="none"
-                      iconColor="var(--color-primary)"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
-                        {member.full_name}
-                      </p>
-                    </div>
-                    <Badge variant={ROLE_BADGE_VARIANT[member.role as keyof typeof ROLE_BADGE_VARIANT] ?? 'secondary'} size="sm">
-                      {ROLE_LABELS[member.role] ?? member.role}
-                    </Badge>
-                  </div>
-                ))}
+                  {selectedGroup.members.map((member, index) => {
+                    const memberRole = normalizeRole(member.role)
+
+                    return (
+                      <div
+                        key={`${member.user_id}-${index}`}
+                        className="flex items-center gap-3 px-3.5 py-3.5"
+                        style={{ borderTop: index > 0 ? '1px solid var(--color-border)' : undefined }}
+                      >
+                        <UserAvatar
+                          avatarUrl={member.avatar_url}
+                          size={36}
+                          bg="var(--color-primary-pale)"
+                          border="none"
+                          iconColor="var(--color-primary)"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
+                            {member.full_name}
+                          </p>
+                          <div className="mt-1 flex flex-wrap gap-1.5">
+                            <Badge variant={ROLE_BADGE_VARIANT[memberRole]} size="sm">
+                              {ROLE_LABELS[member.role] ?? ROLE_LABELS[memberRole] ?? 'Lid'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <span className="shrink-0 text-[15px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                          {formatMoney(member.total)}
+                        </span>
+                      </div>
+                    )
+                  })}
                 </AdminSurface>
               </section>
             )}

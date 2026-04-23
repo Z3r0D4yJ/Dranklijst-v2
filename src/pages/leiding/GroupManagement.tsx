@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { Check, X, Trash, ArrowsClockwise, Copy, CheckCircle } from '@phosphor-icons/react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowsClockwise, CaretRight, Check, CheckCircle, Copy, CurrencyEur, Trash, Users, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Spinner } from '../../components/ui/spinner'
 import { UserAvatar } from '../../components/UserAvatar'
@@ -11,6 +11,13 @@ import { useThemeColor } from '../../hooks/useThemeColor'
 import { useJoinRequests } from '../../hooks/useJoinRequests'
 import { Badge } from '../../components/ui/badge'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
+import { CustomSelect } from '../../components/CustomSelect'
+import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface } from '../../components/AdminThemePrimitives'
+import { AdminFormDrawer } from '../../components/AdminFormDrawer'
+import { IconChip } from '../../components/IconChip'
+import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
+import { formatMoney } from '../../lib/formatters'
+import type { Period, Role } from '../../lib/database.types'
 
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -55,6 +62,12 @@ function SectionLabel({ children, count }: { children: React.ReactNode; count?: 
   )
 }
 
+function normalizeRole(role: string | null | undefined): Role {
+  if (role === 'lid' || role === 'leiding' || role === 'kas' || role === 'groepsleiding') return role
+  if (role === 'admin') return 'kas'
+  return 'lid'
+}
+
 export function GroupManagement() {
   useThemeColor('--color-surface')
   const { profile } = useAuth()
@@ -67,8 +80,41 @@ export function GroupManagement() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [codeLoading, setCodeLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [selectedPeriod, setSelectedPeriod] = useState('')
+  const [membersDrawerOpen, setMembersDrawerOpen] = useState(false)
 
   const { data: requests } = useJoinRequests(groupId)
+
+  const { data: periods } = useQuery({
+    queryKey: ['periods'],
+    queryFn: async () => {
+      const { data } = await supabase.from('periods').select('*').order('started_at', { ascending: false })
+      return (data ?? []) as Period[]
+    },
+  })
+
+  const { data: memberTotals } = useQuery({
+    queryKey: ['leiding-member-turnover', groupId, members.map((member) => member.user_id).join(','), selectedPeriod],
+    enabled: !!groupId && members.length > 0,
+    queryFn: async () => {
+      const memberIds = members.map((member) => member.user_id)
+      let query = supabase
+        .from('transactions')
+        .select('user_id, total_price')
+        .in('user_id', memberIds)
+
+      if (selectedPeriod) query = query.eq('period_id', selectedPeriod)
+
+      const { data } = await query
+      const totals: Record<string, number> = {}
+
+      for (const tx of (data ?? []) as Array<{ user_id: string; total_price: number }>) {
+        totals[tx.user_id] = (totals[tx.user_id] ?? 0) + tx.total_price
+      }
+
+      return totals
+    },
+  })
 
   useEffect(() => {
     void loadData()
@@ -174,6 +220,18 @@ export function GroupManagement() {
     toast.success('Link gekopieerd!')
   }
 
+  const memberRows = members
+    .map((member) => ({
+      ...member,
+      total: memberTotals?.[member.user_id] ?? 0,
+      role: normalizeRole(member.profiles?.role),
+      fullName: member.profiles?.full_name ?? 'Onbekend',
+      avatarUrl: member.profiles?.avatar_url ?? null,
+    }))
+    .sort((a, b) => b.total - a.total || a.fullName.localeCompare(b.fullName))
+
+  const totalTurnover = memberRows.reduce((sum, member) => sum + member.total, 0)
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
@@ -188,12 +246,30 @@ export function GroupManagement() {
         <h1 className="m-0 mb-0.5 text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>
           Groepsbeheer
         </h1>
-        <p className="m-0 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-          {groupName} - {members.length} leden
-        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <Badge variant="secondary" size="sm">{groupName}</Badge>
+          <Badge variant="muted" size="sm">
+            {members.length} {members.length === 1 ? 'lid' : 'leden'}
+          </Badge>
+        </div>
       </div>
 
       <div className="flex flex-col gap-5 px-5 pt-4 pb-content-end-comfort">
+        <section>
+          <SectionLabel>Periode</SectionLabel>
+          <CustomSelect
+            value={selectedPeriod}
+            onChange={setSelectedPeriod}
+            options={(periods ?? []).map((period) => ({
+              value: period.id,
+              label: period.name,
+              statusDot: period.is_active ? 'success' : undefined,
+            }))}
+            placeholder="Alle periodes"
+            style={{ minWidth: 0 }}
+          />
+        </section>
+
         <section>
           <SectionLabel>Uitnodigingslink</SectionLabel>
           <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
@@ -273,9 +349,11 @@ export function GroupManagement() {
                     <p className="m-0 text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
                       {request.profiles?.full_name ?? 'Onbekend'}
                     </p>
-                    <p className="m-0 mt-0.5 text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
-                      {new Date(request.created_at).toLocaleDateString('nl-BE')}
-                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      <Badge variant="muted" size="sm">
+                        {new Date(request.created_at).toLocaleDateString('nl-BE')}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="flex gap-1.5">
                     <IconActionButton
@@ -310,43 +388,114 @@ export function GroupManagement() {
               </p>
             </div>
           ) : (
-            <div className="rounded-card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-              {members.map((member, index) => {
+            <button
+              type="button"
+              onClick={() => setMembersDrawerOpen(true)}
+              className="w-full rounded-card px-4 py-3.5 text-left active:opacity-70 transition-opacity"
+              style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                fontFamily: 'inherit',
+              }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <IconChip tone="primary" icon={Users} size={36} />
+                  <div className="min-w-0">
+                    <p className="m-0 truncate text-[13px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                      {groupName}
+                    </p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <Badge variant="secondary" size="sm">{members.length} {members.length === 1 ? 'lid' : 'leden'}</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                    {formatMoney(totalTurnover)}
+                  </span>
+                  <CaretRight size={14} color="var(--color-text-muted)" />
+                </div>
+              </div>
+            </button>
+          )}
+        </section>
+      </div>
+
+      <AdminFormDrawer
+        open={membersDrawerOpen}
+        onOpenChange={setMembersDrawerOpen}
+        title={groupName || 'Groep'}
+        bodyClassName="space-y-3"
+        contentClassName="max-w-md"
+        maxHeight="var(--drawer-max-height-compact)"
+      >
+        <section className="space-y-2">
+          <AdminSectionLabel>Overzicht</AdminSectionLabel>
+          <div className="grid grid-cols-2 gap-2.5">
+            <AdminStatTile
+              label="Leden"
+              value={String(memberRows.length)}
+              icon={Users}
+              tone="primary"
+            />
+            <AdminStatTile
+              label="Omzet"
+              value={formatMoney(totalTurnover)}
+              icon={CurrencyEur}
+              tone="primary"
+              valueTone="primary"
+            />
+          </div>
+        </section>
+
+        {memberRows.length === 0 ? (
+          <AdminEmptyState
+            icon={Users}
+            title="Nog geen leden"
+            description="Leden van deze groep verschijnen hier zodra ze gekoppeld zijn."
+          />
+        ) : (
+          <section className="space-y-2">
+            <AdminSectionLabel>Leden</AdminSectionLabel>
+            <AdminSurface>
+              {memberRows.map((member, index) => {
                 const isSelf = member.user_id === profile?.id
 
                 return (
                   <div
-                    key={member.id}
-                    className="flex items-center gap-3 px-3.5 py-3"
-                    style={{ borderTop: index === 0 ? 'none' : '1px solid var(--color-border)' }}
+                    key={`${member.user_id}-${index}`}
+                    className="flex items-center gap-3 px-3.5 py-3.5"
+                    style={{ borderTop: index > 0 ? '1px solid var(--color-border)' : undefined }}
                   >
                     <UserAvatar
-                      avatarUrl={member.profiles?.avatar_url}
-                      size={38}
-                      bg={isSelf ? 'var(--color-accent-bg)' : 'var(--color-surface-alt)'}
-                      border={`1.5px solid ${isSelf ? 'var(--color-accent-border)' : 'var(--color-border)'}`}
-                      iconColor={isSelf ? 'var(--color-accent)' : 'var(--color-text-secondary)'}
+                      avatarUrl={member.avatarUrl}
+                      size={36}
+                      bg="var(--color-primary-pale)"
+                      border="none"
+                      iconColor="var(--color-primary)"
                     />
-                    <div className="flex-1">
-                      <p className="m-0 text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                        {member.profiles?.full_name ?? 'Onbekend'}
-                        {isSelf && (
-                          <span className="ml-1.5 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                            (jij)
-                          </span>
-                        )}
+                    <div className="min-w-0 flex-1">
+                      <p className="m-0 truncate text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                        {member.fullName}
                       </p>
-                      <p className="m-0 mt-0.5 text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
-                        {ROLE_LABELS[member.profiles?.role ?? 'lid'] ?? 'Lid'}
-                      </p>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        <Badge variant={ROLE_BADGE_VARIANT[member.role]} size="sm">
+                          {ROLE_LABELS[member.role] ?? 'Lid'}
+                        </Badge>
+                      </div>
                     </div>
+                    <span className="shrink-0 text-[15px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                      {formatMoney(member.total)}
+                    </span>
                     {!isSelf && (
                       <IconActionButton
                         onClick={() => removeMember(member.id, member.user_id)}
                         disabled={actionLoading === member.id}
                         variant="danger-soft"
                         size="sm"
-                        aria-label={`Verwijder ${member.profiles?.full_name ?? 'lid'}`}
+                        aria-label={`Verwijder ${member.fullName}`}
                       >
                         <Trash size={14} color="currentColor" />
                       </IconActionButton>
@@ -354,10 +503,10 @@ export function GroupManagement() {
                   </div>
                 )
               })}
-            </div>
-          )}
-        </section>
-      </div>
+            </AdminSurface>
+          </section>
+        )}
+      </AdminFormDrawer>
     </div>
   )
 }
