@@ -327,6 +327,7 @@ export function GroupManagement() {
                 <ActionPillButton
                   onClick={copyLink}
                   variant={copied ? 'success-soft' : 'primary-soft'}
+                  size="md"
                   className="w-full"
                 >
                   {copied ? <CheckCircle size={14} color="currentColor" weight="fill" /> : <Copy size={14} color="currentColor" />}
