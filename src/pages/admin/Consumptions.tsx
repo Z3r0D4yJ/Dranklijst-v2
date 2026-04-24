@@ -223,17 +223,7 @@ export function Consumptions() {
               </ActionPillButton>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              <ActionPillButton
-                onClick={save}
-                disabled={loading}
-                variant="accent"
-                size="md"
-                className="w-full"
-              >
-                <Check size={14} weight="bold" />
-                {loading ? 'Opslaan...' : 'Opslaan'}
-              </ActionPillButton>
+            <div className={editing ? 'grid grid-cols-2 gap-2' : undefined}>
               {editing && (
                 <ActionPillButton
                   type="button"
@@ -247,6 +237,16 @@ export function Consumptions() {
                   Verwijderen
                 </ActionPillButton>
               )}
+              <ActionPillButton
+                onClick={save}
+                disabled={loading}
+                variant="accent"
+                size="md"
+                className={editing ? 'w-full' : 'w-full'}
+              >
+                <Check size={14} weight="bold" />
+                {loading ? 'Opslaan...' : 'Opslaan'}
+              </ActionPillButton>
             </div>
           )
         }
