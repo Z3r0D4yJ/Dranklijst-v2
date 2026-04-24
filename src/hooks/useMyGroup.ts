@@ -21,12 +21,6 @@ export function useMyGroup() {
         groups: { id: string; name: string } | null
       }>
 
-      // Leiding and kas buy in the shared Leiding context, while managing their own age group separately.
-      if (profile?.role === 'leiding' || profile?.role === 'kas') {
-        const leiding = memberships.find(m => m.groups?.name === 'Leiding')
-        if (leiding?.groups) return leiding.groups
-      }
-
       return memberships.find(m => m.groups?.name !== 'Leiding')?.groups ?? null
     },
   })

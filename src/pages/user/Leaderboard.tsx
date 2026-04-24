@@ -125,8 +125,8 @@ export function Leaderboard() {
 
   const visibleGroups = isLeaderLike
     ? [...baseVisibleGroups].sort((a, b) => {
-      const priorityA = a.group_name === 'Leiding' ? 0 : a.group_id === ownLeaderGroupId ? 1 : 2
-      const priorityB = b.group_name === 'Leiding' ? 0 : b.group_id === ownLeaderGroupId ? 1 : 2
+      const priorityA = a.group_id === ownLeaderGroupId ? 0 : 1
+      const priorityB = b.group_id === ownLeaderGroupId ? 0 : 1
 
       if (priorityA !== priorityB) return priorityA - priorityB
       return a.group_name.localeCompare(b.group_name)
