@@ -25,7 +25,7 @@ export function Pagination({ page, totalPages, onPage }: Props) {
       key={String(target) + String(active)}
       onClick={() => !disabled && onPage(target)}
       disabled={disabled}
-      className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[13px] font-bold transition-colors disabled:opacity-30"
+      className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[13px] font-bold transition-colors disabled:opacity-50"
       style={{
         background: active ? 'var(--color-primary)' : 'var(--color-surface-alt)',
         color: active ? 'var(--color-white)' : 'var(--color-text-secondary)',

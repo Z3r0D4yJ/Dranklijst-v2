@@ -91,7 +91,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
           <button
             onClick={() => setQuantity((current) => Math.max(1, current - 1))}
             disabled={quantity <= 1}
-            className="h-[52px] w-[52px] rounded-2xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30"
+            className="h-[52px] w-[52px] rounded-2xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
             style={{ background: 'var(--color-surface-alt)' }}
           >
             <Minus size={22} color="var(--color-text-primary)" weight="bold" />
@@ -113,7 +113,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
           <button
             onClick={() => setQuantity((current) => Math.min(20, current + 1))}
             disabled={quantity >= 20}
-            className="h-[52px] w-[52px] rounded-2xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30"
+            className="h-[52px] w-[52px] rounded-2xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
             style={{ background: 'var(--color-primary-pale)', border: '1px solid var(--color-primary-border)' }}
           >
             <Plus size={22} color="var(--color-primary)" weight="bold" />

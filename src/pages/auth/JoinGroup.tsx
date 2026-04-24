@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Users, Hash, ArrowRight, CheckCircle, Clock, PaperPlaneTilt } from '@phosphor-icons/react'
+import { Users, Hash, ArrowRight, ArrowLeft, CheckCircle, Clock, PaperPlaneTilt } from '@phosphor-icons/react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Spinner } from '../../components/ui/spinner'
@@ -148,7 +148,7 @@ export function JoinGroup() {
           <button
             onClick={() => navigate('/', { replace: true })}
             className="flex w-full items-center justify-center gap-2 rounded-[14px] py-3.5 text-[14px] font-bold transition-transform active:scale-[0.98]"
-            style={{ background: 'var(--color-primary)', color: 'white' }}
+            style={{ background: 'var(--color-primary)', color: 'var(--color-white)' }}
           >
             Naar de app
             <ArrowRight size={18} />
@@ -252,10 +252,11 @@ export function JoinGroup() {
           <div className="space-y-4">
             <button
               onClick={() => setMode('browse')}
-              className="flex items-center gap-1 text-[13px] font-semibold"
+              className="flex items-center gap-1.5 text-[13px] font-semibold active:opacity-70 transition-opacity"
               style={{ color: 'var(--color-primary)' }}
             >
-              {'<-'} Terug naar groepen
+              <ArrowLeft size={15} weight="bold" />
+              Terug naar groepen
             </button>
 
             <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
@@ -291,8 +292,8 @@ export function JoinGroup() {
             <button
               onClick={handleJoinCode}
               disabled={code.trim().length < 6 || codeLoading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl px-4 text-[14px] font-semibold transition-transform active:scale-[0.98] disabled:opacity-40"
-              style={{ background: 'var(--color-primary)', color: '#fff', height: 'var(--control-height)' }}
+              className="flex w-full items-center justify-center gap-2 rounded-[14px] px-4 text-[14px] font-bold transition-transform active:scale-[0.98] disabled:opacity-50"
+              style={{ background: 'var(--color-primary)', color: 'var(--color-white)', height: 'var(--control-height)' }}
             >
               {codeLoading ? 'Bezig...' : 'Deelnemen'}
               {!codeLoading && <ArrowRight size={18} />}
