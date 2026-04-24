@@ -87,18 +87,10 @@ export function GroupTransactions() {
     queryKey: ['group-transactions', groupInfo?.id, selectedPeriod],
     enabled: !!groupInfo,
     queryFn: async () => {
-      const { data: members } = await supabase
-        .from('group_members')
-        .select('user_id')
-        .eq('group_id', groupInfo!.id)
-
-      const userIds = (members ?? []).map((member) => member.user_id)
-      if (!userIds.length) return []
-
       let query = supabase
         .from('transactions')
         .select('id, user_id, quantity, unit_price, total_price, created_at, period_id, profiles(full_name), consumptions(name, category, icon, color)')
-        .in('user_id', userIds)
+        .eq('group_id', groupInfo!.id)
         .order('created_at', { ascending: false })
 
       if (selectedPeriod) query = query.eq('period_id', selectedPeriod)

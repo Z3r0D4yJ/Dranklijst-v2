@@ -286,10 +286,11 @@ export function Home() {
       ))}
 
       {/* ─── Buy modal ──────────────────────────── */}
-      {selected && period && (
+      {selected && period && group && (
         <BuyModal
           item={selected}
           periodId={period.id}
+          groupId={group.id}
           onClose={() => setSelected(null)}
           onSuccess={handleSuccess}
         />

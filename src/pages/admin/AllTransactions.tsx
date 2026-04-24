@@ -72,10 +72,11 @@ export function AllTransactions() {
     queryFn: async () => {
       let query = supabase
         .from('transactions')
-        .select('id, user_id, quantity, unit_price, total_price, created_at, period_id, profiles(full_name), consumptions(name, category, icon, color)')
+        .select('id, user_id, quantity, unit_price, total_price, created_at, period_id, group_id, profiles(full_name), consumptions(name, category, icon, color), groups(id, name)')
         .order('created_at', { ascending: false })
 
       if (selectedPeriod) query = query.eq('period_id', selectedPeriod)
+      if (selectedGroup) query = query.eq('group_id', selectedGroup)
 
       const { data } = await query
 
@@ -87,36 +88,25 @@ export function AllTransactions() {
         total_price: number
         created_at: string
         period_id: string
+        group_id: string | null
         profiles: { full_name: string }[] | { full_name: string } | null
         consumptions:
           | { name: string; category: ConsumptionCategory | null; icon: string | null; color: string | null }[]
           | { name: string; category: ConsumptionCategory | null; icon: string | null; color: string | null }
           | null
+        groups: { id: string; name: string }[] | { id: string; name: string } | null
       }>
 
-      const userIds = [...new Set(rows.map((row) => row.user_id))]
-      const { data: memberships } = await supabase
-        .from('group_members')
-        .select('user_id, groups(id, name)')
-        .in('user_id', userIds.length ? userIds : ['none'])
-
-      const memberMap: Record<string, { id: string; name: string }> = {}
-      for (const membership of (memberships ?? []) as unknown as Array<{ user_id: string; groups: { id: string; name: string }[] | { id: string; name: string } | null }>) {
-        const group = Array.isArray(membership.groups) ? membership.groups[0] : membership.groups
-        if (group && group.name !== 'Leiding') {
-          memberMap[membership.user_id] = group
-        }
-      }
-
-      const mapped: TxRow[] = rows.map((row) => {
+      return rows.map((row) => {
         const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
         const consumption = Array.isArray(row.consumptions) ? row.consumptions[0] : row.consumptions
+        const group = Array.isArray(row.groups) ? row.groups[0] : row.groups
         return {
           id: row.id,
           user_id: row.user_id,
           full_name: profile?.full_name ?? 'Onbekend',
-          group_id: memberMap[row.user_id]?.id ?? '',
-          group_name: memberMap[row.user_id]?.name ?? '-',
+          group_id: group?.id ?? row.group_id ?? '',
+          group_name: group?.name ?? '-',
           consumption_name: consumption?.name ?? 'Onbekend',
           category: consumption?.category ?? null,
           icon: consumption?.icon ?? null,
@@ -127,13 +117,7 @@ export function AllTransactions() {
           created_at: row.created_at,
           period_id: row.period_id,
         }
-      })
-
-      if (selectedGroup) {
-        return mapped.filter((row) => row.group_id === selectedGroup)
-      }
-
-      return mapped
+      }) as TxRow[]
     },
   })
 

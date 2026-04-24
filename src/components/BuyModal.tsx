@@ -13,6 +13,7 @@ import type { IconChipTone } from './IconChip'
 interface Props {
   item: GroupConsumptionItem
   periodId: string
+  groupId: string
   onClose: () => void
   onSuccess: () => void
 }
@@ -27,7 +28,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'niet-alcoholisch': 'Frisdrank',
 }
 
-export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
+export function BuyModal({ item, periodId, groupId, onClose, onSuccess }: Props) {
   const { user } = useAuth()
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -42,6 +43,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
       user_id: user.id,
       consumption_id: item.consumption_id,
       period_id: periodId,
+      group_id: groupId,
       quantity,
       unit_price: item.price,
     })
