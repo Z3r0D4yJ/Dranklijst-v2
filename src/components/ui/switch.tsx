@@ -29,11 +29,11 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
     >
       <span
         className={[
-          'pointer-events-none block h-5 w-5 rounded-full bg-white',
+          'pointer-events-none block h-5 w-5 rounded-full',
           'transition-transform duration-200 ease-in-out',
           checked ? 'translate-x-5' : 'translate-x-0',
         ].join(' ')}
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}
+        style={{ background: 'var(--color-white)' }}
       />
     </button>
   )

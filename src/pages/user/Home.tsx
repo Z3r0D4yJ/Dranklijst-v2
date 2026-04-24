@@ -78,6 +78,7 @@ export function Home() {
     setSelected(null)
     queryClient.invalidateQueries({ queryKey: ['transactions'] })
     queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
+    queryClient.invalidateQueries({ queryKey: ['my-groups'] })
     toast.success(`${name} gekocht`)
   }, [selected, queryClient])
 
@@ -122,7 +123,7 @@ export function Home() {
             {unreadCount > 0 && (
               <span
                 className="absolute top-[7px] right-[8px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center text-[9px] font-extrabold"
-                style={{ background: 'var(--color-accent)', color: '#fff', border: '1.5px solid var(--color-header)', padding: '0 3px' }}
+                style={{ background: 'var(--color-accent)', color: 'var(--color-white)', border: '1.5px solid var(--color-header)', padding: '0 3px' }}
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>

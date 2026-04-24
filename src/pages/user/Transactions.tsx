@@ -145,7 +145,7 @@ export function Transactions() {
         {/* ─── Total card ──────────────────────────── */}
         <div
           className="rounded-card overflow-hidden relative dl-stagger-card"
-          style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff', animationDelay: '40ms' }}
+          style={{ background: 'var(--color-primary)', padding: '18px 20px', color: 'var(--color-white)', animationDelay: '40ms' }}
         >
           <img
             src="/fox.png"
@@ -160,7 +160,7 @@ export function Transactions() {
           )}
           {payment && (
             <Badge variant="onPrimary" className="gap-1.5 px-3 relative">
-              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-white)' }} />
               {STATUS_LABEL[payment.status] ?? payment.status}
             </Badge>
           )}
@@ -202,7 +202,6 @@ export function Transactions() {
                     style={{
                       borderTop: i === 0 ? 'none' : '1px solid var(--color-border)',
                       animationDelay: `${120 + i * 45}ms`,
-                      fontFamily: 'inherit',
                     }}
                   >
                     <IconChip

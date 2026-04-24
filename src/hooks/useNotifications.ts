@@ -36,18 +36,26 @@ export function useNotifications() {
   async function markAllRead() {
     if (!profile || unreadCount === 0) return
     const unreadIds = (query.data ?? []).filter(n => !n.is_read).map(n => n.id)
+    const snapshot = queryClient.getQueryData<AppNotification[]>(['notifications', profile.id])
     queryClient.setQueryData<AppNotification[]>(['notifications', profile.id], old =>
       (old ?? []).map(n => ({ ...n, is_read: true }))
     )
-    await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds)
+    const { error } = await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds)
+    if (error) {
+      queryClient.setQueryData(['notifications', profile.id], snapshot)
+    }
   }
 
   async function markRead(id: string) {
     if (!profile) return
+    const snapshot = queryClient.getQueryData<AppNotification[]>(['notifications', profile.id])
     queryClient.setQueryData<AppNotification[]>(['notifications', profile.id], old =>
       (old ?? []).map(n => n.id === id ? { ...n, is_read: true } : n)
     )
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id)
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id)
+    if (error) {
+      queryClient.setQueryData(['notifications', profile.id], snapshot)
+    }
   }
 
   return { ...query, unreadCount, markAllRead, markRead }

@@ -18,20 +18,19 @@ export function ProtectedRoute({ minRole = 'lid' }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <Spinner className="size-8" style={{ color: 'var(--color-primary)' }} />
       </div>
     )
   }
 
   if (!session) return <Navigate to="/login" replace />
+  if (!profile) return <Navigate to="/login" replace />
 
-  const currentRank = profile?.role ? (ROLE_RANK[profile.role] ?? 0) : 0
-  const requiredRank = ROLE_RANK[minRole]
+  const currentRank = ROLE_RANK[profile.role] ?? 0
+  const requiredRank = ROLE_RANK[minRole] ?? 0
 
-  if (profile && currentRank < requiredRank) {
-    return <Navigate to="/" replace />
-  }
+  if (currentRank < requiredRank) return <Navigate to="/" replace />
 
   return <Outlet />
 }

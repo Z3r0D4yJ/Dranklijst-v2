@@ -116,17 +116,16 @@ export function Login() {
             className="w-full shrink-0 text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 mt-1"
             style={{
               background: 'var(--color-primary)',
-              color: 'white',
+              color: 'var(--color-white)',
               height: 'var(--control-height)',
               padding: '0 14px',
               borderRadius: 14,
               border: 'none',
-              fontFamily: 'inherit',
             }}
           >
             {loading ? (
               <>
-                <Spinner className="size-4 shrink-0" style={{ color: '#fff' }} />
+                <Spinner className="size-4 shrink-0" style={{ color: 'var(--color-white)' }} />
                 Bezig met inloggen…
               </>
             ) : 'Inloggen'}

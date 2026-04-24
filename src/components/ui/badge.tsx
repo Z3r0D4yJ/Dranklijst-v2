@@ -7,7 +7,7 @@ export const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white',
+        default: 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-white)]',
         secondary: 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)]',
         outline: 'border-[var(--color-border-mid)] bg-transparent text-[var(--color-text-secondary)]',
         primary: 'border-[var(--color-primary-border)] bg-[var(--color-primary-pale)] text-[var(--color-primary)]',
@@ -16,7 +16,7 @@ export const badgeVariants = cva(
         danger: 'border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] text-[var(--color-danger)]',
         muted: 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]',
         glass: 'border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.14)] text-[var(--color-header-fg)]',
-        onPrimary: 'border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.16)] text-white',
+        onPrimary: 'border-[rgba(255,255,255,0.16)] bg-[rgba(255,255,255,0.16)] text-[var(--color-white)]',
       },
       size: {
         xs: 'h-4 px-1.5 text-[9px]',

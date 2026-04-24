@@ -73,8 +73,8 @@ export function JoinViaCode() {
             <Users size={32} color="var(--color-primary)" />
           </div>
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Je bent uitgenodigd!</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+            <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Je bent uitgenodigd!</h1>
+            <p className="text-[13px] font-medium mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               Log in of maak een account aan om deel te nemen.
             </p>
           </div>
@@ -82,7 +82,8 @@ export function JoinViaCode() {
             <Link
               to="/register"
               onClick={() => sessionStorage.setItem('pendingInviteCode', code ?? '')}
-              className="w-full flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3 rounded-xl text-sm active:scale-[0.98] transition-transform"
+              className="w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-[14px] text-[14px] active:scale-[0.98] transition-transform"
+              style={{ background: 'var(--color-primary)', color: 'var(--color-white)' }}
             >
               Account aanmaken
               <ArrowRight size={18} />
@@ -117,14 +118,15 @@ export function JoinViaCode() {
             <CheckCircle size={36} color="var(--color-success)" weight="fill" />
           </div>
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Aanvraag verzonden</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+            <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Aanvraag verzonden</h1>
+            <p className="text-[13px] font-medium mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               Je aanvraag voor {groupName} is doorgestuurd naar de leiding of kas.
             </p>
           </div>
           <button
             onClick={() => navigate('/', { replace: true })}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3 rounded-xl text-sm active:scale-[0.98] transition-transform"
+            className="w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-[14px] text-[14px] active:scale-[0.98] transition-transform"
+            style={{ background: 'var(--color-primary)', color: 'var(--color-white)' }}
           >
             Naar de app
             <ArrowRight size={18} />
@@ -141,8 +143,8 @@ export function JoinViaCode() {
           <WarningCircle size={36} color="var(--color-danger)" weight="fill" />
         </div>
         <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Ongeldige link</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>{errorMsg}</p>
+          <h1 className="text-[22px] font-extrabold tracking-[-0.5px]" style={{ color: 'var(--color-text-primary)' }}>Ongeldige link</h1>
+          <p className="text-[13px] font-medium mt-1" style={{ color: 'var(--color-text-secondary)' }}>{errorMsg}</p>
         </div>
         <button
           onClick={() => navigate('/', { replace: true })}

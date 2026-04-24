@@ -17,10 +17,6 @@ export function usePushSubscription() {
       const hasPush = !!reg.pushManager
       setSupported(hasPush)
       reg.pushManager.getSubscription().then(sub => setSubscribed(!!sub))
-
-      if (hasPush && user && 'Notification' in window && Notification.permission === 'default') {
-        subscribeToPush(user.id).then(ok => setSubscribed(ok))
-      }
     })
   }, [user])
 

@@ -226,7 +226,7 @@ export function Periods() {
             <button
               type="button"
               onClick={() => goToTransactions(period.id)}
-              className="w-full rounded-[12px] px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
+              className="w-full rounded-chip px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
               style={{
                 background: 'var(--color-surface-alt)',
                 border: '1px solid var(--color-border)',

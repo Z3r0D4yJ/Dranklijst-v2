@@ -70,7 +70,7 @@ export function AuthSplashHeader({
         </h1>
         <p
           className="m-0 mt-2 text-[12px] font-medium leading-[1.25]"
-          style={{ color: 'rgba(255,255,255,0.55)' }}
+          style={{ color: 'var(--color-header-fg-muted)' }}
         >
           {subtitle}
         </p>
@@ -100,7 +100,6 @@ export function AuthGoogleButton({
         height: 'var(--control-height)',
         padding: '0 12px',
         color: 'var(--color-text-primary)',
-        fontFamily: 'inherit',
         ...(style as CSSProperties | undefined),
       }}
       {...props}

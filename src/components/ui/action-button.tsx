@@ -7,7 +7,7 @@ const actionToneVariants = {
   neutral: 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)]',
   'success-soft': 'border-[var(--color-success-border)] bg-[var(--color-success-bg)] text-[var(--color-success)]',
   'danger-soft': 'border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] text-[var(--color-danger)]',
-  accent: 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white',
+  accent: 'border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-white)]',
 } as const
 
 const iconActionButtonVariants = cva(

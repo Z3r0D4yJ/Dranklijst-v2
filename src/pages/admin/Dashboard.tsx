@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { CalendarBlank, CurrencyEur, Receipt, TrendUp } from '@phosphor-icons/react'
 import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, SkeletonStatTiles } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
@@ -85,6 +86,11 @@ export function Dashboard() {
 
       setData({ totalRevenue, totalTransactions, topGroup, groupStats })
       setStatsLoading(false)
+    }).catch(() => {
+      if (!cancelled) {
+        setStatsLoading(false)
+        toast.error('Dashboard kon niet geladen worden.')
+      }
     })
 
     return () => {
@@ -182,7 +188,7 @@ export function Dashboard() {
                       return (
                         <div
                           key={group.name}
-                          className="rounded-[12px] border px-3 py-2.5 dl-stagger-card"
+                          className="rounded-chip border px-3 py-2.5 dl-stagger-card"
                           style={{
                             background: 'var(--color-surface-alt)',
                             borderColor: 'var(--color-border)',

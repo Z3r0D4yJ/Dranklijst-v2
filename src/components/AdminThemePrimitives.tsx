@@ -142,7 +142,7 @@ export function AdminStatTile({
 }: AdminStatTileProps) {
   return (
     <div
-      className={cn('h-full min-w-0 rounded-[12px] border px-3 py-2.5', className)}
+      className={cn('h-full min-w-0 rounded-chip border px-3 py-2.5', className)}
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', ...style }}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
@@ -386,7 +386,7 @@ export function SkeletonStatTiles({ count = 2, className, fullWidthLast = false 
         return (
           <div
             key={i}
-            className={cn('h-full min-w-0 rounded-[12px] border px-3 py-2.5', spanFull && 'col-span-2')}
+            className={cn('h-full min-w-0 rounded-chip border px-3 py-2.5', spanFull && 'col-span-2')}
             style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
           >
             <div className="mb-2 flex items-start justify-between gap-2">

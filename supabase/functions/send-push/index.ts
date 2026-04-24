@@ -5,7 +5,7 @@ const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!
 const VAPID_SUBJECT     = 'mailto:jaspervanzeir1@gmail.com'
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://dranklijst.jaspervanzeir.be',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

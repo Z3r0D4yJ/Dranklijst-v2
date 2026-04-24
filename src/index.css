@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 :root {
+  /* Static */
+  --color-white:          #FFFFFF;
+
   /* Backgrounds */
   --color-bg:             #F4F6FB;
   --color-surface:        #FFFFFF;
@@ -25,6 +28,7 @@
   /* Header */
   --color-header:         oklch(0.30 0.14 260);
   --color-header-fg:      #FFFFFF;
+  --color-header-fg-muted: rgba(255,255,255,0.55);
   --color-header-avatar-bg: rgba(255, 255, 255, 0.10);
   --color-header-avatar-border: rgba(147, 197, 253, 0.34);
   --color-header-avatar-icon: rgba(255, 255, 255, 0.92);

@@ -143,7 +143,7 @@ export function BuyModal({ item, periodId, onClose, onSuccess }: Props) {
           className="w-full"
         >
           {loading ? (
-            <Spinner className="size-4 shrink-0" style={{ color: 'white' }} />
+            <Spinner className="size-4 shrink-0" style={{ color: 'var(--color-white)' }} />
           ) : (
             <ShoppingCart size={18} weight="bold" />
           )}
