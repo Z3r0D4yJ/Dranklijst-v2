@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Export, DownloadSimple, Plus } from '@phosphor-icons/react'
 import { usePWAInstall } from '../hooks/usePWAInstall'
 import { ActionPillButton } from './ui/action-button'
@@ -13,51 +13,54 @@ function GateScreen({ canInstall, install }: { canInstall: boolean; install: () 
   return (
     <div
       className="fixed inset-0 flex flex-col overflow-hidden"
-      style={{ background: 'var(--color-primary)' }}
+      style={{ background: 'var(--color-header)' }}
     >
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-4 relative overflow-hidden">
+        {/* pattern overlay — zelfde als auth pagina's */}
         <div
-          className="absolute rounded-full pointer-events-none"
-          style={{ width: 320, height: 320, background: 'rgba(255,255,255,0.06)', top: -80, right: -100 }}
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'var(--auth-header-pattern-image)',
+            backgroundRepeat: 'repeat',
+            backgroundSize: '100px 100px',
+            opacity: 'var(--auth-header-pattern-opacity)',
+          }}
         />
         <div
-          className="absolute rounded-full pointer-events-none"
-          style={{ width: 200, height: 200, background: 'rgba(255,255,255,0.04)', bottom: 20, left: -60 }}
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
+          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(3,10,22,0.14) 100%)' }}
         />
         <p className="text-white text-[36px] font-extrabold tracking-[-1px] mb-2 relative z-10">
           Dranklijst
         </p>
-        <p className="text-[14px] font-medium relative z-10 mb-8" style={{ color: 'rgba(255,255,255,0.65)' }}>
-          Chiro Kapelmuur
+        <p className="text-[14px] font-medium relative z-10 mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          Chiro Reinaert Lochristi
         </p>
         <img
           src="/fox.png"
           alt=""
           className="relative z-10"
-          style={{ width: 190, height: 190, filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.18))' }}
+          style={{ width: 190, height: 190 }}
         />
       </div>
 
       {/* Install card */}
       <div
-        className="rounded-t-[28px] px-5 pt-6 pb-10"
+        className="rounded-t-[24px] px-5 pt-6 pb-10"
         style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}
       >
-        <p className="text-[20px] font-extrabold tracking-[-0.4px] m-0" style={{ color: 'var(--color-text-primary)' }}>
+        <p className="text-[20px] font-extrabold tracking-[-0.4px] m-0 mb-1" style={{ color: 'var(--color-text-primary)' }}>
           Installeer de app
         </p>
-        <p className="text-[13px] leading-[1.6] mt-1 mb-5 m-0" style={{ color: 'var(--color-text-muted)' }}>
+        <p className="text-[13px] font-medium m-0 mb-5" style={{ color: 'var(--color-text-muted)' }}>
           Voeg Dranklijst toe aan je beginscherm voor de beste ervaring.
         </p>
 
         {canInstall && (
-          <ActionPillButton
-            variant="accent"
-            size="md"
-            className="w-full"
-            onClick={install}
-          >
+          <ActionPillButton variant="accent" size="md" className="w-full" onClick={install}>
             <DownloadSimple size={16} weight="bold" />
             App installeren
           </ActionPillButton>
@@ -88,7 +91,7 @@ function GateScreen({ canInstall, install }: { canInstall: boolean; install: () 
         {!canInstall && !ios && (
           <p className="text-[13px] leading-[1.6] m-0" style={{ color: 'var(--color-text-muted)' }}>
             Open deze pagina in <strong style={{ color: 'var(--color-text-primary)' }}>Safari</strong> (iPhone/iPad) of{' '}
-            <strong style={{ color: 'var(--color-text-primary)' }}>Chrome</strong> (Android) om de app te kunnen installeren.
+            <strong style={{ color: 'var(--color-text-primary)' }}>Chrome</strong> (Android) om de app te installeren.
           </p>
         )}
       </div>
@@ -96,23 +99,17 @@ function GateScreen({ canInstall, install }: { canInstall: boolean; install: () 
   )
 }
 
+function detectStandalone() {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    ('standalone' in window.navigator &&
+      (window.navigator as { standalone?: boolean }).standalone === true)
+  )
+}
+
 export function PWAGate({ children }: { children: ReactNode }) {
-  const [isReady, setIsReady] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
+  const [isStandalone] = useState(detectStandalone)
   const { canInstall, install } = usePWAInstall()
-
-  useEffect(() => {
-    const standalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      ('standalone' in window.navigator &&
-        (window.navigator as { standalone?: boolean }).standalone === true)
-    setIsStandalone(standalone)
-    setIsReady(true)
-  }, [])
-
-  if (!isReady) {
-    return <div className="fixed inset-0" style={{ background: 'var(--color-primary)' }} />
-  }
 
   if (isStandalone) return <>{children}</>
 
