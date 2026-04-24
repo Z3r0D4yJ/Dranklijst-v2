@@ -49,7 +49,7 @@ function normalizeRole(role: string | null | undefined): Role {
 }
 
 function roleNeedsGroup(role: Role) {
-  return role === 'lid' || role === 'leiding' || role === 'kas'
+  return role === 'lid' || role === 'leiding'
 }
 
 function getRoleLabel(role: Role) {
@@ -68,9 +68,7 @@ function getDrawerHint(role: Role, groupName: string | null) {
   }
 
   if (role === 'kas') {
-    return groupName
-      ? `${groupName}: hoofdgroep, leidingrechten en kasrechten.`
-      : 'Kies een hoofdgroep. Kas krijgt ook leidingrechten.'
+    return 'Kas wordt automatisch alleen aan de Leiding groep gekoppeld.'
   }
 
   return groupName
@@ -197,35 +195,31 @@ export function Users() {
   }
 
   async function ensureRoleGroupMembership(userId: string, role: Role, groupId: string | null) {
-    const { error: deleteError } = await supabase
-      .from('group_members')
-      .delete()
-      .eq('user_id', userId)
-
+    const { error: deleteError } = await supabase.from('group_members').delete().eq('user_id', userId)
     if (deleteError) throw deleteError
 
-    if (!roleNeedsGroup(role) || !groupId) return
+    const { data: leidingGroup, error: leidingError } = await supabase
+      .from('groups').select('id').eq('name', 'Leiding').maybeSingle()
+    if (leidingError) throw leidingError
 
-    const memberships = [{ user_id: userId, group_id: groupId }]
-
-    if (role === 'leiding' || role === 'kas') {
-      const { data: leidingGroup, error: leidingError } = await supabase
-        .from('groups')
-        .select('id')
-        .eq('name', 'Leiding')
-        .maybeSingle()
-
-      if (leidingError) throw leidingError
-
-      if (leidingGroup?.id && leidingGroup.id !== groupId) {
-        memberships.push({ user_id: userId, group_id: leidingGroup.id })
+    if (role === 'kas') {
+      // kas only goes to Leiding, no primary group
+      if (leidingGroup?.id) {
+        const { error } = await supabase.from('group_members').insert({ user_id: userId, group_id: leidingGroup.id })
+        if (error) throw error
       }
+      return
     }
 
-    const { error: insertError } = await supabase
-      .from('group_members')
-      .insert(memberships)
+    if (!groupId) return
 
+    const memberships: { user_id: string; group_id: string }[] = [{ user_id: userId, group_id: groupId }]
+
+    if (role === 'leiding' && leidingGroup?.id && leidingGroup.id !== groupId) {
+      memberships.push({ user_id: userId, group_id: leidingGroup.id })
+    }
+
+    const { error: insertError } = await supabase.from('group_members').insert(memberships)
     if (insertError) throw insertError
   }
 

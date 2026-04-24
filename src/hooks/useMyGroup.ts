@@ -21,6 +21,12 @@ export function useMyGroup() {
         groups: { id: string; name: string } | null
       }>
 
+      // kas and leiding buy in the Leiding group context
+      if (profile?.role === 'leiding' || profile?.role === 'kas') {
+        const leiding = memberships.find(m => m.groups?.name === 'Leiding')
+        if (leiding?.groups) return leiding.groups
+      }
+
       return memberships.find(m => m.groups?.name !== 'Leiding')?.groups ?? null
     },
   })
