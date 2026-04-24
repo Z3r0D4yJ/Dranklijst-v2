@@ -283,21 +283,6 @@ export function GroupManagement() {
 
       <div className="flex flex-col gap-5 px-5 pt-4 pb-content-end-comfort">
         <section className="dl-stagger-card" style={{ animationDelay: '0ms' }}>
-          <SectionLabel>Periode</SectionLabel>
-          <CustomSelect
-            value={selectedPeriod}
-            onChange={setSelectedPeriod}
-            options={(periods ?? []).map((period) => ({
-              value: period.id,
-              label: period.name,
-              statusDot: period.is_active ? 'success' : undefined,
-            }))}
-            placeholder="Alle periodes"
-            style={{ minWidth: 0 }}
-          />
-        </section>
-
-        <section className="dl-stagger-card" style={{ animationDelay: '60ms' }}>
           <SectionLabel>Uitnodigingslink</SectionLabel>
           <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             {inviteCode ? (
@@ -348,6 +333,21 @@ export function GroupManagement() {
               </div>
             )}
           </div>
+        </section>
+
+        <section className="dl-stagger-card" style={{ animationDelay: '60ms' }}>
+          <SectionLabel>Periode</SectionLabel>
+          <CustomSelect
+            value={selectedPeriod}
+            onChange={setSelectedPeriod}
+            options={(periods ?? []).map((period) => ({
+              value: period.id,
+              label: period.name,
+              statusDot: period.is_active ? 'success' : undefined,
+            }))}
+            placeholder="Alle periodes"
+            style={{ minWidth: 0 }}
+          />
         </section>
 
         <section className="dl-stagger-card" style={{ animationDelay: '120ms' }}>
