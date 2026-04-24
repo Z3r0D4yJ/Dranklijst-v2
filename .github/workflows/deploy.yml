@@ -12,7 +12,7 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p /home/runner/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /home/runner/.ssh/deploy_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > /home/runner/.ssh/deploy_key
           chmod 600 /home/runner/.ssh/deploy_key
 
       - name: Deploy via SSH
