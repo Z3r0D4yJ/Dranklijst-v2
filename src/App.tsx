@@ -25,6 +25,7 @@ import { Users } from './pages/admin/Users'
 import { Dashboard } from './pages/admin/Dashboard'
 import { AllTransactions } from './pages/admin/AllTransactions'
 import { Groups } from './pages/admin/Groups'
+import { PWAGate } from './components/PWAGate'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -160,6 +161,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <PWAGate>
           <SonnerToaster />
           <ScrollToTop />
           <PendingInviteHandler />
@@ -210,6 +212,7 @@ export default function App() {
               </Route>
             </Route>
           </Routes>
+          </PWAGate>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
