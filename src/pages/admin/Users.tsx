@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, MagnifyingGlass, PencilSimple, Users as UsersIcon } from '@phosphor-icons/react'
+import { Check, MagnifyingGlass, PencilSimple, Trash, Users as UsersIcon } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AdminEmptyState, AdminSectionLabel, AdminSurface, SkeletonList } from '../../components/AdminThemePrimitives'
 import { Badge } from '../../components/ui/badge'
@@ -86,6 +86,8 @@ export function Users() {
   const [draftRole, setDraftRole] = useState<Role>('lid')
   const [draftGroupId, setDraftGroupId] = useState('')
   const [saving, setSaving] = useState(false)
+  const [armedDelete, setArmedDelete] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { data: groupOptions = [] } = useQuery({
     queryKey: ['user-group-options'],
@@ -160,13 +162,38 @@ export function Users() {
     setEditingUser(user)
     setDraftRole(user.role)
     setDraftGroupId(user.primaryGroupId ?? '')
+    setArmedDelete(false)
   }
 
   function closeEditor() {
-    if (saving) return
+    if (saving || deletingId) return
     setEditingUser(null)
     setDraftRole('lid')
     setDraftGroupId('')
+    setArmedDelete(false)
+  }
+
+  async function deleteUser(userId: string) {
+    setDeletingId(userId)
+
+    const { error } = await supabase.rpc('delete_user', { p_user_id: userId })
+
+    if (error) {
+      toast.error(error.message || 'Gebruiker kon niet worden verwijderd.')
+      setDeletingId(null)
+      return
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+    ])
+
+    toast.success('Gebruiker verwijderd.')
+    setDeletingId(null)
+    closeEditor()
+    setEditingUser(null)
   }
 
   async function ensureRoleGroupMembership(userId: string, role: Role, groupId: string | null) {
@@ -397,21 +424,62 @@ export function Users() {
           if (!open) closeEditor()
         }}
         title={editingUser ? editingUser.full_name : 'Gebruiker bewerken'}
-        dismissible={!saving}
-        disableClose={saving}
+        dismissible={!saving && !deletingId}
+        disableClose={saving || !!deletingId}
         bodyClassName="space-y-4"
         footer={
-          <ActionPillButton
-            type="button"
-            onClick={() => void saveUser()}
-            disabled={saveDisabled}
-            variant="accent"
-            size="md"
-            className="w-full"
-          >
-            <Check size={14} weight="bold" />
-            {saving ? 'Opslaan...' : 'Opslaan'}
-          </ActionPillButton>
+          editingUser ? (
+            armedDelete ? (
+              <div className="grid grid-cols-2 gap-2">
+                <ActionPillButton
+                  type="button"
+                  onClick={() => setArmedDelete(false)}
+                  disabled={!!deletingId}
+                  variant="neutral"
+                  size="md"
+                  className="w-full"
+                >
+                  Annuleren
+                </ActionPillButton>
+                <ActionPillButton
+                  type="button"
+                  onClick={() => void deleteUser(editingUser.id)}
+                  disabled={!!deletingId}
+                  variant="danger-soft"
+                  size="md"
+                  className="w-full"
+                >
+                  <Trash size={15} color="currentColor" weight="bold" />
+                  {deletingId ? 'Verwijderen...' : 'Ja, verwijderen'}
+                </ActionPillButton>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <ActionPillButton
+                  type="button"
+                  onClick={() => setArmedDelete(true)}
+                  disabled={saving || editingUser.id === profile?.id}
+                  variant="danger-soft"
+                  size="md"
+                  className="w-full"
+                >
+                  <Trash size={15} color="currentColor" weight="bold" />
+                  Verwijderen
+                </ActionPillButton>
+                <ActionPillButton
+                  type="button"
+                  onClick={() => void saveUser()}
+                  disabled={saveDisabled}
+                  variant="accent"
+                  size="md"
+                  className="w-full"
+                >
+                  <Check size={14} weight="bold" />
+                  {saving ? 'Opslaan...' : 'Opslaan'}
+                </ActionPillButton>
+              </div>
+            )
+          ) : undefined
         }
       >
         {editingUser && (
