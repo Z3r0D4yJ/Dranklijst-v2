@@ -282,7 +282,7 @@ export function GroupManagement() {
       />
 
       <div className="flex flex-col gap-5 px-5 pt-4 pb-content-end-comfort">
-        <section>
+        <section className="dl-stagger-card" style={{ animationDelay: '0ms' }}>
           <SectionLabel>Periode</SectionLabel>
           <CustomSelect
             value={selectedPeriod}
@@ -297,7 +297,7 @@ export function GroupManagement() {
           />
         </section>
 
-        <section>
+        <section className="dl-stagger-card" style={{ animationDelay: '60ms' }}>
           <SectionLabel>Uitnodigingslink</SectionLabel>
           <div className="rounded-card p-4" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             {inviteCode ? (
@@ -350,7 +350,7 @@ export function GroupManagement() {
           </div>
         </section>
 
-        <section>
+        <section className="dl-stagger-card" style={{ animationDelay: '120ms' }}>
           <SectionLabel>Aanvragen</SectionLabel>
           <button
             type="button"
@@ -384,7 +384,7 @@ export function GroupManagement() {
           </button>
         </section>
 
-        <section>
+        <section className="dl-stagger-card" style={{ animationDelay: '180ms' }}>
           <SectionLabel>Leden</SectionLabel>
           {members.length === 0 ? (
             <div className="rounded-card px-4 py-6 text-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>

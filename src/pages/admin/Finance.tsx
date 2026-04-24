@@ -213,6 +213,8 @@ export function Finance() {
               icon={Clock}
               tone="danger"
               valueTone="danger"
+              className="dl-stagger-tile"
+              style={{ animationDelay: '0ms' }}
             />
             <AdminStatTile
               label="Te checken"
@@ -220,6 +222,8 @@ export function Finance() {
               icon={Clock}
               tone="warning"
               valueTone="warning"
+              className="dl-stagger-tile"
+              style={{ animationDelay: '65ms' }}
             />
             <AdminStatTile
               label="Ontvangen"
@@ -227,14 +231,15 @@ export function Finance() {
               icon={CheckCircle}
               tone="success"
               valueTone="success"
-              className="col-span-2"
+              className="col-span-2 dl-stagger-tile"
+              style={{ animationDelay: '130ms' }}
             />
           </div>
         </section>
       )}
 
       {(periods ?? []).length > 0 && (
-        <section className="space-y-2">
+        <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '200ms' }}>
           <AdminSectionLabel>Periode</AdminSectionLabel>
           <CustomSelect
             value={selectedPeriod}
@@ -293,7 +298,9 @@ export function Finance() {
 
       {payments.length > 0 && (
         <section className="space-y-2">
-          <AdminSectionLabel>Betalingen</AdminSectionLabel>
+          <div className="dl-stagger-card" style={{ animationDelay: '280ms' }}>
+            <AdminSectionLabel>Betalingen</AdminSectionLabel>
+          </div>
           <AdminSurface>
         {pagePayments.map((payment, index) => {
           const config = STATUS_CONFIG[payment.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.unpaid
@@ -309,11 +316,11 @@ export function Finance() {
               style={{
                 borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                 fontFamily: 'inherit',
-                animationDelay: `${120 + index * 45}ms`,
+                animationDelay: `${340 + index * 45}ms`,
               }}
             >
               <div className="flex items-start gap-3">
-                <IconChip tone={tone} icon={payment.status === 'paid' ? CheckCircle : payment.status === 'pending' ? Clock : User} size={34} />
+                <IconChip tone={tone} icon={payment.status === 'paid' ? CheckCircle : payment.status === 'pending' ? Clock : User} size={36} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">

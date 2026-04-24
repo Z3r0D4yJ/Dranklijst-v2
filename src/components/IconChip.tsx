@@ -3,6 +3,7 @@ import type { IconProps } from '@phosphor-icons/react'
 import {
   BeerBottle, BeerStein, Wine, Drop, Coffee, CurrencyEur,
   Warning, CheckCircle, ShoppingCart,
+  PintGlass, Orange, OrangeSlice, Leaf, Cherries, TeaBag,
 } from '@phosphor-icons/react'
 import type { ConsumptionCategory } from '../lib/database.types'
 
@@ -33,11 +34,22 @@ const COLOR_MAP: Record<string, { bg: string; fg: string }> = {
   yellow: { bg: 'var(--color-drink-yellow-bg)', fg: 'var(--color-drink-yellow-fg)' },
   brown:  { bg: 'var(--color-cat-coffee-bg)',   fg: 'var(--color-cat-coffee-fg)' },
   beer:   { bg: 'var(--color-cat-beer-bg)',     fg: 'var(--color-cat-beer-fg)' },
+  sky:    { bg: 'var(--color-cat-water-bg)',    fg: 'var(--color-cat-water-fg)' },
+  blue:   { bg: 'var(--color-cat-water-bg)',    fg: 'var(--color-cat-water-fg)' },
 }
 
 const ICON_NAME_MAP: Record<string, FC<IconProps>> = {
   BeerBottle,
   BeerStein,
+  Wine,
+  Drop,
+  Coffee,
+  PintGlass,
+  Orange,
+  OrangeSlice,
+  Leaf,
+  Cherries,
+  TeaBag,
 }
 
 const DEFAULT_ICONS: Record<string, FC<IconProps>> = {

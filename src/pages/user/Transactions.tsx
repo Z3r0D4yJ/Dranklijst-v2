@@ -105,11 +105,12 @@ export function Transactions() {
         <div
           ref={tabBarRef}
           data-swipe-ignore
-          className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0"
+          className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0 dl-stagger-card"
           style={{
             background: 'var(--color-surface)',
             borderBottom: '1px solid var(--color-border)',
             scrollbarWidth: 'none',
+            animationDelay: '0ms',
           }}
         >
           {(periods ?? []).map(p => {
@@ -139,7 +140,10 @@ export function Transactions() {
 
       <div className="px-5 pt-4 space-y-4">
         {/* ─── Total card ──────────────────────────── */}
-        <div className="rounded-card overflow-hidden relative" style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff' }}>
+        <div
+          className="rounded-card overflow-hidden relative dl-stagger-card"
+          style={{ background: 'var(--color-primary)', padding: '18px 20px', color: '#fff', animationDelay: '40ms' }}
+        >
           <img
             src="/fox.png"
             alt=""

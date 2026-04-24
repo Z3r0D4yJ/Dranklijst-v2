@@ -146,7 +146,7 @@ export function GroupTransactions() {
       <PageHeader title="Groepstransacties" sub={groupInfo?.name} />
 
       <div className="px-5 pt-4 space-y-3 pb-content-end-comfort">
-        <section className="space-y-2">
+        <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '0ms' }}>
           <AdminSectionLabel>Periode</AdminSectionLabel>
           <CustomSelect
             value={selectedPeriod}
@@ -189,7 +189,10 @@ export function GroupTransactions() {
 
         {allTx.length > 0 && (
           <section className="space-y-2">
-            <div className="flex items-baseline justify-between gap-3">
+            <div
+              className="flex items-baseline justify-between gap-3 dl-stagger-card"
+              style={{ animationDelay: '80ms' }}
+            >
               <AdminSectionLabel>Transacties</AdminSectionLabel>
               <span className="text-[12px] font-medium tabular-nums" style={{ color: 'var(--color-text-muted)' }}>
                 {allTx.length} {allTx.length === 1 ? 'transactie' : 'transacties'} · {formatMoney(total)}
@@ -209,7 +212,7 @@ export function GroupTransactions() {
                   }}
                 >
                   <div className="flex items-start gap-3">
-                    <IconChip tone="primary" icon={Receipt} size={34} />
+                    <IconChip tone="primary" icon={Receipt} size={36} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">

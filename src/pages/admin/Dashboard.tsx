@@ -110,7 +110,7 @@ export function Dashboard() {
   return (
     <div className="px-5 space-y-3 pb-content-end-comfort">
       {periods.length > 0 && (
-        <section className="space-y-2">
+        <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '0ms' }}>
           <AdminSectionLabel>Periode</AdminSectionLabel>
           <CustomSelect
             value={selectedPeriod}

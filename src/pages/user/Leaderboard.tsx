@@ -72,7 +72,10 @@ function GroupView({ group, userId }: { group: LeaderboardGroup; userId: string 
   return (
     <div className="px-5 space-y-3 pb-content-end-comfort" style={{ paddingTop: 58 }}>
       {group.entries.length >= 2 && (
-        <div className="rounded-card" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '22px 16px 18px' }}>
+        <div
+          className="rounded-card dl-stagger-card"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '22px 16px 18px', animationDelay: '40ms' }}
+        >
           <div className="flex items-end justify-center gap-2" style={{ height: 180 }}>
             <Pillar rank={2} name={group.entries[1]?.full_name.split(' ')[0] ?? ''} total={group.entries[1]?.total ?? 0} height={100} />
             <Pillar rank={1} name={group.entries[0]?.full_name.split(' ')[0] ?? ''} total={group.entries[0]?.total ?? 0} height={140} />
@@ -157,13 +160,14 @@ export function Leaderboard() {
         <div
           ref={tabBarRef}
           data-swipe-ignore
-          className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0"
+          className="flex gap-2 overflow-x-auto px-5 py-3 shrink-0 dl-stagger-card"
           style={{
             background: 'var(--color-surface)',
             borderBottom: '1px solid var(--color-border)',
             scrollbarWidth: 'none',
             position: 'relative',
             zIndex: 10,
+            animationDelay: '0ms',
           }}
         >
           {visibleGroups.map(g => {

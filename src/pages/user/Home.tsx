@@ -149,7 +149,10 @@ export function Home() {
       {/* ─── Balance card ───────────────────────── */}
       {group && period && (
         <div className="mx-5 relative z-10" style={{ marginTop: -22 }}>
-          <div className="rounded-card border p-4 flex items-center gap-3.5" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <div
+            className="rounded-card border p-4 flex items-center gap-3.5 dl-stagger-card"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: '40ms' }}
+          >
             <IconChip tone="primary" icon={CurrencyEur} size={44} />
             <div className="flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.8px] leading-none" style={{ color: 'var(--color-text-muted)' }}>Deze periode</p>
@@ -218,39 +221,50 @@ export function Home() {
       {/* ─── Consumption grid ───────────────────── */}
       {!isLoading && group && period && (
         <div className="px-5 pt-[22px] space-y-5">
-          {Object.entries(grouped).map(([category, items]) => (
-            <section key={category}>
-              <div className="flex items-baseline justify-between mb-3 px-0.5">
-                <h2 className="text-[11px] font-extrabold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
-                  {CATEGORY_LABELS[category] ?? category}
-                </h2>
-                <span className="text-[11px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>{items.length} items</span>
-              </div>
-              <div className="grid grid-cols-2 gap-[10px]">
-                {items.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={e => handleBuy(item, e)}
-                    className="rounded-card p-3.5 text-left active:scale-[0.96] transition-transform flex flex-col gap-3"
-                    style={{
-                      background: 'var(--color-surface)',
-                      border: '1px solid var(--color-border)',
-                      transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
-                      transitionDuration: '180ms',
-                    }}
-                  >
-                    <IconChip tone={item.category as IconChipTone} colorName={item.color ?? undefined} iconName={item.icon ?? undefined} size={38} />
-                    <div>
-                      <p className="text-[14px] font-bold tracking-[-0.1px] leading-tight" style={{ color: 'var(--color-text-primary)' }}>{item.name}</p>
-                      <p className="text-[17px] font-extrabold tracking-[-0.3px] mt-0.5 tabular-nums" style={{ color: 'var(--color-primary)' }}>
-                        € {item.price.toFixed(2).replace('.', ',')}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-          ))}
+          {(() => {
+            let globalTileIndex = 0
+            return Object.entries(grouped).map(([category, items], sectionIndex) => (
+              <section key={category}>
+                <div
+                  className="flex items-baseline justify-between mb-3 px-0.5 dl-stagger-card"
+                  style={{ animationDelay: `${120 + sectionIndex * 60}ms` }}
+                >
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-[1.2px]" style={{ color: 'var(--color-text-muted)' }}>
+                    {CATEGORY_LABELS[category] ?? category}
+                  </h2>
+                  <span className="text-[11px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>{items.length} items</span>
+                </div>
+                <div className="grid grid-cols-2 gap-[10px]">
+                  {items.map(item => {
+                    const tileIndex = globalTileIndex++
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={e => handleBuy(item, e)}
+                        className="rounded-card p-3.5 text-left active:scale-[0.96] flex flex-col gap-3 dl-stagger-tile"
+                        style={{
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--color-border)',
+                          transitionProperty: 'transform',
+                          transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
+                          transitionDuration: '180ms',
+                          animationDelay: `${180 + tileIndex * 45}ms`,
+                        }}
+                      >
+                        <IconChip tone={item.category as IconChipTone} colorName={item.color ?? undefined} iconName={item.icon ?? undefined} size={38} />
+                        <div>
+                          <p className="text-[14px] font-bold tracking-[-0.1px] leading-tight" style={{ color: 'var(--color-text-primary)' }}>{item.name}</p>
+                          <p className="text-[17px] font-extrabold tracking-[-0.3px] mt-0.5 tabular-nums" style={{ color: 'var(--color-primary)' }}>
+                            € {item.price.toFixed(2).replace('.', ',')}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </section>
+            ))
+          })()}
 
           {Object.keys(grouped).length === 0 && (
             <div className="text-center mt-8">

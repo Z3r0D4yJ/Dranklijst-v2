@@ -282,7 +282,7 @@ export function Users() {
 
   return (
     <div className="px-5 space-y-4 pb-content-end-comfort">
-      <section className="space-y-2">
+      <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '0ms' }}>
         <div className="relative">
           <MagnifyingGlass
             size={16}
@@ -318,7 +318,9 @@ export function Users() {
 
       {filtered.length > 0 && (
         <section className="space-y-2">
-          <AdminSectionLabel>Accounts</AdminSectionLabel>
+          <div className="dl-stagger-card" style={{ animationDelay: '80ms' }}>
+            <AdminSectionLabel>Accounts</AdminSectionLabel>
+          </div>
           <AdminSurface>
         {pageUsers.map((user, index) => {
           const roleVariant = ROLE_BADGE_VARIANT[user.role] ?? ROLE_BADGE_VARIANT.lid

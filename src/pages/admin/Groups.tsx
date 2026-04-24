@@ -133,6 +133,8 @@ export function Groups() {
             value={String(totalMembers)}
             icon={Users}
             tone="primary"
+            className="dl-stagger-tile"
+            style={{ animationDelay: '0ms' }}
           />
           <AdminStatTile
             label="Omzet"
@@ -140,11 +142,13 @@ export function Groups() {
             icon={CurrencyEur}
             tone="primary"
             valueTone="primary"
+            className="dl-stagger-tile"
+            style={{ animationDelay: '65ms' }}
           />
         </div>
       </section>
 
-      <section className="space-y-2">
+      <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '140ms' }}>
         <AdminSectionLabel>Periode</AdminSectionLabel>
         <CustomSelect
           value={selectedPeriod}
@@ -163,7 +167,9 @@ export function Groups() {
       </section>
 
       <section className="space-y-2">
-        <AdminSectionLabel>Alle groepen</AdminSectionLabel>
+        <div className="dl-stagger-card" style={{ animationDelay: '220ms' }}>
+          <AdminSectionLabel>Alle groepen</AdminSectionLabel>
+        </div>
         <AdminSurface>
           {(groups ?? []).map((group, index) => (
             <button
@@ -174,7 +180,7 @@ export function Groups() {
               style={{
                 borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
                 fontFamily: 'inherit',
-                animationDelay: `${120 + index * 45}ms`,
+                animationDelay: `${280 + index * 45}ms`,
               }}
             >
               <div className="flex items-center justify-between gap-3">

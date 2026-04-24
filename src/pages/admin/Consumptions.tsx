@@ -153,7 +153,8 @@ export function Consumptions() {
         onClick={openNew}
         variant="accent"
         size="md"
-        className="w-full"
+        className="w-full dl-stagger-card"
+        style={{ animationDelay: '0ms' }}
       >
         <Plus size={16} weight="bold" />
         Nieuwe consumptie
@@ -246,9 +247,12 @@ export function Consumptions() {
         />
       )}
 
-      {Object.entries(grouped).map(([category, items]) => (
+      {Object.entries(grouped).map(([category, items], catIndex) => (
         <section key={category} className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
+          <div
+            className="flex items-center justify-between gap-3 dl-stagger-card"
+            style={{ animationDelay: `${80 + catIndex * 80}ms` }}
+          >
             <AdminSectionLabel>{CAT_LABELS[category] ?? category}</AdminSectionLabel>
             <span className="text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
               {items.length} items

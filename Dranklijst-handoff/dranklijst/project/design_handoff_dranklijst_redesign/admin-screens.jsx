@@ -258,7 +258,7 @@ function AdminGroupsInner({ c }) {
           <ACard key={i} c={c} style={{ overflow:'hidden' }}>
             <button onClick={() => setOpenIdx(openIdx === i ? -1 : i)}
               style={{ width:'100%', padding:'12px 14px', display:'flex', alignItems:'center', gap:12, background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', textAlign:'left' }}>
-              <AChip bg={c.primaryPale} fg={c.primary} d={AP2.users} size={34}/>
+              <AChip bg={c.primaryPale} fg={c.primary} d={AP2.users} size={36}/>
               <div style={{ flex:1 }}>
                 <p style={{ fontSize:14, fontWeight:700, color:c.text, margin:0 }}>{g.name}</p>
                 <p style={{ fontSize:12, color:c.textMuted, margin:'2px 0 0' }}>{g.count} leden</p>
