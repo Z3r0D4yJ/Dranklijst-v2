@@ -16,7 +16,7 @@
             username: ${{ secrets.SSH_USER }}
             key: ${{ secrets.SSH_PRIVATE_KEY }}
             port: 22
-            host_key_checking: false
+            debug: true
             script: |
               set -e
               cd /var/www/dranklijst
