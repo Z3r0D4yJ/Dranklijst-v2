@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { CaretRight, CurrencyEur, Users } from '@phosphor-icons/react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { CaretRight, Check, CurrencyEur, Plus, Users } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { AdminEmptyState, AdminSectionLabel, AdminStatTile, AdminSurface, SkeletonList, SkeletonStatTiles } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
 import { Badge } from '../../components/ui/badge'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
+import { ActionPillButton } from '../../components/ui/action-button'
 import { IconChip } from '../../components/IconChip'
 import { UserAvatar } from '../../components/UserAvatar'
 import { ROLE_BADGE_VARIANT } from '../../lib/role-utils'
@@ -40,8 +42,48 @@ function normalizeRole(role: string | null | undefined): Role {
 }
 
 export function Groups() {
+  const queryClient = useQueryClient()
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [selectedPeriod, setSelectedPeriod] = useState('')
+  const [showNew, setShowNew] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [newDescription, setNewDescription] = useState('')
+  const [creating, setCreating] = useState(false)
+
+  function closeNew() {
+    setShowNew(false)
+    setNewName('')
+    setNewDescription('')
+  }
+
+  async function createGroup() {
+    if (!newName.trim()) return
+    setCreating(true)
+
+    try {
+      const { error } = await supabase.from('groups').insert({
+        name: newName.trim(),
+        description: newDescription.trim() || null,
+      })
+
+      if (error) {
+        toast.error(error.message || 'Kon groep niet aanmaken.')
+        return
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin-groups'] }),
+        queryClient.invalidateQueries({ queryKey: ['groups-public'] }),
+        queryClient.invalidateQueries({ queryKey: ['groups-list'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-group-options'] }),
+      ])
+
+      toast.success(`Groep "${newName.trim()}" aangemaakt.`)
+      closeNew()
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const { data: periods } = useQuery({
     queryKey: ['periods'],
@@ -111,6 +153,10 @@ export function Groups() {
   if (isLoading) {
     return (
       <div className="px-5 space-y-3 pb-content-end-comfort">
+        <ActionPillButton onClick={() => setShowNew(true)} variant="accent" size="md" className="w-full">
+          <Plus size={16} weight="bold" />
+          Nieuwe groep
+        </ActionPillButton>
         <section className="space-y-2">
           <AdminSectionLabel>Groepen</AdminSectionLabel>
           <SkeletonStatTiles count={2} />
@@ -125,6 +171,73 @@ export function Groups() {
 
   return (
     <div className="px-5 space-y-3 pb-content-end-comfort">
+      <ActionPillButton
+        onClick={() => setShowNew(true)}
+        variant="accent"
+        size="md"
+        className="w-full dl-stagger-card"
+        style={{ animationDelay: '0ms' }}
+      >
+        <Plus size={16} weight="bold" />
+        Nieuwe groep
+      </ActionPillButton>
+
+      <AdminFormDrawer
+        open={showNew}
+        onOpenChange={(open) => { if (!open) closeNew() }}
+        title="Nieuwe groep"
+        dismissible={!creating}
+        disableClose={creating}
+        scrollBody
+        fixed={false}
+        repositionInputs={false}
+        bodyClassName="space-y-4"
+        footer={
+          <ActionPillButton
+            onClick={createGroup}
+            disabled={!newName.trim() || creating}
+            variant="accent"
+            size="md"
+            className="w-full"
+          >
+            <Check size={14} weight="bold" />
+            {creating ? 'Aanmaken...' : 'Aanmaken'}
+          </ActionPillButton>
+        }
+      >
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>
+            Naam
+          </label>
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="bv. Rakwi"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="words"
+            className="dl-input text-[13px]"
+            onKeyDown={(e) => { if (e.key === 'Enter') void createGroup() }}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-extrabold uppercase tracking-[1px]" style={{ color: 'var(--color-text-muted)' }}>
+            Beschrijving <span className="normal-case font-medium tracking-normal">(optioneel)</span>
+          </label>
+          <input
+            type="text"
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            placeholder="Korte omschrijving"
+            autoComplete="off"
+            autoCorrect="off"
+            className="dl-input text-[13px]"
+            onKeyDown={(e) => { if (e.key === 'Enter') void createGroup() }}
+          />
+        </div>
+      </AdminFormDrawer>
+
       <section className="space-y-2">
         <AdminSectionLabel>Groepen</AdminSectionLabel>
         <div className="grid grid-cols-2 gap-2.5">
