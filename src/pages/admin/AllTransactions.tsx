@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, Receipt, Trash } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow, SkeletonList } from '../../components/AdminThemePrimitives'
 import { IconChip } from '../../components/IconChip'
 import { supabase } from '../../lib/supabase'
@@ -175,14 +176,19 @@ export function AllTransactions() {
 
     const { error } = await supabase.from('transactions').delete().eq('id', id)
 
-    if (!error) {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['all-transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
-        queryClient.invalidateQueries({ queryKey: ['period-stats'] }),
-      ])
+    if (error) {
+      toast.error('Kon transactie niet verwijderen.')
+      setDeletingId(null)
+      return
     }
 
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['all-transactions'] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+      queryClient.invalidateQueries({ queryKey: ['period-stats'] }),
+    ])
+
+    toast.success('Transactie verwijderd.')
     setSelectedTxId(null)
     setArmedDelete(false)
     setDeletingId(null)

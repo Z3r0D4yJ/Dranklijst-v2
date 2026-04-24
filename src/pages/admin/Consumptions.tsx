@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, PencilSimple, Eye, EyeSlash, Check, BeerBottle } from '@phosphor-icons/react'
+import { Plus, PencilSimple, Eye, EyeSlash, Check, BeerBottle, Trash } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { AdminEmptyState, AdminSectionLabel, AdminSurface, SkeletonList } from '../../components/AdminThemePrimitives'
 import { supabase } from '../../lib/supabase'
@@ -42,6 +42,8 @@ export function Consumptions() {
   const [editing, setEditing] = useState<Consumption | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [loading, setLoading] = useState(false)
+  const [armedDelete, setArmedDelete] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { data: consumptions, isLoading } = useQuery({
     queryKey: ['consumptions-admin'],
@@ -70,6 +72,7 @@ export function Consumptions() {
       price: consumption.price.toString(),
       category: consumption.category,
     })
+    setArmedDelete(false)
     setShowForm(true)
   }
 
@@ -77,6 +80,28 @@ export function Consumptions() {
     setShowForm(false)
     setEditing(null)
     setForm(EMPTY_FORM)
+    setArmedDelete(false)
+  }
+
+  async function deleteConsumption(id: string) {
+    setDeletingId(id)
+
+    const { error } = await supabase.from('consumptions').delete().eq('id', id)
+
+    if (error) {
+      toast.error('Kon consumptie niet verwijderen.')
+      setDeletingId(null)
+      return
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['consumptions-admin'] }),
+      queryClient.invalidateQueries({ queryKey: ['group-consumptions'] }),
+    ])
+
+    toast.success('Consumptie verwijderd.')
+    closeForm()
+    setDeletingId(null)
   }
 
   async function save() {
@@ -166,23 +191,64 @@ export function Consumptions() {
           if (!open) closeForm()
         }}
         title={editing ? 'Consumptie bewerken' : 'Nieuwe consumptie'}
-        dismissible={!loading}
-        disableClose={loading}
+        dismissible={!loading && !deletingId}
+        disableClose={loading || !!deletingId}
         scrollBody
         fixed={false}
         repositionInputs={false}
         bodyClassName="space-y-4"
         footer={
-          <ActionPillButton
-            onClick={save}
-            disabled={loading}
-            variant="accent"
-            size="md"
-            className="w-full"
-          >
-            <Check size={14} weight="bold" />
-            {loading ? 'Opslaan...' : 'Opslaan'}
-          </ActionPillButton>
+          armedDelete ? (
+            <div className="grid grid-cols-2 gap-2">
+              <ActionPillButton
+                type="button"
+                onClick={() => setArmedDelete(false)}
+                disabled={deletingId !== null}
+                variant="neutral"
+                size="md"
+                className="w-full"
+              >
+                Annuleren
+              </ActionPillButton>
+              <ActionPillButton
+                type="button"
+                onClick={() => editing && void deleteConsumption(editing.id)}
+                disabled={deletingId !== null}
+                variant="danger-soft"
+                size="md"
+                className="w-full"
+              >
+                <Trash size={15} color="currentColor" weight="bold" />
+                {deletingId ? 'Verwijderen...' : 'Ja, verwijderen'}
+              </ActionPillButton>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <ActionPillButton
+                onClick={save}
+                disabled={loading}
+                variant="accent"
+                size="md"
+                className="w-full"
+              >
+                <Check size={14} weight="bold" />
+                {loading ? 'Opslaan...' : 'Opslaan'}
+              </ActionPillButton>
+              {editing && (
+                <ActionPillButton
+                  type="button"
+                  onClick={() => setArmedDelete(true)}
+                  disabled={loading}
+                  variant="danger-soft"
+                  size="md"
+                  className="w-full"
+                >
+                  <Trash size={15} color="currentColor" weight="bold" />
+                  Verwijderen
+                </ActionPillButton>
+              )}
+            </div>
+          )
         }
       >
         <div className="space-y-1.5">

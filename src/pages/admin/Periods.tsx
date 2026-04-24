@@ -31,6 +31,7 @@ export function Periods() {
   const [showNew, setShowNew] = useState(false)
   const [newName, setNewName] = useState('')
   const [closing, setClosing] = useState<string | null>(null)
+  const [armedClose, setArmedClose] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const { data: stats, isLoading } = useQuery({
@@ -247,16 +248,42 @@ export function Periods() {
               </p>
             </button>
 
-            <ActionPillButton
-              onClick={() => closePeriod(period.id, period.name)}
-              disabled={closing === period.id}
-              variant="danger-soft"
-              size="md"
-              className="w-full"
-            >
-              <Stop size={13} weight="fill" />
-              {closing === period.id ? 'Periode wordt afgesloten...' : 'Periode afsluiten'}
-            </ActionPillButton>
+            {armedClose === period.id ? (
+              <div className="grid grid-cols-2 gap-2">
+                <ActionPillButton
+                  type="button"
+                  onClick={() => setArmedClose(null)}
+                  disabled={closing === period.id}
+                  variant="neutral"
+                  size="md"
+                  className="w-full"
+                >
+                  Annuleren
+                </ActionPillButton>
+                <ActionPillButton
+                  type="button"
+                  onClick={() => { void closePeriod(period.id, period.name) }}
+                  disabled={closing === period.id}
+                  variant="danger-soft"
+                  size="md"
+                  className="w-full"
+                >
+                  <Stop size={13} weight="fill" />
+                  {closing === period.id ? 'Bezig...' : 'Ja, afsluiten'}
+                </ActionPillButton>
+              </div>
+            ) : (
+              <ActionPillButton
+                onClick={() => setArmedClose(period.id)}
+                disabled={closing === period.id}
+                variant="danger-soft"
+                size="md"
+                className="w-full"
+              >
+                <Stop size={13} weight="fill" />
+                Periode afsluiten
+              </ActionPillButton>
+            )}
           </AdminSurface>
         </section>
       ))}
