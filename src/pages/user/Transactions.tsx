@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Receipt } from '@phosphor-icons/react'
+import { CaretRight, Receipt } from '@phosphor-icons/react'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useTransactions } from '../../hooks/useTransactions'
 import { supabase } from '../../lib/supabase'
@@ -8,10 +8,12 @@ import { useAuth } from '../../context/AuthContext'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { useSwipe } from '../../hooks/useSwipe'
 import { IconChip } from '../../components/IconChip'
-import { EmptyState, PageHeader } from '../../components/AdminThemePrimitives'
+import { AdminSurface, DetailRow, EmptyState, PageHeader } from '../../components/AdminThemePrimitives'
+import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Pagination } from '../../components/Pagination'
 import { usePagination } from '../../hooks/usePagination'
-import type { Period, ConsumptionCategory } from '../../lib/database.types'
+import { formatMoney } from '../../lib/formatters'
+import type { Period } from '../../lib/database.types'
 import { Badge, badgeVariants } from '../../components/ui/badge'
 
 function groupByDate<T extends { created_at: string }>(items: T[]) {
@@ -43,6 +45,7 @@ export function Transactions() {
   const { user } = useAuth()
   const { data: activePeriod } = useActivePeriod()
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null)
+  const [selectedTxId, setSelectedTxId] = useState<string | null>(null)
   const tabBarRef = useRef<HTMLDivElement>(null)
 
   const { data: periods } = useQuery({
@@ -191,23 +194,34 @@ export function Transactions() {
               {items.map((t, i) => {
                 const time = new Date(t.created_at).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })
                 return (
-                  <div
+                  <button
                     key={t.id}
-                    className="flex items-center gap-3 px-3.5 py-3.5 dl-stagger-row"
+                    type="button"
+                    onClick={() => setSelectedTxId(t.id)}
+                    className="w-full flex items-center gap-3 px-3.5 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
                     style={{
                       borderTop: i === 0 ? 'none' : '1px solid var(--color-border)',
                       animationDelay: `${120 + i * 45}ms`,
+                      fontFamily: 'inherit',
                     }}
                   >
-                    <IconChip tone={(t as { category?: ConsumptionCategory }).category ?? 'primary'} size={36} />
+                    <IconChip
+                      tone={t.category ?? 'primary'}
+                      colorName={t.color ?? undefined}
+                      iconName={t.icon ?? undefined}
+                      size={36}
+                    />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-bold leading-tight" style={{ color: 'var(--color-text-primary)' }}>{t.consumption_name}</p>
-                      <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{t.quantity}× · {time}</p>
+                      <p className="text-[14px] font-bold leading-tight truncate" style={{ color: 'var(--color-text-primary)' }}>{t.consumption_name}</p>
+                      <p className="text-[12px] font-medium mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>{t.quantity}× · {time}</p>
                     </div>
-                    <p className="text-[15px] font-extrabold tracking-[-0.2px] tabular-nums shrink-0" style={{ color: 'var(--color-text-primary)' }}>
-                      −€{t.total_price.toFixed(2).replace('.', ',')}
-                    </p>
-                  </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[15px] font-extrabold tracking-[-0.2px] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                        −€{t.total_price.toFixed(2).replace('.', ',')}
+                      </span>
+                      <CaretRight size={14} color="var(--color-text-muted)" />
+                    </div>
+                  </button>
                 )
               })}
             </div>
@@ -216,6 +230,55 @@ export function Transactions() {
 
         <Pagination page={page} totalPages={totalPages} onPage={onPage} />
       </div>
+
+      <AdminFormDrawer
+        open={!!selectedTxId}
+        onOpenChange={(open) => { if (!open) setSelectedTxId(null) }}
+        title={allTx.find(t => t.id === selectedTxId)?.consumption_name ?? 'Transactie'}
+        description={selectedPeriod?.name}
+        bodyClassName="space-y-3"
+      >
+        {(() => {
+          const tx = allTx.find(t => t.id === selectedTxId)
+          if (!tx) return null
+          return (
+            <>
+              <div className="flex items-center gap-3">
+                <IconChip
+                  tone={tx.category ?? 'primary'}
+                  colorName={tx.color ?? undefined}
+                  iconName={tx.icon ?? undefined}
+                  size={56}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 text-[18px] font-extrabold tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>
+                    {tx.consumption_name}
+                  </p>
+                  <p className="m-0 mt-0.5 text-[22px] font-extrabold tracking-[-0.5px] tabular-nums" style={{ color: 'var(--color-primary)' }}>
+                    {formatMoney(tx.total_price)}
+                  </p>
+                </div>
+              </div>
+
+              <AdminSurface>
+                <DetailRow first label="Aantal" value={`${tx.quantity}×`} />
+                <DetailRow label="Stukprijs" value={formatMoney(tx.unit_price)} />
+                <DetailRow label="Totaal" value={formatMoney(tx.total_price)} />
+                <DetailRow
+                  label="Moment"
+                  value={new Date(tx.created_at).toLocaleDateString('nl-BE', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                />
+              </AdminSurface>
+            </>
+          )
+        })()}
+      </AdminFormDrawer>
     </div>
   )
 }

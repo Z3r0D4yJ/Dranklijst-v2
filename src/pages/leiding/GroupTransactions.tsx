@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { CaretRight, Receipt } from '@phosphor-icons/react'
 import { AdminEmptyState, AdminSectionLabel, AdminSurface, DetailRow, PageHeader, SkeletonList } from '../../components/AdminThemePrimitives'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
-import { Badge } from '../../components/ui/badge'
 import { CustomSelect } from '../../components/CustomSelect'
 import { IconChip } from '../../components/IconChip'
 import { Pagination } from '../../components/Pagination'
@@ -12,7 +11,7 @@ import { usePagination } from '../../hooks/usePagination'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { formatMoney } from '../../lib/formatters'
 import { supabase } from '../../lib/supabase'
-import type { Period } from '../../lib/database.types'
+import type { ConsumptionCategory, Period } from '../../lib/database.types'
 
 const PAGE_SIZE = 50
 
@@ -23,6 +22,9 @@ interface TxRow {
   group_id: string
   group_name: string
   consumption_name: string
+  category: ConsumptionCategory | null
+  icon: string | null
+  color: string | null
   quantity: number
   unit_price: number
   total_price: number
@@ -95,7 +97,7 @@ export function GroupTransactions() {
 
       let query = supabase
         .from('transactions')
-        .select('id, user_id, quantity, unit_price, total_price, created_at, period_id, profiles(full_name), consumptions(name)')
+        .select('id, user_id, quantity, unit_price, total_price, created_at, period_id, profiles(full_name), consumptions(name, category, icon, color)')
         .in('user_id', userIds)
         .order('created_at', { ascending: false })
 
@@ -112,7 +114,10 @@ export function GroupTransactions() {
         created_at: string
         period_id: string
         profiles: { full_name: string }[] | { full_name: string } | null
-        consumptions: { name: string }[] | { name: string } | null
+        consumptions:
+          | { name: string; category: ConsumptionCategory | null; icon: string | null; color: string | null }[]
+          | { name: string; category: ConsumptionCategory | null; icon: string | null; color: string | null }
+          | null
       }>).map((row) => {
         const profileRow = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
         const consumption = Array.isArray(row.consumptions) ? row.consumptions[0] : row.consumptions
@@ -124,6 +129,9 @@ export function GroupTransactions() {
           group_id: groupInfo!.id,
           group_name: groupInfo!.name,
           consumption_name: consumption?.name ?? 'Onbekend',
+          category: consumption?.category ?? null,
+          icon: consumption?.icon ?? null,
+          color: consumption?.color ?? null,
           quantity: row.quantity,
           unit_price: row.unit_price,
           total_price: row.total_price,
@@ -212,24 +220,20 @@ export function GroupTransactions() {
                   }}
                 >
                   <div className="flex items-start gap-3">
-                    <IconChip tone="primary" icon={Receipt} size={36} />
+                    <IconChip
+                      tone={tx.category ?? 'primary'}
+                      colorName={tx.color ?? undefined}
+                      iconName={tx.icon ?? undefined}
+                      size={36}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px] font-bold m-0 truncate" style={{ color: 'var(--color-text-primary)' }}>
                             {tx.full_name}
                           </p>
-                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                            <Badge
-                              variant="secondary"
-                              size="sm"
-                              className="max-w-full whitespace-normal break-words text-left leading-[1.25]"
-                            >
-                              {tx.consumption_name} x{tx.quantity}
-                            </Badge>
-                          </div>
-                          <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                            {formatTransactionMoment(tx.created_at)}
+                          <p className="m-0 mt-0.5 text-[12px] font-medium truncate" style={{ color: 'var(--color-text-muted)' }}>
+                            {tx.consumption_name} · {tx.quantity}× · {formatTransactionMoment(tx.created_at)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -255,16 +259,32 @@ export function GroupTransactions() {
         onOpenChange={(open) => {
           if (!open) setSelectedTxId(null)
         }}
-        title={selectedTx?.full_name ?? 'Transactie'}
-        description={selectedTx ? `${selectedTx.group_name} - ${selectedTxPeriodName}` : undefined}
+        title={selectedTx?.consumption_name ?? 'Transactie'}
+        description={selectedTxPeriodName}
         bodyClassName="space-y-3"
       >
         {selectedTx && (
-          <section className="space-y-2">
-            <AdminSectionLabel>Details</AdminSectionLabel>
+          <>
+            <div className="flex items-center gap-3">
+              <IconChip
+                tone={selectedTx.category ?? 'primary'}
+                colorName={selectedTx.color ?? undefined}
+                iconName={selectedTx.icon ?? undefined}
+                size={56}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="m-0 text-[18px] font-extrabold tracking-[-0.3px]" style={{ color: 'var(--color-text-primary)' }}>
+                  {selectedTx.consumption_name}
+                </p>
+                <p className="m-0 mt-0.5 text-[22px] font-extrabold tracking-[-0.5px] tabular-nums" style={{ color: 'var(--color-primary)' }}>
+                  {formatMoney(selectedTx.total_price)}
+                </p>
+              </div>
+            </div>
+
             <AdminSurface>
-              <DetailRow first label="Consumptie" value={selectedTx.consumption_name} />
-              <DetailRow label="Aantal" value={String(selectedTx.quantity)} />
+              <DetailRow first label="Lid" value={selectedTx.full_name} />
+              <DetailRow label="Aantal" value={`${selectedTx.quantity}×`} />
               <DetailRow label="Stukprijs" value={formatMoney(selectedTx.unit_price)} />
               <DetailRow label="Totaal" value={formatMoney(selectedTx.total_price)} />
               <DetailRow
@@ -278,7 +298,7 @@ export function GroupTransactions() {
                 })}
               />
             </AdminSurface>
-          </section>
+          </>
         )}
       </AdminFormDrawer>
     </div>

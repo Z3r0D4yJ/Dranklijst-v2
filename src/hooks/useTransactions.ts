@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import type { ConsumptionCategory } from '../lib/database.types'
 
 export interface TransactionItem {
   id: string
@@ -9,6 +10,9 @@ export interface TransactionItem {
   total_price: number
   created_at: string
   consumption_name: string
+  category: ConsumptionCategory | null
+  icon: string | null
+  color: string | null
   period_id: string
 }
 
@@ -21,7 +25,7 @@ export function useTransactions(periodId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transactions')
-        .select('id, quantity, unit_price, total_price, created_at, period_id, consumptions(name)')
+        .select('id, quantity, unit_price, total_price, created_at, period_id, consumptions(name, category, icon, color)')
         .eq('user_id', user!.id)
         .eq('period_id', periodId!)
         .order('created_at', { ascending: false })
@@ -35,7 +39,7 @@ export function useTransactions(periodId: string | undefined) {
         total_price: number
         created_at: string
         period_id: string
-        consumptions: { name: string } | null
+        consumptions: { name: string; category: ConsumptionCategory | null; icon: string | null; color: string | null } | null
       }>).map(t => ({
         id: t.id,
         quantity: t.quantity,
@@ -44,6 +48,9 @@ export function useTransactions(periodId: string | undefined) {
         created_at: t.created_at,
         period_id: t.period_id,
         consumption_name: t.consumptions?.name ?? 'Onbekend',
+        category: t.consumptions?.category ?? null,
+        icon: t.consumptions?.icon ?? null,
+        color: t.consumptions?.color ?? null,
       })) as TransactionItem[]
     },
   })
