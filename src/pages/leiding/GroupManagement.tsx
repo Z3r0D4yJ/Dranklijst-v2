@@ -588,7 +588,7 @@ export function GroupManagement() {
                           <IconActionButton
                             onClick={() => { setArmedRemoveMemberId(null); void removeMember(member.id, member.user_id) }}
                             disabled={actionLoading === member.id}
-                            variant="danger"
+                            variant="danger-soft"
                             size="sm"
                             aria-label={`Bevestig verwijderen ${member.fullName}`}
                           >
