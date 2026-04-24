@@ -120,14 +120,24 @@ function ScrollToTop() {
       scheduleScrollSync('clamp')
     }
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') scheduleScrollSync('clamp')
+    }
+
     window.addEventListener('pageshow', handlePageShow)
+    window.addEventListener('focus', handleViewportChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     window.addEventListener('resize', handleViewportChange)
     window.visualViewport?.addEventListener('resize', handleViewportChange)
+    window.visualViewport?.addEventListener('scroll', handleViewportChange)
 
     return () => {
       window.removeEventListener('pageshow', handlePageShow)
+      window.removeEventListener('focus', handleViewportChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('resize', handleViewportChange)
       window.visualViewport?.removeEventListener('resize', handleViewportChange)
+      window.visualViewport?.removeEventListener('scroll', handleViewportChange)
     }
   }, [])
 
