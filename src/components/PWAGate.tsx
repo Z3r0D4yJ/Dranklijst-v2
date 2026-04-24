@@ -33,18 +33,18 @@ function GateScreen({ canInstall, install }: { canInstall: boolean; install: () 
           className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
           style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(3,10,22,0.14) 100%)' }}
         />
-        <p className="text-white text-[36px] font-extrabold tracking-[-1px] mb-2 relative z-10">
-          Dranklijst
-        </p>
-        <p className="text-[14px] font-medium relative z-10 mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
-          Chiro Reinaert Lochristi
-        </p>
         <img
           src="/fox.png"
           alt=""
-          className="relative z-10"
-          style={{ width: 190, height: 190 }}
+          className="relative z-10 mb-5"
+          style={{ width: 160, height: 160 }}
         />
+        <p className="text-white text-[32px] font-extrabold tracking-[-0.8px] m-0 relative z-10">
+          Dranklijst
+        </p>
+        <p className="text-[14px] font-medium mt-2 relative z-10" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          Chiro Reinaert Lochristi
+        </p>
       </div>
 
       {/* Install card */}
