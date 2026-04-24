@@ -173,18 +173,18 @@ export function Home() {
 
       {/* ─── Empty / no-group states ─────────────── */}
       {!groupLoading && !group && (
-        <div className="px-5 mt-10 flex flex-col items-center text-center">
-          <img src="/fox.png" alt="" className="w-16 h-16 object-cover rounded-full mx-auto mb-3 opacity-60" style={{ animation: 'dl-wiggle 2.6s ease-in-out infinite' }} />
-          <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>Nog geen groep</p>
-          <p className="text-[13px] mt-1 mb-5" style={{ color: 'var(--color-text-secondary)' }}>Dien een join-aanvraag in om consumpties te kopen.</p>
-          <ActionPillButton
-            onClick={() => navigate('/join-group')}
-            variant="accent"
-            size="md"
-          >
-            <Users size={18} weight="bold" />
-            Groep joinen
-          </ActionPillButton>
+        <div className="px-5 mt-6">
+          <EmptyState
+            icon={Users}
+            title="Nog geen groep"
+            description="Dien een join-aanvraag in bij je groep om consumpties te kunnen kopen."
+            action={
+              <ActionPillButton onClick={() => navigate('/join-group')} variant="accent" size="md">
+                <Users size={16} weight="bold" />
+                Groep joinen
+              </ActionPillButton>
+            }
+          />
         </div>
       )}
 

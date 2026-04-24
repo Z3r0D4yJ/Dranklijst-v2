@@ -39,6 +39,7 @@ interface AdminEmptyStateProps {
   icon: FC<IconProps>
   title: ReactNode
   description: ReactNode
+  action?: ReactNode
   tone?: IconChipTone
   className?: string
 }
@@ -178,6 +179,7 @@ export function AdminEmptyState({
   icon,
   title,
   description,
+  action,
   tone = 'primary',
   className,
 }: AdminEmptyStateProps) {
@@ -193,6 +195,7 @@ export function AdminEmptyState({
       <p className="m-0 mt-1 text-[13px] leading-[1.55]" style={{ color: 'var(--color-text-muted)' }}>
         {description}
       </p>
+      {action && <div className="mt-5">{action}</div>}
     </div>
   )
 }
