@@ -85,18 +85,17 @@ export function NotificationsSheet({ onClose }: Props) {
       title="Meldingen"
       description={unreadCount > 0 ? `${unreadCount} ongelezen` : undefined}
       maxHeight="var(--drawer-max-height-compact)"
-      footer={
-        unreadCount > 0 ? (
-          <ActionPillButton
-            onClick={markAllRead}
-            variant="primary-soft"
-            size="md"
-            className="w-full"
-          >
-            <CheckCircle size={14} color="currentColor" weight="fill" />
-            Alles gelezen
-          </ActionPillButton>
-        ) : undefined
+      headerAction={
+        <ActionPillButton
+          onClick={markAllRead}
+          variant="primary-soft"
+          size="sm"
+          className="h-9"
+          disabled={unreadCount === 0}
+        >
+          <CheckCircle size={13} color="currentColor" weight="fill" />
+          Alles gelezen
+        </ActionPillButton>
       }
     >
       {isLoading && (

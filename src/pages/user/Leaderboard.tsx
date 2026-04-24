@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
-import { Crown, Medal } from '@phosphor-icons/react'
+import { Crown, Medal, Trophy } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
-import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useLeaderboard, type LeaderboardEntry, type LeaderboardGroup } from '../../hooks/useLeaderboard'
 import { useMyGroups } from '../../hooks/useMyGroups'
+import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { useSwipe } from '../../hooks/useSwipe'
 import { badgeVariants } from '../../components/ui/badge'
-import { PageHeader } from '../../components/AdminThemePrimitives'
+import { EmptyState, PageHeader } from '../../components/AdminThemePrimitives'
 
 function Pillar({ rank, name, total, height }: { rank: number; name: string; total: number; height: number }) {
   const tone = rank === 1 ? 'var(--color-accent)' : rank === 2 ? 'var(--color-silver)' : 'var(--color-bronze)'
@@ -105,11 +105,14 @@ function GroupView({ group, userId }: { group: LeaderboardGroup; userId: string 
 export function Leaderboard() {
   useThemeColor('--color-surface')
   const { profile } = useAuth()
-  const { data: period } = useActivePeriod()
-  const { data: allGroups, isLoading } = useLeaderboard(period?.id)
+  const { data: period, isLoading: periodLoading } = useActivePeriod()
+
+  const { data: allGroups, isLoading: groupsLoading } = useLeaderboard(period?.id)
   const { data: myGroups } = useMyGroups()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const tabBarRef = useRef<HTMLDivElement>(null)
+
+  const isLoading = periodLoading || groupsLoading
 
   const canSeeAll = profile?.role === 'kas'
   const isLeaderLike = profile?.role === 'leiding' || profile?.role === 'kas'
@@ -212,16 +215,22 @@ export function Leaderboard() {
       )}
 
       {!isLoading && !period && (
-        <div className="px-5 mt-10 text-center">
-          <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Geen actieve periode.</p>
+        <div className="px-5 mt-6">
+          <EmptyState
+            icon={Trophy}
+            title="Geen actieve periode"
+            description="Het leaderboard is zichtbaar wanneer de kas een nieuwe periode start."
+          />
         </div>
       )}
 
       {!isLoading && period && visibleGroups.length === 0 && (
-        <div className="px-5 mt-10 text-center">
-          <img src="/fox.png" alt="" className="w-16 h-16 object-cover rounded-full mx-auto mb-3 opacity-60" style={{ animation: 'dl-wiggle 2.6s ease-in-out infinite' }} />
-          <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>Nog geen scores</p>
-          <p className="text-[13px] mt-1" style={{ color: 'var(--color-text-muted)' }}>Koop iets om op het leaderboard te komen.</p>
+        <div className="px-5 mt-6">
+          <EmptyState
+            icon={Trophy}
+            title="Nog geen scores"
+            description="Koop iets om op het leaderboard te komen."
+          />
         </div>
       )}
 

@@ -150,7 +150,7 @@ export function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 mt-1"
+            className="w-full shrink-0 text-[14px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-60 mt-1"
             style={{
               background: 'var(--color-primary)',
               color: 'white',

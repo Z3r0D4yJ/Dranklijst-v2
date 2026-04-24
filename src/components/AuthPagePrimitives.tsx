@@ -90,7 +90,7 @@ export function AuthGoogleButton({
     <button
       type={type}
       className={cn(
-        'w-full flex items-center justify-center gap-2.5 text-[14px] font-semibold active:scale-[0.98] transition-transform',
+        'w-full shrink-0 flex items-center justify-center gap-2.5 text-[14px] font-semibold active:scale-[0.98] transition-transform',
         className,
       )}
       style={{

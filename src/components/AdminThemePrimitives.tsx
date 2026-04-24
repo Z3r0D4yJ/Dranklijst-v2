@@ -204,21 +204,25 @@ interface PageHeaderProps {
   title: ReactNode
   sub?: ReactNode
   meta?: ReactNode
+  trailing?: ReactNode
   className?: string
 }
 
-export function PageHeader({ title, sub, meta, className }: PageHeaderProps) {
+export function PageHeader({ title, sub, meta, trailing, className }: PageHeaderProps) {
   return (
     <div
       className={cn('px-5 pt-[14px] pb-4', className)}
       style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}
     >
-      <h1
-        className="m-0 text-[22px] font-extrabold tracking-[-0.5px]"
-        style={{ color: 'var(--color-text-primary)' }}
-      >
-        {title}
-      </h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1
+          className="m-0 text-[22px] font-extrabold tracking-[-0.5px]"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          {title}
+        </h1>
+        {trailing && <div className="shrink-0">{trailing}</div>}
+      </div>
       {sub && (
         <p
           className="m-0 mt-0.5 text-[12px] font-medium"

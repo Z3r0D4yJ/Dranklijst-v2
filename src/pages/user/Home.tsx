@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Bell, CurrencyEur, Users } from '@phosphor-icons/react'
+import { Bell, CalendarBlank, CurrencyEur, Users } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { useMyGroup } from '../../hooks/useMyGroup'
 import { useGroupConsumptions, type GroupConsumptionItem } from '../../hooks/useGroupConsumptions'
@@ -20,6 +20,7 @@ import { IconChip } from '../../components/IconChip'
 import type { IconChipTone } from '../../components/IconChip'
 import { Badge } from '../../components/ui/badge'
 import { ActionPillButton } from '../../components/ui/action-button'
+import { EmptyState } from '../../components/AdminThemePrimitives'
 
 const ROLE_LABELS: Record<string, string> = {
   lid: 'Lid',
@@ -188,8 +189,12 @@ export function Home() {
       )}
 
       {!isLoading && group && !period && (
-        <div className="px-5 mt-8 text-center">
-          <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Geen actieve periode. Neem contact op met de kas.</p>
+        <div className="px-5 mt-6">
+          <EmptyState
+            icon={CalendarBlank}
+            title="Geen actieve periode"
+            description="Er is momenteel geen actieve periode. Neem contact op met de kas."
+          />
         </div>
       )}
 

@@ -30,6 +30,7 @@ interface AdminFormDrawerProps {
   description?: string
   children: ReactNode
   footer?: ReactNode
+  headerAction?: ReactNode
   dismissible?: boolean
   disableClose?: boolean
   contentClassName?: string
@@ -48,6 +49,7 @@ export function AdminFormDrawer({
   description,
   children,
   footer,
+  headerAction,
   dismissible = true,
   disableClose = false,
   contentClassName,
@@ -190,15 +192,18 @@ export function AdminFormDrawer({
               </DrawerDescription>
             )}
           </div>
-          <DrawerClose asChild>
-            <IconActionButton
-              aria-label="Sluiten"
-              size="sm"
-              disabled={disableClose}
-            >
-              <X size={16} color="currentColor" weight="bold" />
-            </IconActionButton>
-          </DrawerClose>
+          <div className="flex items-center gap-2 shrink-0">
+            {headerAction}
+            <DrawerClose asChild>
+              <IconActionButton
+                aria-label="Sluiten"
+                size="sm"
+                disabled={disableClose}
+              >
+                <X size={16} color="currentColor" weight="bold" />
+              </IconActionButton>
+            </DrawerClose>
+          </div>
         </DrawerHeader>
 
         <div
