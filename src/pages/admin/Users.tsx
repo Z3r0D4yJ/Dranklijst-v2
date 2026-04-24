@@ -49,7 +49,7 @@ function normalizeRole(role: string | null | undefined): Role {
 }
 
 function roleNeedsGroup(role: Role) {
-  return role === 'lid' || role === 'leiding'
+  return role === 'lid' || role === 'leiding' || role === 'kas'
 }
 
 function getRoleLabel(role: Role) {
@@ -68,7 +68,9 @@ function getDrawerHint(role: Role, groupName: string | null) {
   }
 
   if (role === 'kas') {
-    return 'Kas wordt automatisch alleen aan de Leiding groep gekoppeld.'
+    return groupName
+      ? `${groupName}: hoofdgroep + automatisch Leiding.`
+      : 'Kies een hoofdgroep. Leiding wordt automatisch extra gekoppeld.'
   }
 
   return groupName
@@ -202,20 +204,11 @@ export function Users() {
       .from('groups').select('id').eq('name', 'Leiding').maybeSingle()
     if (leidingError) throw leidingError
 
-    if (role === 'kas') {
-      // kas only goes to Leiding, no primary group
-      if (leidingGroup?.id) {
-        const { error } = await supabase.from('group_members').insert({ user_id: userId, group_id: leidingGroup.id })
-        if (error) throw error
-      }
-      return
-    }
-
     if (!groupId) return
 
     const memberships: { user_id: string; group_id: string }[] = [{ user_id: userId, group_id: groupId }]
 
-    if (role === 'leiding' && leidingGroup?.id && leidingGroup.id !== groupId) {
+    if ((role === 'leiding' || role === 'kas') && leidingGroup?.id && leidingGroup.id !== groupId) {
       memberships.push({ user_id: userId, group_id: leidingGroup.id })
     }
 
