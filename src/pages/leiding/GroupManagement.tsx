@@ -79,6 +79,7 @@ export function GroupManagement() {
   const [selectedPeriod, setSelectedPeriod] = useState('')
   const [membersDrawerOpen, setMembersDrawerOpen] = useState(false)
   const [requestsDrawerOpen, setRequestsDrawerOpen] = useState(false)
+  const [armedRemoveMemberId, setArmedRemoveMemberId] = useState<string | null>(null)
 
   const { data: requests, error: requestsError } = useJoinRequests(groupId)
 
@@ -505,7 +506,10 @@ export function GroupManagement() {
 
       <AdminFormDrawer
         open={membersDrawerOpen}
-        onOpenChange={setMembersDrawerOpen}
+        onOpenChange={(open) => {
+          setMembersDrawerOpen(open)
+          if (!open) setArmedRemoveMemberId(null)
+        }}
         title={groupName || 'Groep'}
         bodyClassName="space-y-3"
         contentClassName="max-w-md"
@@ -570,15 +574,38 @@ export function GroupManagement() {
                       {formatMoney(member.total)}
                     </span>
                     {!isSelf && (
-                      <IconActionButton
-                        onClick={() => removeMember(member.id, member.user_id)}
-                        disabled={actionLoading === member.id}
-                        variant="danger-soft"
-                        size="sm"
-                        aria-label={`Verwijder ${member.fullName}`}
-                      >
-                        <Trash size={14} color="currentColor" />
-                      </IconActionButton>
+                      armedRemoveMemberId === member.id ? (
+                        <div className="flex shrink-0 gap-1.5">
+                          <IconActionButton
+                            onClick={() => setArmedRemoveMemberId(null)}
+                            disabled={actionLoading === member.id}
+                            variant="neutral"
+                            size="sm"
+                            aria-label="Annuleren"
+                          >
+                            <X size={14} color="currentColor" weight="bold" />
+                          </IconActionButton>
+                          <IconActionButton
+                            onClick={() => { setArmedRemoveMemberId(null); void removeMember(member.id, member.user_id) }}
+                            disabled={actionLoading === member.id}
+                            variant="danger"
+                            size="sm"
+                            aria-label={`Bevestig verwijderen ${member.fullName}`}
+                          >
+                            <Check size={14} color="currentColor" weight="bold" />
+                          </IconActionButton>
+                        </div>
+                      ) : (
+                        <IconActionButton
+                          onClick={() => setArmedRemoveMemberId(member.id)}
+                          disabled={actionLoading === member.id}
+                          variant="danger-soft"
+                          size="sm"
+                          aria-label={`Verwijder ${member.fullName}`}
+                        >
+                          <Trash size={14} color="currentColor" />
+                        </IconActionButton>
+                      )
                     )}
                   </div>
                 )
