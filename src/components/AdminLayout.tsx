@@ -5,6 +5,7 @@ import { useThemeColor } from '../hooks/useThemeColor'
 import { useAuth } from '../context/AuthContext'
 import { useSwipe } from '../hooks/useSwipe'
 import { BottomNav } from './BottomNav'
+import { OfflineBanner } from './OfflineBanner'
 
 export function AdminLayout() {
   useThemeColor('--color-surface')
@@ -53,6 +54,7 @@ export function AdminLayout() {
       style={{ background: 'var(--color-bg)' }}
       {...swipe}
     >
+      <OfflineBanner />
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px 0' }}>
         <h1 className="text-[22px] font-extrabold tracking-[-0.5px] pb-4" style={{ color: 'var(--color-text-primary)' }}>Beheer</h1>
         <div ref={tabBarRef} data-swipe-ignore className="flex gap-4 overflow-x-auto scrollbar-hide pb-0">

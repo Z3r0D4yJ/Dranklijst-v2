@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
+import { toast } from 'sonner'
 import { useAuth } from '../context/AuthContext'
+import { useOnlineStatus } from '../hooks/useOnlineStatus'
 import type { Role } from '../lib/database.types'
 import { Spinner } from './ui/spinner'
 
@@ -15,6 +18,15 @@ interface Props {
 
 export function ProtectedRoute({ minRole = 'lid' }: Props) {
   const { session, profile, loading } = useAuth()
+  const online = useOnlineStatus()
+  const requiresNetwork = minRole === 'leiding' || minRole === 'kas'
+  const blockOffline = requiresNetwork && !online
+
+  useEffect(() => {
+    if (blockOffline) {
+      toast.error('Deze pagina vereist verbinding')
+    }
+  }, [blockOffline])
 
   if (loading) {
     return (
@@ -31,6 +43,7 @@ export function ProtectedRoute({ minRole = 'lid' }: Props) {
   const requiredRank = ROLE_RANK[minRole] ?? 0
 
   if (currentRank < requiredRank) return <Navigate to="/" replace />
+  if (blockOffline) return <Navigate to="/" replace />
 
   return <Outlet />
 }

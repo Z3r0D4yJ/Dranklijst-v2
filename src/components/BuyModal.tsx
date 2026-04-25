@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { X, Minus, Plus, ShoppingCart } from '@phosphor-icons/react'
+import { X, Minus, Plus, ShoppingCart, CloudSlash } from '@phosphor-icons/react'
 import { Spinner } from './ui/spinner'
 import { ActionPillButton, IconActionButton } from './ui/action-button'
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerTitle } from './ui/drawer'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
+import { enqueueTransaction } from '../lib/outbox'
 import { useAuth } from '../context/AuthContext'
+import { useOnlineStatus } from '../hooks/useOnlineStatus'
 import type { GroupConsumptionItem } from '../hooks/useGroupConsumptions'
 import { IconChip } from './IconChip'
 import type { IconChipTone } from './IconChip'
@@ -30,6 +32,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function BuyModal({ item, periodId, groupId, onClose, onSuccess }: Props) {
   const { user } = useAuth()
+  const online = useOnlineStatus()
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
 
@@ -39,18 +42,48 @@ export function BuyModal({ item, periodId, groupId, onClose, onSuccess }: Props)
     if (!user) return
     setLoading(true)
 
-    const { error } = await supabase.from('transactions').insert({
+    const payload = {
       user_id: user.id,
       consumption_id: item.consumption_id,
       period_id: periodId,
       group_id: groupId,
       quantity,
       unit_price: item.price,
+      consumption_name: item.name,
+      category: item.category ?? null,
+      icon: item.icon ?? null,
+      color: item.color ?? null,
+    }
+
+    if (!online) {
+      try {
+        await enqueueTransaction(payload)
+        onSuccess()
+      } catch {
+        toast.error('Kon niet opslaan voor sync. Probeer opnieuw.')
+        setLoading(false)
+      }
+      return
+    }
+
+    const { error } = await supabase.from('transactions').insert({
+      user_id: payload.user_id,
+      consumption_id: payload.consumption_id,
+      period_id: payload.period_id,
+      group_id: payload.group_id,
+      quantity: payload.quantity,
+      unit_price: payload.unit_price,
     })
 
     if (error) {
-      toast.error('Er ging iets mis. Probeer opnieuw.')
-      setLoading(false)
+      try {
+        await enqueueTransaction(payload)
+        toast.message('Geen verbinding — wacht op sync')
+        onSuccess()
+      } catch {
+        toast.error('Er ging iets mis. Probeer opnieuw.')
+        setLoading(false)
+      }
       return
     }
 
@@ -136,6 +169,40 @@ export function BuyModal({ item, periodId, groupId, onClose, onSuccess }: Props)
             € {Number(total).toFixed(2).replace('.', ',')}
           </span>
         </div>
+
+        {!online && (
+          <div
+            className="mb-3 flex items-center gap-3 rounded-card px-3.5 py-3"
+            style={{
+              background: 'var(--color-warning-bg)',
+              border: '1px solid var(--color-warning-border)',
+            }}
+          >
+            <div
+              className="shrink-0 flex items-center justify-center"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: 'color-mix(in oklch, var(--color-surface) 55%, transparent)',
+                border: '1px solid var(--color-warning-border)',
+              }}
+            >
+              <CloudSlash size={16} color="var(--color-warning)" weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-extrabold uppercase tracking-[1.2px] leading-none" style={{ color: 'var(--color-warning)' }}>
+                Geen verbinding
+              </p>
+              <p
+                className="text-[12px] font-semibold mt-1 leading-tight"
+                style={{ color: 'color-mix(in oklch, var(--color-warning) 70%, transparent)' }}
+              >
+                Wordt verstuurd zodra je weer online bent
+              </p>
+            </div>
+          </div>
+        )}
 
         <ActionPillButton
           onClick={handleBuy}

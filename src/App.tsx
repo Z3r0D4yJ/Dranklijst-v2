@@ -1,13 +1,18 @@
 import { useEffect, useLayoutEffect } from 'react'
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, useQueryClient } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { Toaster } from 'sonner'
+import { queryPersister } from './lib/query-persister'
+import { startSyncEngine } from './lib/sync-engine'
+import { requestPersistentStorage } from './lib/db'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { useTheme } from './context/ThemeContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PublicRoute } from './components/PublicRoute'
 import { BottomNav } from './components/BottomNav'
 import { AdminLayout } from './components/AdminLayout'
+import { OfflineBanner } from './components/OfflineBanner'
 import { Login } from './pages/auth/Login'
 import { Register } from './pages/auth/Register'
 import { JoinGroup } from './pages/auth/JoinGroup'
@@ -27,14 +32,28 @@ import { AllTransactions } from './pages/admin/AllTransactions'
 import { Groups } from './pages/admin/Groups'
 import { PWAGate } from './components/PWAGate'
 
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60_000,
+      gcTime: SEVEN_DAYS_MS,
       refetchOnMount: true,
     },
   },
 })
+
+const NON_PERSISTED_KEYS = new Set(['notifications', 'group-members'])
+
+function SyncEngineBoot() {
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    startSyncEngine(queryClient)
+    void requestPersistentStorage()
+  }, [queryClient])
+  return null
+}
 
 function SonnerToaster() {
   const { mode } = useTheme()
@@ -160,6 +179,7 @@ function PendingInviteHandler() {
 function AppLayout() {
   return (
     <>
+      <OfflineBanner />
       <Outlet />
       <BottomNav />
     </>
@@ -168,11 +188,24 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: queryPersister,
+        maxAge: SEVEN_DAYS_MS,
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) => {
+            const root = String(query.queryKey[0] ?? '')
+            return !NON_PERSISTED_KEYS.has(root)
+          },
+        },
+      }}
+    >
       <BrowserRouter>
         <AuthProvider>
           <PWAGate>
           <SonnerToaster />
+          <SyncEngineBoot />
           <ScrollToTop />
           <PendingInviteHandler />
           <Routes>
@@ -225,6 +258,6 @@ export default function App() {
           </PWAGate>
         </AuthProvider>
       </BrowserRouter>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   )
 }

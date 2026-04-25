@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import type { FC } from 'react'
 import type { IconProps } from '@phosphor-icons/react'
-import { SignOut, Users, Clock, CheckCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, XCircle, User, CaretRight, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash, X } from '@phosphor-icons/react'
+import { SignOut, Users, Clock, CheckCircle, Warning, Bell, BellSlash, DownloadSimple, Sun, Moon, Monitor, XCircle, User, CaretRight, CloudSlash, Gear, UsersThree, Receipt, PencilSimple, Camera, Lock, Eye, EyeSlash, X } from '@phosphor-icons/react'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { Spinner } from '../../components/ui/spinner'
 import { useAuth } from '../../context/AuthContext'
@@ -17,6 +17,7 @@ import type { Role } from '../../lib/database.types'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
 import { usePWAInstall } from '../../hooks/usePWAInstall'
 import { useTheme, type ThemeMode } from '../../context/ThemeContext'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { IconChip } from '../../components/IconChip'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { SURFACE_USER_AVATAR_STYLE, UserAvatar } from '../../components/UserAvatar'
@@ -74,7 +75,7 @@ const PAYMENT_STATUS_UI: Record<'unpaid' | 'pending', {
   },
 }
 
-function AccountRow({ icon, tone, label, sub, trailing, first, onClick }: {
+function AccountRow({ icon, tone, label, sub, trailing, first, onClick, disabled }: {
   icon: FC<IconProps>
   tone?: string
   label: string
@@ -82,15 +83,20 @@ function AccountRow({ icon, tone, label, sub, trailing, first, onClick }: {
   trailing?: React.ReactNode
   first?: boolean
   onClick?: () => void
+  disabled?: boolean
 }) {
+  const computedTrailing = disabled
+    ? <CloudSlash size={16} color="var(--color-text-muted)" weight="bold" />
+    : trailing ?? (onClick && <CaretRight size={16} color="var(--color-text-muted)" />)
+
   const inner = (
     <>
       <IconChip tone={(tone as never) ?? 'neutral'} icon={icon as never} size={36} />
-      <div className="flex-1">
-        <p className="text-[14px] font-bold" style={{ color: 'var(--color-text-primary)' }}>{label}</p>
-        {sub && <p className="text-[12px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{sub}</p>}
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-bold leading-tight truncate" style={{ color: 'var(--color-text-primary)' }}>{label}</p>
+        {sub && <p className="text-[12px] font-medium mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>{sub}</p>}
       </div>
-      {trailing ?? (onClick && <CaretRight size={16} color="var(--color-text-muted)" />)}
+      {computedTrailing}
     </>
   )
 
@@ -98,7 +104,8 @@ function AccountRow({ icon, tone, label, sub, trailing, first, onClick }: {
     return (
       <button
         onClick={onClick}
-        className="w-full flex items-center gap-3 px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+        disabled={disabled}
+        className="w-full flex items-center gap-3 px-3.5 py-3.5 text-left active:opacity-70 transition-opacity disabled:opacity-55 disabled:active:opacity-55 disabled:cursor-not-allowed"
         style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
       >
         {inner}
@@ -109,7 +116,10 @@ function AccountRow({ icon, tone, label, sub, trailing, first, onClick }: {
   return (
     <div
       className="flex items-center gap-3 px-3.5 py-3.5"
-      style={{ borderTop: first ? 'none' : '1px solid var(--color-border)' }}
+      style={{
+        borderTop: first ? 'none' : '1px solid var(--color-border)',
+        opacity: disabled ? 0.55 : 1,
+      }}
     >
       {inner}
     </div>
@@ -402,6 +412,7 @@ export function Profile() {
   const push = usePushSubscription()
   const pwa = usePWAInstall()
   const { mode, setMode } = useTheme()
+  const online = useOnlineStatus()
   const [joinRequests, setJoinRequests] = useState<JoinRequestWithGroup[]>([])
   const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>([])
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
@@ -495,9 +506,10 @@ export function Profile() {
           </div>
           <IconActionButton
             onClick={() => setEditOpen(true)}
+            disabled={!online}
             variant="primary-soft"
             className="shrink-0"
-            aria-label="Profiel bewerken"
+            aria-label={online ? 'Profiel bewerken' : 'Profiel bewerken (offline)'}
           >
             <PencilSimple size={16} color="currentColor" weight="bold" />
           </IconActionButton>
@@ -629,6 +641,7 @@ export function Profile() {
             icon={push.subscribed ? Bell : BellSlash}
             tone={push.subscribed ? 'success' : 'neutral'}
             label="Meldingen"
+            disabled={!online}
             sub={
               !push.supported
                 ? isStandalone
@@ -641,7 +654,7 @@ export function Profile() {
                 <Switch
                   checked={push.subscribed}
                   onCheckedChange={(checked) => checked ? push.enable() : push.disable()}
-                  disabled={push.loading}
+                  disabled={push.loading || !online}
                 />
               ) : undefined
             }
@@ -665,6 +678,7 @@ export function Profile() {
               icon={Users}
               label="Mijn groep"
               sub={myGroups.map(g => g.name).join(', ')}
+              disabled={!online}
               onClick={() => setGroupSheetId(myGroups[0].id)}
             />
           )}
@@ -701,6 +715,7 @@ export function Profile() {
                   tone="primary"
                   label="Groepsbeheer"
                   sub="Aanvragen & leden"
+                  disabled={!online}
                   onClick={() => navigate('/leiding/groep')}
                 />
               )}
@@ -710,6 +725,7 @@ export function Profile() {
                   tone="primary"
                   label="Groepstransacties"
                   sub="Aankopen van jouw groep"
+                  disabled={!online}
                   onClick={() => navigate('/leiding/transacties')}
                 />
               )}
@@ -720,6 +736,7 @@ export function Profile() {
                   tone="primary"
                   label="Beheerpanel"
                   sub="Dashboard, transacties & meer"
+                  disabled={!online}
                   onClick={() => navigate('/admin')}
                 />
               )}

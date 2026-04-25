@@ -2,6 +2,7 @@
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { registerRoute, NavigationRoute } from 'workbox-routing'
 import { NetworkFirst, NetworkOnly } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -25,7 +26,25 @@ registerRoute(
   })
 )
 
-// Supabase API: NetworkOnly — data must always be fresh, never serve stale cache
+// Supabase REST GET → NetworkFirst with cache fallback for offline reads
+registerRoute(
+  ({ url, request }) =>
+    url.hostname.endsWith('.supabase.co') &&
+    url.pathname.startsWith('/rest/v1/') &&
+    request.method === 'GET',
+  new NetworkFirst({
+    cacheName: 'supabase-rest-cache',
+    networkTimeoutSeconds: 4,
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 80,
+        maxAgeSeconds: 24 * 60 * 60, // 24h
+      }),
+    ],
+  })
+)
+
+// All other Supabase calls (writes, RPC, auth, storage) → NetworkOnly
 registerRoute(
   ({ url }) => url.hostname.endsWith('.supabase.co'),
   new NetworkOnly()

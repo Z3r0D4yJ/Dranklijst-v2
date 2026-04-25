@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CaretRight, Receipt } from '@phosphor-icons/react'
+import { CaretRight, Clock, Receipt, Warning } from '@phosphor-icons/react'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useTransactions } from '../../hooks/useTransactions'
 import { supabase } from '../../lib/supabase'
@@ -84,7 +84,7 @@ export function Transactions() {
   const { data: transactions, isLoading } = useTransactions(selectedPeriod?.id)
 
   const allTx = transactions ?? []
-  const total = allTx.reduce((s, t) => s + t.total_price, 0)
+  const total = allTx.reduce((s, t) => s + (t._rejected ? 0 : t.total_price), 0)
   const { slice: pageTx, page, totalPages, onPage } = usePagination(allTx, 30)
   const grouped = groupByDate(pageTx)
 
@@ -209,11 +209,33 @@ export function Transactions() {
                       size={36}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-bold leading-tight truncate" style={{ color: 'var(--color-text-primary)' }}>{t.consumption_name}</p>
-                      <p className="text-[12px] font-medium mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>{t.quantity}× · {time}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[14px] font-bold leading-tight truncate" style={{ color: 'var(--color-text-primary)' }}>{t.consumption_name}</p>
+                        {t._pending && (
+                          <Badge variant="warning" size="xs" uppercase className="gap-1">
+                            <Clock size={9} weight="fill" color="currentColor" />
+                            Wacht
+                          </Badge>
+                        )}
+                        {t._rejected && (
+                          <Badge variant="danger" size="xs" uppercase className="gap-1">
+                            <Warning size={9} weight="fill" color="currentColor" />
+                            Mislukt
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[12px] font-medium mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
+                        {t.quantity}× · {time}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[15px] font-extrabold tracking-[-0.2px] tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                      <span
+                        className="text-[15px] font-extrabold tracking-[-0.2px] tabular-nums"
+                        style={{
+                          color: t._rejected ? 'var(--color-danger)' : 'var(--color-text-primary)',
+                          opacity: t._pending ? 0.55 : 1,
+                        }}
+                      >
                         −€{t.total_price.toFixed(2).replace('.', ',')}
                       </span>
                       <CaretRight size={14} color="var(--color-text-muted)" />

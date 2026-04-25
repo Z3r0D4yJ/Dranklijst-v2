@@ -6,8 +6,20 @@ import { useMyGroups } from '../../hooks/useMyGroups'
 import { useActivePeriod } from '../../hooks/useActivePeriod'
 import { useThemeColor } from '../../hooks/useThemeColor'
 import { useSwipe } from '../../hooks/useSwipe'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { badgeVariants } from '../../components/ui/badge'
 import { EmptyState, PageHeader } from '../../components/AdminThemePrimitives'
+
+function formatRelativeTime(timestamp: number): string {
+  const diffMs = Date.now() - timestamp
+  const minutes = Math.floor(diffMs / 60_000)
+  if (minutes < 1) return 'zojuist'
+  if (minutes < 60) return `${minutes} ${minutes === 1 ? 'minuut' : 'minuten'} geleden`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} ${hours === 1 ? 'uur' : 'uur'} geleden`
+  const days = Math.floor(hours / 24)
+  return `${days} ${days === 1 ? 'dag' : 'dagen'} geleden`
+}
 
 function Pillar({ rank, name, total, height }: { rank: number; name: string; total: number; height: number }) {
   const tone = rank === 1 ? 'var(--color-accent)' : rank === 2 ? 'var(--color-silver)' : 'var(--color-bronze)'
@@ -107,7 +119,8 @@ export function Leaderboard() {
   const { profile } = useAuth()
   const { data: period, isLoading: periodLoading } = useActivePeriod()
 
-  const { data: allGroups, isLoading: groupsLoading } = useLeaderboard(period?.id)
+  const { data: allGroups, isLoading: groupsLoading, dataUpdatedAt } = useLeaderboard(period?.id)
+  const online = useOnlineStatus()
   const { data: myGroups } = useMyGroups()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const tabBarRef = useRef<HTMLDivElement>(null)
@@ -155,7 +168,14 @@ export function Leaderboard() {
   return (
     <div className="min-h-screen pb-nav-clearance" style={{ background: 'var(--color-bg)' }} {...swipe}>
       <div style={{ position: 'relative', zIndex: 10 }}>
-        <PageHeader title="Leaderboard" sub={period?.name} />
+        <PageHeader
+          title="Leaderboard"
+          sub={
+            !online && dataUpdatedAt
+              ? `${period?.name ?? ''} · bijgewerkt ${formatRelativeTime(dataUpdatedAt)}`.trim()
+              : period?.name
+          }
+        />
       </div>
 
       {/* ─── Group tabs (only when multiple groups) ── */}
