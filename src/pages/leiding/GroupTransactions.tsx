@@ -204,14 +204,10 @@ export function GroupTransactions() {
                   key={tx.id}
                   type="button"
                   onClick={() => setSelectedTxId(tx.id)}
-                  className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
-                  style={{
-                    borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
-                    fontFamily: 'inherit',
-                    animationDelay: `${120 + index * 45}ms`,
-                  }}
+                  className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                  style={{ borderTop: index === 0 ? 'none' : '1px solid var(--color-border)' }}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 dl-stagger-row" style={{ animationDelay: `${120 + index * 45}ms` }}>
                     <IconChip
                       tone={tx.category ?? 'primary'}
                       colorName={tx.color ?? undefined}

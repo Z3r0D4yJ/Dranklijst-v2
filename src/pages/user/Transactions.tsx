@@ -198,12 +198,10 @@ export function Transactions() {
                     key={t.id}
                     type="button"
                     onClick={() => setSelectedTxId(t.id)}
-                    className="w-full flex items-center gap-3 px-3.5 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
-                    style={{
-                      borderTop: i === 0 ? 'none' : '1px solid var(--color-border)',
-                      animationDelay: `${120 + i * 45}ms`,
-                    }}
+                    className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                    style={{ borderTop: i === 0 ? 'none' : '1px solid var(--color-border)' }}
                   >
+                  <div className="flex items-center gap-3 dl-stagger-row" style={{ animationDelay: `${120 + i * 45}ms` }}>
                     <IconChip
                       tone={t.category ?? 'primary'}
                       colorName={t.color ?? undefined}
@@ -220,6 +218,7 @@ export function Transactions() {
                       </span>
                       <CaretRight size={14} color="var(--color-text-muted)" />
                     </div>
+                  </div>
                   </button>
                 )
               })}
