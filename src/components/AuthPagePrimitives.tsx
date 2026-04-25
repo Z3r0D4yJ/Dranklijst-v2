@@ -47,7 +47,6 @@ export function AuthSplashHeader({
           backgroundImage: 'var(--auth-header-pattern-image)',
           backgroundRepeat: 'repeat',
           backgroundSize: '100px 100px',
-          backgroundPosition: '0 calc(-1 * var(--safe-area-top))',
           opacity: 'var(--auth-header-pattern-opacity)',
           pointerEvents: 'none',
         }}

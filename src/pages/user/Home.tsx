@@ -94,18 +94,7 @@ export function Home() {
   return (
     <div ref={containerRef} className="min-h-screen pb-nav-fab-clearance relative" style={{ background: 'var(--color-bg)' }}>
       {/* ─── Header ─────────────────────────────── */}
-      <div style={{ background: 'var(--color-header)', padding: '14px 20px 32px', color: 'var(--color-header-fg)', position: 'relative', overflow: 'hidden' }}>
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: 'var(--auth-header-pattern-image)',
-            backgroundRepeat: 'repeat',
-            backgroundSize: '100px 100px',
-            backgroundPosition: '0 calc(-1 * var(--safe-area-top))',
-            opacity: 'var(--auth-header-pattern-opacity)',
-          }}
-        />
+      <div style={{ background: 'var(--color-header)', padding: '14px 20px 32px', color: 'var(--color-header-fg)' }}>
         <div className="flex justify-between items-center mb-[18px]">
           <div className="flex items-center gap-3.5">
             <button
