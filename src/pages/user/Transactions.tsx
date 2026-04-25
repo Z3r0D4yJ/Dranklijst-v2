@@ -132,7 +132,7 @@ export function Transactions() {
                 {p.is_active && (
                   <span
                     className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ background: isActive ? 'rgba(255,255,255,0.7)' : 'var(--color-success)' }}
+                    style={{ background: isActive ? 'var(--color-white)' : 'var(--color-success)', opacity: isActive ? 0.7 : 1 }}
                   />
                 )}
               </button>
@@ -154,7 +154,7 @@ export function Transactions() {
           />
           <p className="text-[12px] font-semibold uppercase tracking-[0.6px] relative" style={{ opacity: 0.75 }}>Totaal verbruikt</p>
           {(!selectedPeriodId || isLoading) ? (
-            <div className="h-[48px] w-36 rounded-lg mt-1 mb-2.5" style={{ background: 'rgba(255,255,255,0.2)' }} />
+            <div className="h-[48px] w-36 rounded-lg mt-1 mb-2.5" style={{ background: 'var(--color-primary-skeleton)' }} />
           ) : (
             <p className="text-[40px] font-extrabold tracking-[-1px] mt-1 mb-2.5 tabular-nums relative">€ {total.toFixed(2).replace('.', ',')}</p>
           )}

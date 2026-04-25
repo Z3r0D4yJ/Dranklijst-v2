@@ -20,7 +20,7 @@ function Pillar({ rank, name, total, height }: { rank: number; name: string; tot
         className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
         style={{ background: tone }}
       >
-        <IconEl size={22} color="#fff" weight="bold" />
+        <IconEl size={22} color="var(--color-white)" weight="bold" />
       </div>
       <p className="text-[13px] font-bold text-center leading-tight truncate w-full px-1" style={{ color: 'var(--color-text-primary)' }}>{name}</p>
       <p className="text-[13px] font-extrabold tabular-nums" style={{ color: 'var(--color-primary)' }}>€ {total.toFixed(2).replace('.', ',')}</p>
@@ -52,7 +52,7 @@ function EntryRow({ entry, isMe, index }: { entry: LeaderboardEntry; isMe: boole
         className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[13px] font-extrabold tracking-[-0.2px] shrink-0"
         style={{
           background: tone ?? 'var(--color-surface-alt)',
-          color: isPodium ? '#fff' : 'var(--color-text-secondary)',
+          color: isPodium ? 'var(--color-white)' : 'var(--color-text-secondary)',
         }}
       >
         {entry.rank}

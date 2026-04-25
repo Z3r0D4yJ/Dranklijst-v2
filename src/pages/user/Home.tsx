@@ -110,14 +110,14 @@ export function Home() {
               />
             </button>
             <div>
-              <p className="text-[13px] font-medium opacity-70 leading-none">Hoi {firstName}</p>
+              <p className="text-[13px] font-semibold opacity-70 leading-none">Hoi {firstName}</p>
               <h1 className="text-[22px] font-extrabold leading-tight tracking-[-0.4px] mt-0.5">Dorst?</h1>
             </div>
           </div>
           <button
             onClick={() => setShowNotifs(true)}
             className="w-10 h-10 rounded-xl flex items-center justify-center relative active:scale-95 transition-transform"
-            style={{ background: 'rgba(255,255,255,0.12)' }}
+            style={{ background: 'var(--color-header-btn-bg)' }}
           >
             <Bell size={20} color="var(--color-header-fg)" />
             {unreadCount > 0 && (
