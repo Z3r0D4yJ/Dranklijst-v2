@@ -308,6 +308,7 @@ export function AllTransactions() {
                   size="md"
                   className="w-full"
                 >
+                  <Trash size={15} color="currentColor" weight="bold" />
                   {deletingId === selectedTx.id ? 'Verwijderen...' : 'Ja, verwijderen'}
                 </ActionPillButton>
               </div>
