@@ -40,42 +40,30 @@ export function Dashboard() {
   }, [])
 
   useEffect(() => {
-    if (!selectedPeriod) return
+    if (loading) return
 
     let cancelled = false
     setStatsLoading(true)
 
+    const txQuery = supabase.from('transactions').select('group_id, total_price')
+    const filteredTxQuery = selectedPeriod ? txQuery.eq('period_id', selectedPeriod) : txQuery
+
     Promise.all([
-      supabase.from('transactions').select('user_id, total_price').eq('period_id', selectedPeriod),
-      supabase.from('groups').select('id, name').neq('name', 'Leiding'),
-      supabase.from('group_members').select('user_id, groups(id, name)'),
-    ]).then(([txRes, groupsRes, membershipsRes]) => {
+      filteredTxQuery,
+      supabase.from('groups').select('id, name'),
+    ]).then(([txRes, groupsRes]) => {
       if (cancelled) return
 
-      const allTx = (txRes.data ?? []) as { user_id: string; total_price: number }[]
+      const allTx = (txRes.data ?? []) as { group_id: string | null; total_price: number }[]
       const allGroups = (groupsRes.data ?? []) as { id: string; name: string }[]
-      const allMemberships = (membershipsRes.data ?? []) as Array<{
-        user_id: string
-        groups: { id: string; name: string }[] | { id: string; name: string } | null
-      }>
 
       const totalRevenue = allTx.reduce((sum, transaction) => sum + Number(transaction.total_price), 0)
       const totalTransactions = allTx.length
 
-      const dashboardGroupIds = new Set(allGroups.map((group) => group.id))
-      const memberGroupMap: Record<string, string> = {}
-      for (const membership of allMemberships) {
-        const group = Array.isArray(membership.groups) ? membership.groups[0] : membership.groups
-        if (!group) continue
-        if (!dashboardGroupIds.has(group.id)) continue
-        if (memberGroupMap[membership.user_id]) continue
-        memberGroupMap[membership.user_id] = group.id
-      }
-
       const groupTotals: Record<string, number> = {}
       for (const transaction of allTx) {
-        const groupId = memberGroupMap[transaction.user_id]
-        if (groupId) groupTotals[groupId] = (groupTotals[groupId] ?? 0) + Number(transaction.total_price)
+        if (!transaction.group_id) continue
+        groupTotals[transaction.group_id] = (groupTotals[transaction.group_id] ?? 0) + Number(transaction.total_price)
       }
 
       const groupStats: GroupStat[] = allGroups
@@ -96,7 +84,7 @@ export function Dashboard() {
     return () => {
       cancelled = true
     }
-  }, [selectedPeriod])
+  }, [selectedPeriod, loading])
 
   if (loading) {
     return (
@@ -110,6 +98,7 @@ export function Dashboard() {
   }
 
   const currentPeriod = periods.find((period) => period.id === selectedPeriod)
+  const isAllPeriods = selectedPeriod === ''
   const visibleGroupStats = (data?.groupStats ?? []).filter((group) => group.total > 0)
   const maxVisibleGroupTotal = Math.max(...visibleGroupStats.map((group) => group.total), 1)
 
@@ -129,12 +118,19 @@ export function Dashboard() {
               label: period.name,
               statusDot: period.is_active ? 'success' : undefined,
             }))}
-            icon={<IconChip tone={currentPeriod?.is_active ? 'success' : 'neutral'} icon={CalendarBlank} size={28} />}
+            placeholder="Alle periodes"
+            icon={
+              <IconChip
+                tone={isAllPeriods ? 'primary' : currentPeriod?.is_active ? 'success' : 'neutral'}
+                icon={CalendarBlank}
+                size={28}
+              />
+            }
           />
         </section>
       )}
 
-      {selectedPeriod && (
+      {(selectedPeriod || isAllPeriods) && (
         <>
           {statsLoading ? (
             <section className="space-y-2">
@@ -234,7 +230,11 @@ export function Dashboard() {
                 <AdminEmptyState
                   icon={Receipt}
                   title="Geen transacties"
-                  description="Voor deze periode zijn nog geen aankopen geregistreerd."
+                  description={
+                    isAllPeriods
+                      ? 'Er zijn nog geen aankopen geregistreerd.'
+                      : 'Voor deze periode zijn nog geen aankopen geregistreerd.'
+                  }
                 />
               )}
             </>
