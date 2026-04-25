@@ -4,12 +4,22 @@ function StatusBarInsetLayer() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed left-0 right-0 top-0 z-40"
+      className="pointer-events-none fixed left-0 right-0 top-0 z-40 overflow-hidden"
       style={{
         height: 'max(env(safe-area-inset-top, 0px), 0px)',
         backgroundColor: 'var(--pwa-status-bar-fill, var(--color-header))',
       }}
-    />
+    >
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'var(--auth-header-pattern-image)',
+          backgroundRepeat: 'repeat',
+          backgroundSize: '100px 100px',
+          opacity: 'var(--auth-header-pattern-opacity)',
+        }}
+      />
+    </div>
   )
 }
 
