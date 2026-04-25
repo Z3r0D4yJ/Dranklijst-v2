@@ -115,25 +115,34 @@ export function Consumptions() {
     setLoading(true)
 
     try {
-      const { error } = editing
-        ? await supabase
+      if (editing) {
+        const { error } = await supabase
           .from('consumptions')
-          .update({
-            name: form.name.trim(),
-            price,
-            category: form.category,
-          })
+          .update({ name: form.name.trim(), price, category: form.category })
           .eq('id', editing.id)
-        : await supabase.from('consumptions').insert({
-          name: form.name.trim(),
-          price,
-          category: form.category,
-          is_active: true,
-        })
 
-      if (error) {
-        toast.error(error.message || 'Kon consumptie niet opslaan.')
-        return
+        if (error) {
+          toast.error(error.message || 'Kon consumptie niet opslaan.')
+          return
+        }
+      } else {
+        const { data: newConsumption, error } = await supabase
+          .from('consumptions')
+          .insert({ name: form.name.trim(), price, category: form.category, is_active: true })
+          .select('id')
+          .single()
+
+        if (error || !newConsumption) {
+          toast.error(error?.message || 'Kon consumptie niet opslaan.')
+          return
+        }
+
+        const { data: groups } = await supabase.from('groups').select('id')
+        if (groups?.length) {
+          await supabase.from('group_consumptions').insert(
+            groups.map(g => ({ group_id: g.id, consumption_id: newConsumption.id, is_visible: true }))
+          )
+        }
       }
 
       await Promise.all([
