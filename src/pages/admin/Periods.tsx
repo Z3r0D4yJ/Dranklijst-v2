@@ -205,7 +205,7 @@ export function Periods() {
       {activeStats.map(({ period, user_count, total }) => (
         <section key={period.id} className="space-y-2">
           <AdminSectionLabel>Actieve periode</AdminSectionLabel>
-          <AdminSurface padded className="space-y-3 dl-stagger-card" style={{ animationDelay: '80ms' }}>
+          <AdminSurface padded className="space-y-3 dl-stagger-card" style={{ animationDelay: '60ms' }}>
             <div className="flex items-start gap-3">
               <IconChip tone="primary" icon={CalendarBlank} size={38} />
               <div className="min-w-0 flex-1">
@@ -290,7 +290,7 @@ export function Periods() {
 
       {closedStats.length > 0 && (
         <section className="space-y-2">
-          <div className="dl-stagger-card" style={{ animationDelay: '160ms' }}>
+          <div className="dl-stagger-card" style={{ animationDelay: '120ms' }}>
             <AdminSectionLabel>Afgesloten periodes</AdminSectionLabel>
           </div>
           <AdminSurface>
@@ -299,14 +299,10 @@ export function Periods() {
                 key={period.id}
                 type="button"
                 onClick={() => goToTransactions(period.id)}
-                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
-                style={{
-                  borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
-                  fontFamily: 'inherit',
-                  animationDelay: `${220 + index * 45}ms`,
-                }}
+                className="w-full px-3.5 py-3.5 text-left active:opacity-70 transition-opacity"
+                style={{ borderTop: index === 0 ? 'none' : '1px solid var(--color-border)' }}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 dl-stagger-row" style={{ animationDelay: `${120 + index * 45}ms` }}>
                   <IconChip tone="neutral" icon={CalendarBlank} size={36} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">

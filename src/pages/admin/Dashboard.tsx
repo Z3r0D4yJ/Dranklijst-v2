@@ -162,7 +162,7 @@ export function Dashboard() {
                     icon={Receipt}
                     tone="primary"
                     className="dl-stagger-tile"
-                    style={{ animationDelay: '65ms' }}
+                    style={{ animationDelay: '60ms' }}
                   />
                   <AdminStatTile
                     label="Top groep"
@@ -172,7 +172,7 @@ export function Dashboard() {
                     valueTone="warning"
                     valueClassName="text-[15px]"
                     className="col-span-2 dl-stagger-tile"
-                    style={{ animationDelay: '130ms' }}
+                    style={{ animationDelay: '120ms' }}
                   />
                 </div>
               </section>

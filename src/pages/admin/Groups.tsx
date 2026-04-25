@@ -256,12 +256,12 @@ export function Groups() {
             tone="primary"
             valueTone="primary"
             className="dl-stagger-tile"
-            style={{ animationDelay: '65ms' }}
+            style={{ animationDelay: '60ms' }}
           />
         </div>
       </section>
 
-      <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '140ms' }}>
+      <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '120ms' }}>
         <AdminSectionLabel>Periode</AdminSectionLabel>
         <CustomSelect
           value={selectedPeriod}
@@ -280,7 +280,7 @@ export function Groups() {
       </section>
 
       <section className="space-y-2">
-        <div className="dl-stagger-card" style={{ animationDelay: '220ms' }}>
+        <div className="dl-stagger-card" style={{ animationDelay: '200ms' }}>
           <AdminSectionLabel>Alle groepen</AdminSectionLabel>
         </div>
         <AdminSurface>
@@ -289,14 +289,10 @@ export function Groups() {
               key={group.id}
               type="button"
               onClick={() => setSelectedGroupId(group.id)}
-              className="w-full px-4 py-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
-              style={{
-                borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
-                fontFamily: 'inherit',
-                animationDelay: `${280 + index * 45}ms`,
-              }}
+              className="w-full px-4 py-3.5 text-left active:opacity-70 transition-opacity"
+              style={{ borderTop: index === 0 ? 'none' : '1px solid var(--color-border)' }}
             >
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3 dl-stagger-row" style={{ animationDelay: `${120 + index * 45}ms` }}>
                 <div className="flex items-center gap-3 min-w-0">
                   <IconChip tone="primary" icon={Users} size={36} />
                   <div className="min-w-0">

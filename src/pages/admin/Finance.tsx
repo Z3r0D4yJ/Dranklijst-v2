@@ -223,7 +223,7 @@ export function Finance() {
               tone="warning"
               valueTone="warning"
               className="dl-stagger-tile"
-              style={{ animationDelay: '65ms' }}
+              style={{ animationDelay: '60ms' }}
             />
             <AdminStatTile
               label="Ontvangen"
@@ -232,14 +232,14 @@ export function Finance() {
               tone="success"
               valueTone="success"
               className="col-span-2 dl-stagger-tile"
-              style={{ animationDelay: '130ms' }}
+              style={{ animationDelay: '120ms' }}
             />
           </div>
         </section>
       )}
 
       {(periods ?? []).length > 0 && (
-        <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '200ms' }}>
+        <section className="space-y-2 dl-stagger-card" style={{ animationDelay: '180ms' }}>
           <AdminSectionLabel>Periode</AdminSectionLabel>
           <CustomSelect
             value={selectedPeriod}
@@ -298,7 +298,7 @@ export function Finance() {
 
       {payments.length > 0 && (
         <section className="space-y-2">
-          <div className="dl-stagger-card" style={{ animationDelay: '280ms' }}>
+          <div className="dl-stagger-card" style={{ animationDelay: '260ms' }}>
             <AdminSectionLabel>Betalingen</AdminSectionLabel>
           </div>
           <AdminSurface>
@@ -312,14 +312,10 @@ export function Finance() {
               key={payment.id}
               type="button"
               onClick={() => setSelectedPaymentId(payment.id)}
-              className="w-full p-3.5 text-left active:opacity-70 transition-opacity dl-stagger-row"
-              style={{
-                borderTop: index === 0 ? 'none' : '1px solid var(--color-border)',
-                fontFamily: 'inherit',
-                animationDelay: `${340 + index * 45}ms`,
-              }}
+              className="w-full p-3.5 text-left active:opacity-70 transition-opacity"
+              style={{ borderTop: index === 0 ? 'none' : '1px solid var(--color-border)' }}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 dl-stagger-row" style={{ animationDelay: `${120 + index * 45}ms` }}>
                 <IconChip tone={tone} icon={payment.status === 'paid' ? CheckCircle : payment.status === 'pending' ? Clock : User} size={36} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
