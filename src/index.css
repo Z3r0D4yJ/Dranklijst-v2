@@ -99,11 +99,12 @@
   --bottom-nav-fab-clearance: calc(var(--bottom-nav-height) + 40px);
   --page-bottom-clearance: calc(24px + var(--safe-area-bottom));
   --content-end-comfort: 28px;
+  --app-vh: 100dvh;
   --app-safe-screen-height: calc(
-    100dvh - var(--safe-area-top)
+    var(--app-vh, 100dvh) - var(--safe-area-top)
   );
   --app-full-screen-height: calc(
-    100dvh - var(--safe-area-top) + var(--safe-area-bottom)
+    var(--app-vh, 100dvh) - var(--safe-area-top) + var(--safe-area-bottom)
   );
   --drawer-max-height: 92vh;
   --drawer-max-height-compact: 80vh;
@@ -361,8 +362,14 @@ body {
   color: var(--color-text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
   padding-top: var(--safe-area-top);
+  min-height: var(--app-vh, 100dvh);
   /* Belt-and-suspenders for older Safari versions that ignore html overscroll-behavior */
   overscroll-behavior: none;
+}
+
+#root {
+  min-height: calc(var(--app-vh, 100dvh) - var(--safe-area-top));
+  background-color: var(--color-bg);
 }
 
 /* Page roots use min-h-screen / h-screen extensively.

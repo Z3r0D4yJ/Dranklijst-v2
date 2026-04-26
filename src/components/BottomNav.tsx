@@ -23,7 +23,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-stretch px-2"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-stretch px-2"
       style={{ height: 'var(--bottom-nav-height)' }}
     >
       {navItem('/', true,           <House size={22} />,   'Home')}
