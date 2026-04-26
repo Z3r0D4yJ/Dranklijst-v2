@@ -95,9 +95,8 @@
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --bottom-nav-height: 84px;
-  --bottom-nav-safe-height: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
-  --bottom-nav-clearance: calc(var(--bottom-nav-safe-height) + 12px);
-  --bottom-nav-fab-clearance: calc(var(--bottom-nav-safe-height) + 40px);
+  --bottom-nav-clearance: calc(var(--bottom-nav-height) + 12px);
+  --bottom-nav-fab-clearance: calc(var(--bottom-nav-height) + 40px);
   --page-bottom-clearance: calc(24px + var(--safe-area-bottom));
   --content-end-comfort: 28px;
   --app-vh: 100dvh;
@@ -363,7 +362,7 @@ body {
   color: var(--color-text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
   padding-top: var(--safe-area-top);
-  min-height: calc(var(--app-vh, 100dvh) - var(--safe-area-top));
+  min-height: var(--app-vh, 100dvh);
   /* Belt-and-suspenders for older Safari versions that ignore html overscroll-behavior */
   overscroll-behavior: none;
 }
