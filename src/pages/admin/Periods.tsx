@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { CalendarBlank, Stop, Plus } from '@phosphor-icons/react'
+import { CalendarBlank, Stop, Plus, Check } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { supabase } from '../../lib/supabase'
 import { ActionPillButton } from '../../components/ui/action-button'
@@ -12,16 +12,45 @@ import { useAuth } from '../../context/AuthContext'
 import { notifyPeriodClosed } from '../../lib/notifications'
 import { AdminFormDrawer } from '../../components/AdminFormDrawer'
 import { formatMoney } from '../../lib/formatters'
+import { scopesEqual } from '../../lib/period-resolver'
 import type { Period } from '../../lib/database.types'
 
+interface PeriodWithGroups extends Period {
+  group_ids: string[]
+}
+
 interface PeriodStats {
-  period: Period
+  period: PeriodWithGroups
   user_count: number
   total: number
 }
 
+interface GroupRow {
+  id: string
+  name: string
+}
+
 function formatMemberCount(count: number) {
   return `${count} ${count === 1 ? 'lid' : 'leden'}`
+}
+
+function ScopeBadges({ groupIds, groups }: { groupIds: string[]; groups: GroupRow[] }) {
+  if (groupIds.length === 0) {
+    return <Badge variant="primary" size="sm">Alle groepen</Badge>
+  }
+
+  const groupMap = new Map(groups.map(g => [g.id, g.name]))
+  const visible = groupIds.slice(0, 2)
+  const overflow = groupIds.length - visible.length
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map(id => (
+        <Badge key={id} variant="secondary" size="sm">{groupMap.get(id) ?? '?'}</Badge>
+      ))}
+      {overflow > 0 && <Badge variant="secondary" size="sm">+{overflow}</Badge>}
+    </div>
+  )
 }
 
 export function Periods() {
@@ -30,22 +59,42 @@ export function Periods() {
   const navigate = useNavigate()
   const [showNew, setShowNew] = useState(false)
   const [newName, setNewName] = useState('')
+  const [scopeMode, setScopeMode] = useState<'all' | 'specific'>('all')
+  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set())
   const [closing, setClosing] = useState<string | null>(null)
   const [armedClose, setArmedClose] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const { data: groups } = useQuery({
+    queryKey: ['groups-list-all'],
+    queryFn: async () => {
+      const { data } = await supabase.from('groups').select('id, name').order('name')
+      return (data ?? []) as GroupRow[]
+    },
+  })
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['period-stats'],
     queryFn: async () => {
       const { data: periods } = await supabase
         .from('periods')
-        .select('*')
+        .select('id, name, started_at, ended_at, is_active, created_by, period_groups(group_id)')
         .order('started_at', { ascending: false })
 
       if (!periods) return []
 
+      const periodRows = (periods as unknown as Array<Period & { period_groups: { group_id: string }[] | null }>).map(p => ({
+        id: p.id,
+        name: p.name,
+        started_at: p.started_at,
+        ended_at: p.ended_at,
+        is_active: p.is_active,
+        created_by: p.created_by,
+        group_ids: (p.period_groups ?? []).map(pg => pg.group_id),
+      })) as PeriodWithGroups[]
+
       const result: PeriodStats[] = await Promise.all(
-        (periods as Period[]).map(async (period) => {
+        periodRows.map(async (period) => {
           const { data } = await supabase
             .from('transactions')
             .select('user_id, total_price')
@@ -66,22 +115,68 @@ export function Periods() {
   function closeNewDrawer() {
     setShowNew(false)
     setNewName('')
+    setScopeMode('all')
+    setSelectedGroups(new Set())
   }
+
+  function toggleGroup(groupId: string) {
+    setSelectedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(groupId)) next.delete(groupId)
+      else next.add(groupId)
+      return next
+    })
+  }
+
+  const newScopeIds = useMemo(
+    () => (scopeMode === 'specific' ? Array.from(selectedGroups) : []),
+    [scopeMode, selectedGroups],
+  )
+
+  const submitDisabled =
+    loading ||
+    !newName.trim() ||
+    (scopeMode === 'specific' && selectedGroups.size === 0)
 
   async function startPeriod() {
     if (!newName.trim() || !user) return
+    if (scopeMode === 'specific' && selectedGroups.size === 0) return
     setLoading(true)
 
     try {
-      const { error } = await supabase.from('periods').insert({
-        name: newName.trim(),
-        is_active: true,
-        created_by: user.id,
-      })
+      const activePeriods = (stats ?? []).filter(s => s.period.is_active)
+      const conflict = activePeriods.find(s => scopesEqual(s.period.group_ids, newScopeIds))
+      if (conflict) {
+        const label = newScopeIds.length === 0 ? 'voor alle groepen' : 'voor deze groepen'
+        toast.error(`Er loopt al een actieve periode ${label}. Sluit die eerst af.`)
+        return
+      }
 
-      if (error) {
+      const { data: created, error } = await supabase
+        .from('periods')
+        .insert({
+          name: newName.trim(),
+          is_active: true,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
+
+      if (error || !created) {
         toast.error('Kon periode niet starten.')
         return
+      }
+
+      if (newScopeIds.length > 0) {
+        const { error: scopeErr } = await supabase
+          .from('period_groups')
+          .insert(newScopeIds.map(gid => ({ period_id: created.id, group_id: gid })))
+
+        if (scopeErr) {
+          await supabase.from('periods').delete().eq('id', created.id)
+          toast.error('Kon scope niet opslaan, periode geannuleerd.')
+          return
+        }
       }
 
       await Promise.all([
@@ -134,6 +229,7 @@ export function Periods() {
 
   const activeStats = (stats ?? []).filter(({ period }) => period.is_active)
   const closedStats = (stats ?? []).filter(({ period }) => !period.is_active)
+  const allGroups = groups ?? []
 
   return (
     <div className="px-5 space-y-3 pb-content-end-comfort">
@@ -159,11 +255,11 @@ export function Periods() {
         scrollBody
         fixed={false}
         repositionInputs={false}
-        bodyClassName="space-y-1.5"
+        bodyClassName="space-y-5"
         footer={
           <ActionPillButton
             onClick={startPeriod}
-            disabled={!newName.trim() || loading}
+            disabled={submitDisabled}
             variant="accent"
             size="md"
             className="w-full"
@@ -172,27 +268,75 @@ export function Periods() {
           </ActionPillButton>
         }
       >
-        <label
-          className="text-[11px] font-extrabold uppercase tracking-[1px]"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          Naam
-        </label>
-        <input
-          type="text"
-          value={newName}
-          onChange={(event) => setNewName(event.target.value)}
-          placeholder="bv. Zomerkamp 2025"
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="words"
-          className="dl-input text-[13px]"
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              void startPeriod()
-            }
-          }}
-        />
+        <div className="space-y-1.5">
+          <label
+            className="text-[11px] font-extrabold uppercase tracking-[1px]"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Naam
+          </label>
+          <input
+            type="text"
+            value={newName}
+            onChange={(event) => setNewName(event.target.value)}
+            placeholder="bv. Zomerkamp 2025"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="words"
+            className="dl-input text-[13px]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            className="text-[11px] font-extrabold uppercase tracking-[1px]"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Voor welke groepen?
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <ScopeToggle
+              active={scopeMode === 'all'}
+              onClick={() => setScopeMode('all')}
+              label="Alle groepen"
+            />
+            <ScopeToggle
+              active={scopeMode === 'specific'}
+              onClick={() => setScopeMode('specific')}
+              label="Specifieke groepen"
+            />
+          </div>
+
+          {scopeMode === 'specific' && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {allGroups.map(group => {
+                const selected = selectedGroups.has(group.id)
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => toggleGroup(group.id)}
+                    className="inline-flex items-center gap-1.5 rounded-full border px-3 h-8 text-[12px] font-bold transition-colors active:scale-95"
+                    style={{
+                      background: selected ? 'var(--color-primary-pale)' : 'var(--color-surface)',
+                      borderColor: selected ? 'var(--color-primary-border)' : 'var(--color-border-mid)',
+                      color: selected ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                    }}
+                  >
+                    {selected && <Check size={11} weight="bold" color="currentColor" />}
+                    {group.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {scopeMode === 'specific' && selectedGroups.size === 0 && (
+            <p className="text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+              Selecteer minstens één groep.
+            </p>
+          )}
+        </div>
       </AdminFormDrawer>
 
       {isLoading && (
@@ -221,6 +365,9 @@ export function Periods() {
                 <p className="m-0 mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
                   Sinds {formatDate(period.started_at)} · {formatMemberCount(user_count)}
                 </p>
+                <div className="mt-2">
+                  <ScopeBadges groupIds={period.group_ids} groups={allGroups} />
+                </div>
               </div>
             </div>
 
@@ -313,6 +460,9 @@ export function Periods() {
                         <p className="m-0 mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
                           {formatDate(period.started_at)} – {formatDate(period.ended_at ?? period.started_at)} · {formatMemberCount(user_count)}
                         </p>
+                        <div className="mt-1.5">
+                          <ScopeBadges groupIds={period.group_ids} groups={allGroups} />
+                        </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <span className="text-[16px] font-extrabold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
@@ -328,5 +478,22 @@ export function Periods() {
         </section>
       )}
     </div>
+  )
+}
+
+function ScopeToggle({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-xl border px-3 h-11 text-[13px] font-bold transition-colors active:scale-[0.98]"
+      style={{
+        background: active ? 'var(--color-primary-pale)' : 'var(--color-surface)',
+        borderColor: active ? 'var(--color-primary-border)' : 'var(--color-border-mid)',
+        color: active ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+      }}
+    >
+      {label}
+    </button>
   )
 }

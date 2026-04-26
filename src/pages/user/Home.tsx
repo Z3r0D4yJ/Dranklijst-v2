@@ -194,7 +194,7 @@ export function Home() {
           <EmptyState
             icon={CalendarBlank}
             title="Geen actieve periode"
-            description="Er is momenteel geen actieve periode. Neem contact op met de kas."
+            description="Er loopt momenteel geen periode voor jouw groep. Neem contact op met de kas."
           />
         </div>
       )}

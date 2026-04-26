@@ -75,6 +75,7 @@ export function Groups() {
         queryClient.invalidateQueries({ queryKey: ['admin-groups'] }),
         queryClient.invalidateQueries({ queryKey: ['groups-public'] }),
         queryClient.invalidateQueries({ queryKey: ['groups-list'] }),
+        queryClient.invalidateQueries({ queryKey: ['groups-list-all'] }),
         queryClient.invalidateQueries({ queryKey: ['user-group-options'] }),
       ])
 

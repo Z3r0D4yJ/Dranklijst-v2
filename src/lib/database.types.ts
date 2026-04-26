@@ -61,6 +61,13 @@ export interface Period {
   ended_at: string | null
   is_active: boolean
   created_by: string
+  group_ids?: string[]
+}
+
+export interface PeriodGroup {
+  id: string
+  period_id: string
+  group_id: string
 }
 
 export interface Transaction {
@@ -141,6 +148,12 @@ export type Database = {
         Row: Period
         Insert: { name: string; is_active?: boolean; created_by?: string; ended_at?: string | null }
         Update: { name?: string; is_active?: boolean; ended_at?: string | null }
+        Relationships: []
+      }
+      period_groups: {
+        Row: PeriodGroup
+        Insert: { period_id: string; group_id: string }
+        Update: Record<string, never>
         Relationships: []
       }
       transactions: {
