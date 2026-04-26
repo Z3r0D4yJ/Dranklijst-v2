@@ -23,6 +23,7 @@ import { useThemeColor } from '../../hooks/useThemeColor'
 import { SURFACE_USER_AVATAR_STYLE, UserAvatar } from '../../components/UserAvatar'
 import { ActionPillButton, IconActionButton } from '../../components/ui/action-button'
 import { PageHeader } from '../../components/AdminThemePrimitives'
+import { PaymentDrawer } from '../../components/PaymentDrawer'
 
 interface JoinRequestWithGroup {
   id: string
@@ -418,6 +419,7 @@ export function Profile() {
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
   const [groupSheetId, setGroupSheetId] = useState<string | null>(null)
   const [editOpen, setEditOpen] = useState(false)
+  const [paymentDrawerId, setPaymentDrawerId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!profile) return
@@ -519,7 +521,6 @@ export function Profile() {
         {(openPayments ?? []).length > 0 && (openPayments ?? []).map(payment => {
           const isPending = payment.status === 'pending'
           const statusUi = PAYMENT_STATUS_UI[isPending ? 'pending' : 'unpaid']
-          const isSubmitting = markingPaid === payment.id
 
           return (
             <div
@@ -571,20 +572,15 @@ export function Profile() {
                 </p>
               </div>
 
-              {payment.status === 'unpaid' && (
-                <ActionPillButton
-                  onClick={() => markAsPaid(payment.id)}
-                  disabled={isSubmitting}
-                  variant="primary-soft"
-                  size="md"
-                  className="mt-3 w-full"
-                >
-                  {isSubmitting
-                    ? <Spinner className="size-[16px]" style={{ color: 'var(--color-primary)' }} />
-                    : <CheckCircle size={16} color="currentColor" weight="bold" />}
-                  {isSubmitting ? 'Bezig...' : 'Ik heb betaald'}
-                </ActionPillButton>
-              )}
+              <ActionPillButton
+                onClick={() => setPaymentDrawerId(payment.id)}
+                variant={isPending ? 'neutral' : 'accent'}
+                size="md"
+                className="mt-3 w-full"
+              >
+                <CheckCircle size={16} color="currentColor" weight="bold" />
+                {isPending ? 'Bekijk betaalgegevens' : 'Hoe betalen'}
+              </ActionPillButton>
             </div>
           )
         })}
@@ -772,6 +768,24 @@ export function Profile() {
 
       {/* ─── Edit profile sheet ─────────────────── */}
       {editOpen && <EditProfileSheet onClose={() => setEditOpen(false)} />}
+
+      {/* ─── Payment drawer ─────────────────────── */}
+      {paymentDrawerId && (() => {
+        const payment = (openPayments ?? []).find(p => p.id === paymentDrawerId)
+        if (!payment) return null
+        const status = (payment.status === 'pending' ? 'pending' : 'unpaid') as 'pending' | 'unpaid'
+        return (
+          <PaymentDrawer
+            paymentId={payment.id}
+            amountDue={payment.amount_due}
+            periodName={payment.period_name}
+            status={status}
+            isMarkingPaid={markingPaid === payment.id}
+            onMarkAsPaid={() => { void markAsPaid(payment.id) }}
+            onClose={() => setPaymentDrawerId(null)}
+          />
+        )
+      })()}
     </div>
   )
 }
