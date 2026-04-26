@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { House, Receipt, Trophy, User, Plus } from '@phosphor-icons/react'
+import { createPortal } from 'react-dom'
 
 export function BottomNav() {
   const navigate = useNavigate()
@@ -21,10 +22,16 @@ export function BottomNav() {
     </NavLink>
   )
 
-  return (
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-stretch px-2"
-      style={{ height: 'var(--bottom-nav-height)' }}
+      className="fixed left-0 right-0 z-40 bg-[var(--color-surface)] border-t border-[var(--color-border)] flex items-stretch px-2"
+      style={{
+        bottom: 'calc(env(safe-area-inset-bottom, 0px) * -1)',
+        height: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
     >
       {navItem('/', true,           <House size={22} />,   'Home')}
       {navItem('/transactions', false, <Receipt size={22} />, 'Transacties')}
@@ -43,6 +50,7 @@ export function BottomNav() {
 
       {navItem('/leaderboard', false, <Trophy size={22} />, 'Top')}
       {navItem('/profile', false,     <User size={22} />,   'Profiel')}
-    </nav>
+    </nav>,
+    document.body,
   )
 }
