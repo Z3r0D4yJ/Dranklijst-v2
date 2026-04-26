@@ -13,6 +13,7 @@ import { PublicRoute } from './components/PublicRoute'
 import { BottomNav } from './components/BottomNav'
 import { AdminLayout } from './components/AdminLayout'
 import { OfflineBanner } from './components/OfflineBanner'
+import { PushOnboardingDrawer } from './components/PushOnboardingDrawer'
 import { Login } from './pages/auth/Login'
 import { Register } from './pages/auth/Register'
 import { JoinGroup } from './pages/auth/JoinGroup'
@@ -182,6 +183,7 @@ function AppLayout() {
       <OfflineBanner />
       <Outlet />
       <BottomNav />
+      <PushOnboardingDrawer />
     </>
   )
 }

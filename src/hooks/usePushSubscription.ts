@@ -20,12 +20,13 @@ export function usePushSubscription() {
     })
   }, [user])
 
-  async function enable() {
-    if (!user) return
+  async function enable(): Promise<boolean> {
+    if (!user) return false
     setLoading(true)
     const ok = await subscribeToPush(user.id)
     setSubscribed(ok)
     setLoading(false)
+    return ok
   }
 
   async function disable() {
