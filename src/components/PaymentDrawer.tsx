@@ -71,7 +71,16 @@ export function PaymentDrawer({ paymentId, amountDue, periodName, status, isMark
   }
 
   return (
-    <Drawer open onOpenChange={(next: boolean) => { if (!next && !isMarkingPaid) onClose() }} dismissible={!isMarkingPaid}>
+    <Drawer
+      open
+      onOpenChange={(next: boolean) => {
+        if (next) return
+        if (isMarkingPaid) return
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
+        onClose()
+      }}
+      dismissible={!isMarkingPaid}
+    >
       <DrawerContent
         className="mx-auto w-full max-w-md rounded-t-[24px] px-0"
         style={{ background: 'var(--color-surface)', maxHeight: 'var(--drawer-max-height)' }}
@@ -90,7 +99,10 @@ export function PaymentDrawer({ paymentId, amountDue, periodName, status, isMark
           </DrawerClose>
         </DrawerHeader>
 
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
+        <div
+          className="flex-1 overflow-y-auto px-5 py-5 space-y-3"
+          style={{ background: 'var(--color-bg)' }}
+        >
           <div
             className="rounded-card border p-4 text-center"
             style={{ background: 'var(--color-primary-pale)', borderColor: 'var(--color-primary-border)' }}

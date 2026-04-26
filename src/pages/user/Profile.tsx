@@ -419,7 +419,20 @@ export function Profile() {
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
   const [groupSheetId, setGroupSheetId] = useState<string | null>(null)
   const [editOpen, setEditOpen] = useState(false)
-  const [paymentDrawerId, setPaymentDrawerId] = useState<string | null>(null)
+  const [paymentDrawerId, setPaymentDrawerId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    try { return sessionStorage.getItem('payment-drawer-id') } catch { return null }
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (paymentDrawerId) sessionStorage.setItem('payment-drawer-id', paymentDrawerId)
+      else sessionStorage.removeItem('payment-drawer-id')
+    } catch {
+      // ignore
+    }
+  }, [paymentDrawerId])
 
   useEffect(() => {
     if (!profile) return
@@ -455,13 +468,17 @@ export function Profile() {
     },
   })
 
-  async function markAsPaid(paymentId: string) {
+  async function markAsPaid(paymentId: string): Promise<boolean> {
     setMarkingPaid(paymentId)
     const { error } = await supabase.from('payments').update({ status: 'pending' }).eq('id', paymentId)
     await queryClient.invalidateQueries({ queryKey: ['open-payments', profile?.id] })
     setMarkingPaid(null)
-    if (error) toast.error('Er ging iets mis. Probeer opnieuw.')
-    else toast.success('Betaling gemarkeerd. Wacht op bevestiging van de kas.')
+    if (error) {
+      toast.error('Er ging iets mis. Probeer opnieuw.')
+      return false
+    }
+    toast.success('Betaling gemarkeerd. Wacht op bevestiging van de kas.')
+    return true
   }
 
   const isStandalone =
@@ -781,7 +798,10 @@ export function Profile() {
             periodName={payment.period_name}
             status={status}
             isMarkingPaid={markingPaid === payment.id}
-            onMarkAsPaid={() => { void markAsPaid(payment.id) }}
+            onMarkAsPaid={async () => {
+              const ok = await markAsPaid(payment.id)
+              if (ok) setPaymentDrawerId(null)
+            }}
             onClose={() => setPaymentDrawerId(null)}
           />
         )
