@@ -28,6 +28,7 @@ export function Dashboard() {
     supabase
       .from('periods')
       .select('id, name, is_active, started_at, ended_at')
+      .order('is_active', { ascending: false })
       .order('started_at', { ascending: false })
       .then(({ data }) => {
         const list = (data ?? []) as PeriodOption[]

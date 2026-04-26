@@ -350,49 +350,53 @@ export function Periods() {
         <section key={period.id} className="space-y-2">
           <AdminSectionLabel>Actieve periode</AdminSectionLabel>
           <AdminSurface padded className="space-y-3 dl-stagger-card" style={{ animationDelay: '60ms' }}>
-            <div className="flex items-start gap-3">
-              <IconChip tone="primary" icon={CalendarBlank} size={38} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                  <p
-                    className="m-0 truncate text-[16px] font-extrabold tracking-[-0.4px]"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    {period.name}
-                  </p>
-                  <Badge variant="success" dot dotPulse>Lopend</Badge>
-                </div>
-                <p className="m-0 mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                  Sinds {formatDate(period.started_at)} · {formatMemberCount(user_count)}
-                </p>
-                <div className="mt-2">
-                  <ScopeBadges groupIds={period.group_ids} groups={allGroups} />
-                </div>
-              </div>
-            </div>
-
             <button
               type="button"
               onClick={() => goToTransactions(period.id)}
-              className="w-full rounded-chip px-3.5 py-2.5 text-left active:scale-[0.99] transition-transform"
-              style={{
-                background: 'var(--color-surface-alt)',
-                border: '1px solid var(--color-border)',
-                fontFamily: 'inherit',
-              }}
+              className="block w-full text-left space-y-3 active:opacity-80 transition-opacity"
+              style={{ fontFamily: 'inherit' }}
             >
-              <p
-                className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
-                style={{ color: 'var(--color-text-muted)' }}
+              <div className="flex items-start gap-3">
+                <IconChip tone="primary" icon={CalendarBlank} size={38} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <p
+                      className="m-0 truncate text-[16px] font-extrabold tracking-[-0.4px]"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {period.name}
+                    </p>
+                    <Badge variant="success" dot dotPulse>Lopend</Badge>
+                  </div>
+                  <p className="m-0 mt-1 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                    Sinds {formatDate(period.started_at)} · {formatMemberCount(user_count)}
+                  </p>
+                  <div className="mt-2">
+                    <ScopeBadges groupIds={period.group_ids} groups={allGroups} />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="rounded-chip px-3.5 py-2.5"
+                style={{
+                  background: 'var(--color-surface-alt)',
+                  border: '1px solid var(--color-border)',
+                }}
               >
-                Huidige omzet
-              </p>
-              <p
-                className="mt-1 text-[16px] font-extrabold tracking-[-0.35px] tabular-nums"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                {formatMoney(total)}
-              </p>
+                <p
+                  className="m-0 text-[11px] font-extrabold uppercase tracking-[1.2px]"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  Huidige omzet
+                </p>
+                <p
+                  className="mt-1 text-[16px] font-extrabold tracking-[-0.35px] tabular-nums"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {formatMoney(total)}
+                </p>
+              </div>
             </button>
 
             {armedClose === period.id ? (

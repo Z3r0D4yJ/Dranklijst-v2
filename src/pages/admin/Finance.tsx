@@ -67,6 +67,7 @@ export function Finance() {
       const { data } = await supabase
         .from('periods')
         .select('*')
+        .order('is_active', { ascending: false })
         .order('started_at', { ascending: false })
       return (data ?? []) as Period[]
     },

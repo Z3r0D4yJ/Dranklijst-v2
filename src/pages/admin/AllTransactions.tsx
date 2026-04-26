@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CaretRight, Receipt, Trash } from '@phosphor-icons/react'
 import { useSearchParams } from 'react-router-dom'
@@ -54,18 +54,49 @@ export function AllTransactions() {
   const { data: periods } = useQuery({
     queryKey: ['periods'],
     queryFn: async () => {
-      const { data } = await supabase.from('periods').select('*').order('started_at', { ascending: false })
+      const { data } = await supabase
+        .from('periods')
+        .select('*')
+        .order('is_active', { ascending: false })
+        .order('started_at', { ascending: false })
       return (data ?? []) as Period[]
     },
   })
 
   const { data: groups } = useQuery({
-    queryKey: ['groups-list'],
+    queryKey: ['groups-list-all'],
     queryFn: async () => {
-      const { data } = await supabase.from('groups').select('id, name').neq('name', 'Leiding').order('name')
+      const { data } = await supabase.from('groups').select('id, name').order('name')
       return (data ?? []) as { id: string; name: string }[]
     },
   })
+
+  const { data: periodScope } = useQuery({
+    queryKey: ['period-scope', selectedPeriod],
+    enabled: !!selectedPeriod,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('period_groups')
+        .select('group_id')
+        .eq('period_id', selectedPeriod)
+      return (data ?? []).map((r) => (r as { group_id: string }).group_id)
+    },
+  })
+
+  const visibleGroups = useMemo(() => {
+    const all = groups ?? []
+    if (!selectedPeriod || !periodScope || periodScope.length === 0) return all
+    const scope = new Set(periodScope)
+    return all.filter((g) => scope.has(g.id))
+  }, [groups, periodScope, selectedPeriod])
+
+  useEffect(() => {
+    if (!selectedGroup) return
+    if (visibleGroups.some((g) => g.id === selectedGroup)) return
+    if (groups && periodScope && periodScope.length > 0) {
+      setSelectedGroup('')
+    }
+  }, [visibleGroups, selectedGroup, groups, periodScope])
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['all-transactions', selectedPeriod, selectedGroup],
@@ -197,7 +228,7 @@ export function AllTransactions() {
           <CustomSelect
             value={selectedGroup}
             onChange={setSelectedGroup}
-            options={(groups ?? []).map((group) => ({ value: group.id, label: group.name }))}
+            options={visibleGroups.map((group) => ({ value: group.id, label: group.name }))}
             placeholder="Alle groepen"
             style={{ minWidth: 0 }}
           />

@@ -86,7 +86,11 @@ export function GroupManagement() {
   const { data: periods } = useQuery({
     queryKey: ['periods'],
     queryFn: async () => {
-      const { data } = await supabase.from('periods').select('*').order('started_at', { ascending: false })
+      const { data } = await supabase
+        .from('periods')
+        .select('*')
+        .order('is_active', { ascending: false })
+        .order('started_at', { ascending: false })
       return (data ?? []) as Period[]
     },
   })
